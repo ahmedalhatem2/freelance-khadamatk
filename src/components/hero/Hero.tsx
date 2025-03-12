@@ -27,7 +27,7 @@ const Hero = () => {
               <Button variant="outline" className="rounded-full text-base py-6 flex-1">سجل كمستقل</Button>
             </div>
             
-            <div className="glass p-2 rounded-full flex items-center opacity-0 animate-fade-in animate-delay-500 bg-blue-100">
+            <div className="glass p-2 rounded-full flex items-center opacity-0 animate-fade-in animate-delay-500 bg-primary">
               <Search className="mx-3 text-muted-foreground" size={20} />
               <input type="text" placeholder="ابحث عن مهارة أو خدمة..." className="flex-1 bg-transparent border-0 outline-none py-2 text-foreground placeholder:text-muted-foreground" />
               <Button className="rounded-full ml-1">بحث</Button>
