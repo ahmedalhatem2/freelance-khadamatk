@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { cn } from '@/lib/utils';
+import { Link } from 'react-router-dom';
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -18,7 +19,7 @@ const Navbar = () => {
   }, []);
 
   const navLinks = [
-    { name: "الرئيسية", href: "#" },
+    { name: "الرئيسية", href: "/" },
     { name: "الخدمات", href: "#services" },
     { name: "المستقلين", href: "#freelancers" },
     { name: "كيف يعمل", href: "#how-it-works" },
@@ -33,7 +34,7 @@ const Navbar = () => {
       <div className="container mx-auto">
         <div className="flex items-center justify-between">
           <div className="flex items-center">
-            <a href="#" className="text-2xl font-bold text-primary">خدماتك</a>
+            <Link to="/" className="text-2xl font-bold text-primary">خدماتك</Link>
           </div>
 
           {/* Desktop Navigation */}
@@ -50,8 +51,12 @@ const Navbar = () => {
           </nav>
 
           <div className="hidden md:flex items-center space-x-4 space-x-reverse">
-            <Button variant="outline" className="rounded-full">تسجيل دخول</Button>
-            <Button className="rounded-full">إنشاء حساب</Button>
+            <Link to="/login">
+              <Button variant="outline" className="rounded-full">تسجيل دخول</Button>
+            </Link>
+            <Link to="/register">
+              <Button className="rounded-full">إنشاء حساب</Button>
+            </Link>
           </div>
 
           {/* Mobile Menu Button */}
@@ -81,8 +86,12 @@ const Navbar = () => {
             </a>
           ))}
           <div className="flex flex-col space-y-4 pt-8">
-            <Button variant="outline" className="rounded-full w-40">تسجيل دخول</Button>
-            <Button className="rounded-full w-40">إنشاء حساب</Button>
+            <Link to="/login" onClick={() => setMobileMenuOpen(false)}>
+              <Button variant="outline" className="rounded-full w-40">تسجيل دخول</Button>
+            </Link>
+            <Link to="/register" onClick={() => setMobileMenuOpen(false)}>
+              <Button className="rounded-full w-40">إنشاء حساب</Button>
+            </Link>
           </div>
         </div>
       </div>
