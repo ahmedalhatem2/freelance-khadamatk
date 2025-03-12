@@ -53,9 +53,9 @@ const Footer = () => {
       <div className="container mx-auto px-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10">
           <div className="lg:col-span-2">
-            <a href="#" className="text-2xl font-bold text-primary mb-6 inline-block">موسايك</a>
+            <a href="#" className="text-2xl font-bold text-primary mb-6 inline-block">خدماتك</a>
             <p className="text-muted-foreground mb-6 max-w-md">
-              منصة موسايك تربط بين أفضل المستقلين وأصحاب المشاريع في العالم العربي، وتوفر بيئة آمنة وسهلة لإنجاز الأعمال.
+              منصة خدماتك تربط بين أفضل المستقلين وأصحاب المشاريع في العالم العربي، وتوفر بيئة آمنة وسهلة لإنجاز الأعمال.
             </p>
             
             <div className="mb-6">
@@ -108,7 +108,7 @@ const Footer = () => {
         
         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-sm text-muted-foreground">
-            &copy; {currentYear} موسايك. جميع الحقوق محفوظة
+            &copy; {currentYear} خدماتك. جميع الحقوق محفوظة
           </p>
           
           <div className="flex gap-6">

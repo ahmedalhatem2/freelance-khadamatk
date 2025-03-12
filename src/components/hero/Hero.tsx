@@ -22,7 +22,7 @@ const Hero = () => {
               اعثر على <span className="text-primary">أفضل المستقلين</span> لإنجاز مشاريعك
             </h1>
             <p className="text-muted-foreground text-lg mb-8 opacity-0 animate-fade-in animate-delay-300">
-              منصة موسايك تجمع بين أصحاب المشاريع والمستقلين المحترفين في مكان واحد. أطلق مشروعك واعثر على المهارات المناسبة بكل سهولة.
+              منصة خدماتك تجمع بين أصحاب المشاريع والمستقلين المحترفين في مكان واحد. أطلق مشروعك واعثر على المهارات المناسبة بكل سهولة.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 mb-8 opacity-0 animate-fade-in animate-delay-400">
