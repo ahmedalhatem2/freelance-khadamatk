@@ -20,8 +20,8 @@ const Navbar = () => {
 
   const navLinks = [
     { name: "الرئيسية", href: "/" },
-    { name: "الخدمات", href: "#services" },
-    { name: "المستقلين", href: "#freelancers" },
+    { name: "الخدمات", href: "/services" },
+    { name: "المستقلين", href: "/providers" },
     { name: "كيف يعمل", href: "#how-it-works" },
     { name: "تواصل معنا", href: "#contact" },
   ];
@@ -40,13 +40,13 @@ const Navbar = () => {
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-1 space-x-reverse">
             {navLinks.map((link) => (
-              <a 
+              <Link 
                 key={link.name}
-                href={link.href}
+                to={link.href.startsWith('#') ? link.href : link.href}
                 className="px-4 py-2 text-foreground/80 hover:text-primary transition-colors"
               >
                 {link.name}
-              </a>
+              </Link>
             ))}
           </nav>
 
@@ -54,7 +54,7 @@ const Navbar = () => {
             <Link to="/login">
               <Button variant="outline" className="rounded-full">تسجيل دخول</Button>
             </Link>
-            <Link to="/register">
+            <Link to="/register-steps">
               <Button className="rounded-full">إنشاء حساب</Button>
             </Link>
           </div>
@@ -76,20 +76,20 @@ const Navbar = () => {
       )}>
         <div className="flex flex-col items-center justify-center h-full space-y-8">
           {navLinks.map((link) => (
-            <a 
+            <Link 
               key={link.name}
-              href={link.href}
+              to={link.href.startsWith('#') ? link.href : link.href}
               className="text-xl font-medium hover:text-primary transition-colors"
               onClick={() => setMobileMenuOpen(false)}
             >
               {link.name}
-            </a>
+            </Link>
           ))}
           <div className="flex flex-col space-y-4 pt-8">
             <Link to="/login" onClick={() => setMobileMenuOpen(false)}>
               <Button variant="outline" className="rounded-full w-40">تسجيل دخول</Button>
             </Link>
-            <Link to="/register" onClick={() => setMobileMenuOpen(false)}>
+            <Link to="/register-steps" onClick={() => setMobileMenuOpen(false)}>
               <Button className="rounded-full w-40">إنشاء حساب</Button>
             </Link>
           </div>
