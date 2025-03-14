@@ -25,90 +25,12 @@ const Providers = () => {
   ];
 
   const freelancers = [
-    {
-      id: 1,
-      name: "أحمد محمد",
-      avatar: "https://i.pravatar.cc/150?img=11",
-      title: "مطور واجهات أمامية",
-      category: "dev",
-      location: "دمشق، سوريا",
-      rating: 4.9,
-      reviews: 124,
-      completedProjects: 78,
-      hourlyRate: 35,
-      tags: ["React", "Vue.js", "TypeScript"],
-      bio: "مطور واجهات أمامية ذو خبرة 5 سنوات في تطوير مواقع الويب التفاعلية وتطبيقات الويب. متخصص في React وNext.js وVue.js."
-    },
-    {
-      id: 2,
-      name: "سارة خالد",
-      avatar: "https://i.pravatar.cc/150?img=5",
-      title: "مصممة جرافيك",
-      category: "design",
-      location: "حلب، سوريا",
-      rating: 4.8,
-      reviews: 87,
-      completedProjects: 64,
-      hourlyRate: 30,
-      tags: ["UI/UX", "Photoshop", "Illustrator"],
-      bio: "مصممة جرافيك متخصصة في تصميم الهويات البصرية والواجهات. أعمل على تقديم تصاميم عصرية تناسب احتياجات العملاء."
-    },
-    {
-      id: 3,
-      name: "عمر حسن",
-      avatar: "https://i.pravatar.cc/150?img=3",
-      title: "كاتب محتوى",
-      category: "writing",
-      location: "اللاذقية، سوريا",
-      rating: 4.7,
-      reviews: 56,
-      completedProjects: 42,
-      hourlyRate: 25,
-      tags: ["SEO", "محتوى تسويقي", "ترجمة"],
-      bio: "كاتب محتوى متخصص في المحتوى التسويقي والمقالات المدعمة بمعايير SEO. أقدم محتوى عربي احترافي يحقق النتائج المرجوة."
-    },
-    {
-      id: 4,
-      name: "منى علي",
-      avatar: "https://i.pravatar.cc/150?img=10",
-      title: "خبيرة تسويق رقمي",
-      category: "marketing",
-      location: "حمص، سوريا",
-      rating: 4.9,
-      reviews: 98,
-      completedProjects: 68,
-      hourlyRate: 40,
-      tags: ["SEO", "SEM", "وسائل التواصل"],
-      bio: "متخصصة في التسويق الرقمي مع خبرة 6 سنوات في إدارة الحملات الإعلانية وتحسين محركات البحث وإدارة وسائل التواصل الاجتماعي."
-    },
-    {
-      id: 5,
-      name: "يوسف أحمد",
-      avatar: "https://i.pravatar.cc/150?img=15",
-      title: "مصمم فيديو موشن جرافيك",
-      category: "video",
-      location: "دمشق، سوريا",
-      rating: 4.8,
-      reviews: 72,
-      completedProjects: 51,
-      hourlyRate: 45,
-      tags: ["After Effects", "Premier", "3D Animation"],
-      bio: "مصمم فيديو وموشن جرافيك محترف. أقدم خدمات تصميم فيديوهات إعلانية وشروحات تفاعلية وأنيميشن ثنائي وثلاثي الأبعاد."
-    },
-    {
-      id: 6,
-      name: "رنا محمود",
-      avatar: "https://i.pravatar.cc/150?img=23",
-      title: "مطورة تطبيقات موبايل",
-      category: "dev",
-      location: "حماة، سوريا",
-      rating: 4.6,
-      reviews: 63,
-      completedProjects: 38,
-      hourlyRate: 38,
-      tags: ["Flutter", "React Native", "iOS/Android"],
-      bio: "مطورة تطبيقات جوال متخصصة في Flutter وReact Native. أقوم بتطوير تطبيقات عالية الأداء لمنصات iOS وAndroid بواجهات مستخدم جذابة."
-    }
+    { id: 1, name: "أحمد محمد", avatar: "https://i.pravatar.cc/150?img=11", title: "مطور واجهات أمامية", category: "dev", location: "دمشق، سوريا", rating: 4.9, reviews: 124, completedProjects: 78, hourlyRate: 35, tags: ["React", "Vue.js", "TypeScript"], bio: "مطور واجهات أمامية ذو خبرة 5 سنوات في تطوير مواقع الويب التفاعلية وتطبيقات الويب. متخصص في React وNext.js وVue.js." },
+    { id: 2, name: "سارة خالد", avatar: "https://i.pravatar.cc/150?img=5", title: "مصممة جرافيك", category: "design", location: "حلب، سوريا", rating: 4.8, reviews: 87, completedProjects: 64, hourlyRate: 30, tags: ["UI/UX", "Photoshop", "Illustrator"], bio: "مصممة جرافيك متخصصة في تصميم الهويات البصرية والواجهات. أعمل على تقديم تصاميم عصرية تناسب احتياجات العملاء." },
+    { id: 3, name: "عمر حسن", avatar: "https://i.pravatar.cc/150?img=3", title: "كاتب محتوى", category: "writing", location: "اللاذقية، سوريا", rating: 4.7, reviews: 56, completedProjects: 42, hourlyRate: 25, tags: ["SEO", "محتوى تسويقي", "ترجمة"], bio: "كاتب محتوى متخصص في المحتوى التسويقي والمقالات المدعمة بمعايير SEO. أقدم محتوى عربي احترافي يحقق النتائج المرجوة." },
+    { id: 4, name: "منى علي", avatar: "https://i.pravatar.cc/150?img=10", title: "خبيرة تسويق رقمي", category: "marketing", location: "حمص، سوريا", rating: 4.9, reviews: 98, completedProjects: 68, hourlyRate: 40, tags: ["SEO", "SEM", "وسائل التواصل"], bio: "متخصصة في التسويق الرقمي مع خبرة 6 سنوات في إدارة الحملات الإعلانية وتحسين محركات البحث وإدارة وسائل التواصل الاجتماعي." },
+    { id: 5, name: "يوسف أحمد", avatar: "https://i.pravatar.cc/150?img=15", title: "مصمم فيديو موشن جرافيك", category: "video", location: "دمشق، سوريا", rating: 4.8, reviews: 72, completedProjects: 51, hourlyRate: 45, tags: ["After Effects", "Premier", "3D Animation"], bio: "مصمم فيديو وموشن جرافيك محترف. أقدم خدمات تصميم فيديوهات إعلانية وشروحات تفاعلية وأنيميشن ثنائي وثلاثي الأبعاد." },
+    { id: 6, name: "رنا محمود", avatar: "https://i.pravatar.cc/150?img=23", title: "مطورة تطبيقات موبايل", category: "dev", location: "حماة، سوريا", rating: 4.6, reviews: 63, completedProjects: 38, hourlyRate: 38, tags: ["Flutter", "React Native", "iOS/Android"], bio: "مطورة تطبيقات جوال متخصصة في Flutter وReact Native. أقوم بتطوير تطبيقات عالية الأداء لمنصات iOS وAndroid بواجهات مستخدم جذابة." }
   ];
 
   const filteredFreelancers = selectedCategory === "all" 
@@ -121,7 +43,7 @@ const Providers = () => {
       
       <div className="container mx-auto mt-24 px-4 flex-grow">
         <div className="flex flex-col md:flex-row gap-8 py-10">
-          <SidebarProvider className="w-full">
+          <SidebarProvider>
             <div className="w-full flex flex-col md:flex-row gap-6">
               <aside className="md:w-1/4 md:static md:block">
                 <Sidebar className="p-4 rounded-xl bg-card border shadow-sm">
