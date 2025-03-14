@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
-import { SidebarProvider } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -10,7 +10,6 @@ import Navbar from "@/components/navbar/Navbar";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import Footer from "@/components/footer/Footer";
-import ServiceCard, { ServiceProps } from "@/components/services/ServiceCard";
 import { 
   Select,
   SelectContent,
@@ -59,7 +58,7 @@ const Services = () => {
     { value: "price-low-high", label: "السعر: من الأقل للأعلى" }
   ];
 
-  const services: ServiceProps[] = [
+  const services = [
     {
       id: 1,
       title: "تصميم موقع إلكتروني احترافي متجاوب",
@@ -220,7 +219,7 @@ const Services = () => {
         <div className="flex flex-col md:flex-row gap-8 py-10">
           <SidebarProvider className="w-full">
             <div className="w-full flex flex-col md:flex-row-reverse gap-6">
-              <aside className="md:w-1/4 md:static">
+              <aside className="md:w-1/4 md:static md:block">
                 <Sidebar className="p-4 rounded-xl bg-card border shadow-sm" side="right">
                   <SidebarContent>
                     <div className="relative mb-6">
@@ -326,6 +325,11 @@ const Services = () => {
                     </div>
                   </SidebarContent>
                 </Sidebar>
+                <div className="md:hidden mt-4">
+                  <SidebarTrigger className="w-full rounded-full">
+                    فلترة الخدمات
+                  </SidebarTrigger>
+                </div>
               </aside>
               
               <main className="md:w-3/4">
@@ -356,7 +360,39 @@ const Services = () => {
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {filteredServices.map((service) => (
-                    <ServiceCard key={service.id} service={service} />
+                    <Card key={service.id} className="overflow-hidden card-hover">
+                      <div className="relative h-40">
+                        <img 
+                          src={service.image} 
+                          alt={service.title} 
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="p-4">
+                        <h3 className="font-bold text-lg line-clamp-2 h-14">{service.title}</h3>
+                        <div className="flex items-center gap-1 mt-2">
+                          <div className="flex items-center">
+                            <svg className="w-4 h-4 text-amber-400 fill-current" viewBox="0 0 24 24">
+                              <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+                            </svg>
+                            <span className="font-medium mr-1">{service.rating}</span>
+                          </div>
+                          <span className="text-muted-foreground text-sm">({service.reviews} تقييم)</span>
+                        </div>
+                        <div className="flex flex-wrap gap-1 mt-3">
+                          {service.tags.slice(0, 3).map((tag, i) => (
+                            <Badge key={i} variant="secondary" className="rounded-full text-xs">
+                              {tag}
+                            </Badge>
+                          ))}
+                        </div>
+                        <Separator className="my-3" />
+                        <div className="flex justify-between items-center">
+                          <span className="text-primary font-bold text-lg">${service.price}</span>
+                          <Button variant="outline" size="sm" className="rounded-full">تفاصيل</Button>
+                        </div>
+                      </div>
+                    </Card>
                   ))}
                 </div>
                 

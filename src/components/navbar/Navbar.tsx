@@ -1,16 +1,13 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
-import { Menu, X, SidebarOpen } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { cn } from '@/lib/utils';
-import { Link, useLocation } from 'react-router-dom';
-import { useSidebar } from '@/components/ui/sidebar';
+import { Link } from 'react-router-dom';
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const location = useLocation();
-  const { toggleSidebar } = useSidebar();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -28,8 +25,6 @@ const Navbar = () => {
     { name: "كيف يعمل", href: "#how-it-works" },
     { name: "تواصل معنا", href: "#contact" },
   ];
-
-  const showSidebarToggle = location.pathname === '/services' || location.pathname === '/providers';
 
   return (
     <header className={cn(
@@ -56,17 +51,6 @@ const Navbar = () => {
           </nav>
 
           <div className="hidden md:flex items-center space-x-4 space-x-reverse">
-            {showSidebarToggle && (
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                onClick={toggleSidebar}
-                className="mr-2"
-              >
-                <SidebarOpen className="h-5 w-5" />
-                <span className="sr-only">Toggle Sidebar</span>
-              </Button>
-            )}
             <Link to="/login">
               <Button variant="outline" className="rounded-full">تسجيل دخول</Button>
             </Link>
@@ -76,24 +60,12 @@ const Navbar = () => {
           </div>
 
           {/* Mobile Menu Button */}
-          <div className="md:hidden flex items-center gap-2">
-            {showSidebarToggle && (
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                onClick={toggleSidebar}
-              >
-                <SidebarOpen className="h-5 w-5" />
-                <span className="sr-only">Toggle Sidebar</span>
-              </Button>
-            )}
-            <button 
-              className="text-foreground"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            >
-              {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
-          </div>
+          <button 
+            className="md:hidden text-foreground"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          >
+            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
         </div>
       </div>
 
