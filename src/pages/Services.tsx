@@ -10,6 +10,7 @@ import Navbar from "@/components/navbar/Navbar";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import Footer from "@/components/footer/Footer";
+import { cn } from "@/lib/utils";
 import { 
   Select,
   SelectContent,
