@@ -1,13 +1,19 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
-import { Menu, X } from "lucide-react";
+import { Menu, X, PanelRight } from "lucide-react";
 import { cn } from '@/lib/utils';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
+import { useSidebar } from "@/components/ui/sidebar";
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const location = useLocation();
+  const showSidebarToggle = location.pathname === "/services" || location.pathname === "/providers";
+  
+  // Only try to use sidebar context if we're on a page that has it
+  const sidebarContext = showSidebarToggle ? useSidebar() : null;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -51,6 +57,17 @@ const Navbar = () => {
           </nav>
 
           <div className="hidden md:flex items-center space-x-4 space-x-reverse">
+            {showSidebarToggle && sidebarContext && (
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={sidebarContext.toggleSidebar}
+                className="rounded-full"
+                aria-label="Toggle Sidebar"
+              >
+                <PanelRight className="h-5 w-5" />
+              </Button>
+            )}
             <Link to="/login">
               <Button variant="outline" className="rounded-full">تسجيل دخول</Button>
             </Link>
@@ -86,6 +103,19 @@ const Navbar = () => {
             </Link>
           ))}
           <div className="flex flex-col space-y-4 pt-8">
+            {showSidebarToggle && sidebarContext && (
+              <Button 
+                variant="outline" 
+                className="rounded-full w-40 flex items-center justify-center gap-2"
+                onClick={() => {
+                  sidebarContext.toggleSidebar();
+                  setMobileMenuOpen(false);
+                }}
+              >
+                <PanelRight className="h-4 w-4" />
+                <span>إظهار القائمة</span>
+              </Button>
+            )}
             <Link to="/login" onClick={() => setMobileMenuOpen(false)}>
               <Button variant="outline" className="rounded-full w-40">تسجيل دخول</Button>
             </Link>

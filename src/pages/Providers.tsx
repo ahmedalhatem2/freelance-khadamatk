@@ -6,14 +6,16 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Search, Star, MapPin, UserCheck, Briefcase } from "lucide-react";
+import { Search, Star, MapPin, UserCheck, Briefcase, Heart } from "lucide-react";
 import Navbar from "@/components/navbar/Navbar";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import Footer from "@/components/footer/Footer";
+import { cn } from "@/lib/utils";
 
 const Providers = () => {
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const [favoriteFreelancers, setFavoriteFreelancers] = useState<number[]>([]);
 
   const categories = [
     { id: "all", name: "جميع المستقلين", count: 187 },
@@ -111,6 +113,14 @@ const Providers = () => {
     }
   ];
 
+  const toggleFavorite = (freelancerId: number) => {
+    setFavoriteFreelancers(prev => 
+      prev.includes(freelancerId)
+        ? prev.filter(id => id !== freelancerId)
+        : [...prev, freelancerId]
+    );
+  };
+
   const filteredFreelancers = selectedCategory === "all" 
     ? freelancers 
     : freelancers.filter(freelancer => freelancer.category === selectedCategory);
@@ -122,16 +132,16 @@ const Providers = () => {
       <div className="container mx-auto mt-24 px-4 flex-grow">
         <div className="flex flex-col md:flex-row gap-8 py-10">
           <SidebarProvider className="w-full">
-            <div className="w-full flex flex-col md:flex-row gap-6">
+            <div className="w-full flex flex-col md:flex-row-reverse gap-6">
               <aside className="md:w-1/4 md:static md:block">
-                <Sidebar className="p-4 rounded-xl bg-card border shadow-sm">
+                <Sidebar className="p-4 rounded-xl bg-card border shadow-sm" side="right">
                   <SidebarContent>
                     <div className="relative mb-6">
                       <Input 
                         placeholder="ابحث عن مستقل..." 
-                        className="pr-10 rounded-full" 
+                        className="pl-10 pr-3 rounded-full" 
                       />
-                      <Search className="absolute top-1/2 transform -translate-y-1/2 right-3 h-5 w-5 text-muted-foreground" />
+                      <Search className="absolute top-1/2 transform -translate-y-1/2 left-3 h-5 w-5 text-muted-foreground" />
                     </div>
                     
                     <h3 className="text-lg font-bold mb-4">التخصصات</h3>
@@ -229,7 +239,22 @@ const Providers = () => {
                     <Card key={freelancer.id} className="overflow-hidden card-hover">
                       <div className="p-6">
                         <div className="flex flex-col md:flex-row gap-6">
-                          <div className="flex flex-col items-center md:w-1/4">
+                          <div className="flex flex-col items-center md:w-1/4 relative">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="absolute top-0 left-0 text-foreground rounded-full h-8 w-8"
+                              onClick={() => toggleFavorite(freelancer.id)}
+                            >
+                              <Heart 
+                                className={cn(
+                                  "h-5 w-5", 
+                                  favoriteFreelancers.includes(freelancer.id) ? "fill-rose-500 text-rose-500" : ""
+                                )} 
+                              />
+                              <span className="sr-only">إضافة للمفضلة</span>
+                            </Button>
+                            
                             <Avatar className="w-24 h-24 border-2 border-primary/20">
                               <img src={freelancer.avatar} alt={freelancer.name} />
                             </Avatar>

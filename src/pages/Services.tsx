@@ -5,7 +5,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Search, ChevronDown } from "lucide-react";
+import { Search, Bookmark, MapPin, Star } from "lucide-react";
 import Navbar from "@/components/navbar/Navbar";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
@@ -21,6 +21,7 @@ import {
 const Services = () => {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedSort, setSelectedSort] = useState("newest");
+  const [savedServices, setSavedServices] = useState<number[]>([]);
 
   const categories = [
     { id: "all", name: "جميع الخدمات", count: 245 },
@@ -211,6 +212,14 @@ const Services = () => {
     console.log("Applying price filter:", { minPrice, maxPrice });
   };
 
+  const toggleSaveService = (serviceId: number) => {
+    setSavedServices(prev => 
+      prev.includes(serviceId)
+        ? prev.filter(id => id !== serviceId)
+        : [...prev, serviceId]
+    );
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <Navbar />
@@ -218,7 +227,7 @@ const Services = () => {
       <div className="container mx-auto mt-24 px-4 flex-grow">
         <div className="flex flex-col md:flex-row gap-8 py-10">
           <SidebarProvider className="w-full">
-            <div className="w-full flex flex-col md:flex-row-reverse gap-6">
+            <div className="w-full flex flex-col md:flex-row md:flex-row-reverse gap-6">
               <aside className="md:w-1/4 md:static md:block">
                 <Sidebar className="p-4 rounded-xl bg-card border shadow-sm" side="right">
                   <SidebarContent>
@@ -313,9 +322,7 @@ const Services = () => {
                             />
                             <div className="flex items-center gap-1 text-amber-400">
                               {Array(rating).fill(0).map((_, i) => (
-                                <svg key={i} className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                                  <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-                                </svg>
+                                <Star key={i} className="w-4 h-4 fill-amber-400" />
                               ))}
                               <span className="text-foreground mr-1">وأعلى</span>
                             </div>
@@ -367,18 +374,37 @@ const Services = () => {
                           alt={service.title} 
                           className="w-full h-full object-cover"
                         />
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="absolute top-2 left-2 bg-white/80 hover:bg-white text-foreground rounded-full h-8 w-8"
+                          onClick={() => toggleSaveService(service.id)}
+                        >
+                          <Bookmark 
+                            className={cn(
+                              "h-5 w-5", 
+                              savedServices.includes(service.id) ? "fill-primary text-primary" : ""
+                            )} 
+                          />
+                          <span className="sr-only">حفظ الخدمة</span>
+                        </Button>
                       </div>
                       <div className="p-4">
                         <h3 className="font-bold text-lg line-clamp-2 h-14">{service.title}</h3>
-                        <div className="flex items-center gap-1 mt-2">
-                          <div className="flex items-center">
-                            <svg className="w-4 h-4 text-amber-400 fill-current" viewBox="0 0 24 24">
-                              <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-                            </svg>
-                            <span className="font-medium mr-1">{service.rating}</span>
+                        
+                        <div className="flex justify-between items-center mt-2">
+                          <div className="flex items-center gap-1">
+                            <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
+                            <span className="font-medium">{service.rating}</span>
+                            <span className="text-muted-foreground text-sm">({service.reviews})</span>
                           </div>
-                          <span className="text-muted-foreground text-sm">({service.reviews} تقييم)</span>
+                          
+                          <div className="flex items-center gap-1 text-muted-foreground text-sm">
+                            <MapPin className="h-4 w-4" />
+                            <span>{governorates.find(g => g.id === service.governorate)?.name}</span>
+                          </div>
                         </div>
+                        
                         <div className="flex flex-wrap gap-1 mt-3">
                           {service.tags.slice(0, 3).map((tag, i) => (
                             <Badge key={i} variant="secondary" className="rounded-full text-xs">
@@ -386,7 +412,9 @@ const Services = () => {
                             </Badge>
                           ))}
                         </div>
+                        
                         <Separator className="my-3" />
+                        
                         <div className="flex justify-between items-center">
                           <span className="text-primary font-bold text-lg">${service.price}</span>
                           <Button variant="outline" size="sm" className="rounded-full">تفاصيل</Button>
