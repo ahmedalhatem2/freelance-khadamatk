@@ -1,28 +1,18 @@
-
 import React, { useState } from 'react';
-import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Search, Bookmark, MapPin, Star } from "lucide-react";
 import Navbar from "@/components/navbar/Navbar";
-import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
 import Footer from "@/components/footer/Footer";
-import { cn } from "@/lib/utils";
-import { 
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import ServicesSidebar from '@/components/services/ServicesSidebar';
+import ServicesList from '@/components/services/ServicesList';
 
 const Services = () => {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedSort, setSelectedSort] = useState("newest");
   const [savedServices, setSavedServices] = useState<number[]>([]);
+  const [selectedGovernorate, setSelectedGovernorate] = useState("all");
+  const [minPrice, setMinPrice] = useState("");
+  const [maxPrice, setMaxPrice] = useState("");
+  const [selectedRatings, setSelectedRatings] = useState<number[]>([]);
 
   const categories = [
     { id: "all", name: "جميع الخدمات", count: 245 },
@@ -151,12 +141,10 @@ const Services = () => {
     }
   ];
 
-  // Filter services by category
   const categoryFiltered = selectedCategory === "all" 
     ? services 
     : services.filter(service => service.category === selectedCategory);
 
-  // Sort services based on selectedSort
   const sortedServices = [...categoryFiltered].sort((a, b) => {
     switch (selectedSort) {
       case "top-rated":
@@ -171,19 +159,11 @@ const Services = () => {
     }
   });
 
-  const [selectedGovernorate, setSelectedGovernorate] = useState("all");
-  const [minPrice, setMinPrice] = useState("");
-  const [maxPrice, setMaxPrice] = useState("");
-  const [selectedRatings, setSelectedRatings] = useState<number[]>([]);
-
-  // Apply all filters
   const filteredServices = sortedServices.filter(service => {
-    // Filter by governorate
     if (selectedGovernorate !== "all" && service.governorate !== selectedGovernorate) {
       return false;
     }
     
-    // Filter by price range
     if (minPrice && service.price < parseInt(minPrice)) {
       return false;
     }
@@ -192,7 +172,6 @@ const Services = () => {
       return false;
     }
     
-    // Filter by rating
     if (selectedRatings.length > 0 && !selectedRatings.some(rating => service.rating >= rating)) {
       return false;
     }
@@ -209,7 +188,6 @@ const Services = () => {
   };
 
   const handlePriceFilter = () => {
-    // Price filtering is applied automatically in the filteredServices computation
     console.log("Applying price filter:", { minPrice, maxPrice });
   };
 
@@ -230,109 +208,21 @@ const Services = () => {
           <SidebarProvider className="w-full">
             <div className="w-full flex flex-col md:flex-row md:flex-row-reverse gap-6">
               <aside className="md:w-1/4 md:static md:block">
-                <Sidebar className="p-4 rounded-xl bg-card border shadow-sm" side="right">
-                  <SidebarContent>
-                    <div className="relative mb-6">
-                      <Input 
-                        placeholder="ابحث عن خدمة..." 
-                        className="pl-10 pr-3 rounded-full" 
-                      />
-                      <Search className="absolute top-1/2 transform -translate-y-1/2 left-3 h-5 w-5 text-muted-foreground" />
-                    </div>
-                    
-                    <h3 className="text-lg font-bold mb-4">التصنيفات</h3>
-                    <SidebarGroup>
-                      <SidebarGroupContent>
-                        <SidebarMenu>
-                          {categories.map((category) => (
-                            <SidebarMenuItem key={category.id}>
-                              <SidebarMenuButton 
-                                onClick={() => setSelectedCategory(category.id)}
-                                className={`justify-between w-full rounded-lg transition-colors ${selectedCategory === category.id ? 'bg-primary/10 text-primary' : ''}`}
-                              >
-                                <span>{category.name}</span>
-                                <Badge variant="secondary" className="rounded-full">
-                                  {category.count}
-                                </Badge>
-                              </SidebarMenuButton>
-                            </SidebarMenuItem>
-                          ))}
-                        </SidebarMenu>
-                      </SidebarGroupContent>
-                    </SidebarGroup>
-                    
-                    <Separator className="my-6" />
-                    
-                    <div className="space-y-4">
-                      <h3 className="text-lg font-bold mb-4">المحافظة</h3>
-                      <Select 
-                        value={selectedGovernorate} 
-                        onValueChange={setSelectedGovernorate}
-                      >
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="اختر المحافظة" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {governorates.map(gov => (
-                            <SelectItem key={gov.id} value={gov.id}>
-                              {gov.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    
-                    <Separator className="my-6" />
-                    
-                    <div className="space-y-4">
-                      <h3 className="text-lg font-bold mb-4">السعر</h3>
-                      <div className="flex gap-3">
-                        <Input 
-                          type="number" 
-                          placeholder="من" 
-                          value={minPrice}
-                          onChange={(e) => setMinPrice(e.target.value)}
-                        />
-                        <Input 
-                          type="number" 
-                          placeholder="إلى" 
-                          value={maxPrice}
-                          onChange={(e) => setMaxPrice(e.target.value)}
-                        />
-                      </div>
-                      <Button 
-                        className="w-full rounded-full"
-                        onClick={handlePriceFilter}
-                      >
-                        تطبيق
-                      </Button>
-                    </div>
-                    
-                    <Separator className="my-6" />
-                    
-                    <div className="space-y-4">
-                      <h3 className="text-lg font-bold mb-4">التقييم</h3>
-                      <div className="space-y-2">
-                        {[5, 4, 3, 2, 1].map((rating) => (
-                          <label key={rating} className="flex items-center space-x-reverse space-x-2 cursor-pointer">
-                            <input 
-                              type="checkbox" 
-                              className="w-4 h-4 text-primary border-gray-300 rounded"
-                              checked={selectedRatings.includes(rating)}
-                              onChange={() => toggleRating(rating)}
-                            />
-                            <div className="flex items-center gap-1 text-amber-400">
-                              {Array(rating).fill(0).map((_, i) => (
-                                <Star key={i} className="w-4 h-4 fill-amber-400" />
-                              ))}
-                              <span className="text-foreground mr-1">وأعلى</span>
-                            </div>
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-                  </SidebarContent>
-                </Sidebar>
+                <ServicesSidebar 
+                  categories={categories}
+                  governorates={governorates}
+                  selectedCategory={selectedCategory}
+                  setSelectedCategory={setSelectedCategory}
+                  selectedGovernorate={selectedGovernorate}
+                  setSelectedGovernorate={setSelectedGovernorate}
+                  minPrice={minPrice}
+                  setMinPrice={setMinPrice}
+                  maxPrice={maxPrice}
+                  setMaxPrice={setMaxPrice}
+                  selectedRatings={selectedRatings}
+                  toggleRating={toggleRating}
+                  handlePriceFilter={handlePriceFilter}
+                />
                 <div className="md:hidden mt-4">
                   <SidebarTrigger className="w-full rounded-full">
                     فلترة الخدمات
@@ -341,102 +231,17 @@ const Services = () => {
               </aside>
               
               <main className="md:w-3/4">
-                <div className="flex flex-col md:flex-row justify-between items-center mb-6">
-                  <h1 className="text-2xl font-bold">{
-                    selectedCategory === "all" 
-                      ? "جميع الخدمات" 
-                      : categories.find(c => c.id === selectedCategory)?.name
-                  }</h1>
-                  <div className="flex gap-2 mt-4 md:mt-0">
-                    <Select 
-                      value={selectedSort} 
-                      onValueChange={setSelectedSort}
-                    >
-                      <SelectTrigger className="w-[180px]">
-                        <SelectValue placeholder="ترتيب الخدمات" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {sortOptions.map(option => (
-                          <SelectItem key={option.value} value={option.value}>
-                            {option.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {filteredServices.map((service) => (
-                    <Card key={service.id} className="overflow-hidden card-hover">
-                      <div className="relative h-40">
-                        <img 
-                          src={service.image} 
-                          alt={service.title} 
-                          className="w-full h-full object-cover"
-                        />
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="absolute top-2 left-2 bg-white/80 hover:bg-white text-foreground rounded-full h-8 w-8"
-                          onClick={() => toggleSaveService(service.id)}
-                        >
-                          <Bookmark 
-                            className={cn(
-                              "h-5 w-5", 
-                              savedServices.includes(service.id) ? "fill-primary text-primary" : ""
-                            )} 
-                          />
-                          <span className="sr-only">حفظ الخدمة</span>
-                        </Button>
-                      </div>
-                      <div className="p-4">
-                        <h3 className="font-bold text-lg line-clamp-2 h-14">{service.title}</h3>
-                        
-                        <div className="flex justify-between items-center mt-2">
-                          <div className="flex items-center gap-1">
-                            <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
-                            <span className="font-medium">{service.rating}</span>
-                            <span className="text-muted-foreground text-sm">({service.reviews})</span>
-                          </div>
-                          
-                          <div className="flex items-center gap-1 text-muted-foreground text-sm">
-                            <MapPin className="h-4 w-4" />
-                            <span>{governorates.find(g => g.id === service.governorate)?.name}</span>
-                          </div>
-                        </div>
-                        
-                        <div className="flex flex-wrap gap-1 mt-3">
-                          {service.tags.slice(0, 3).map((tag, i) => (
-                            <Badge key={i} variant="secondary" className="rounded-full text-xs">
-                              {tag}
-                            </Badge>
-                          ))}
-                        </div>
-                        
-                        <Separator className="my-3" />
-                        
-                        <div className="flex justify-between items-center">
-                          <span className="text-primary font-bold text-lg">${service.price}</span>
-                          <Button variant="outline" size="sm" className="rounded-full">تفاصيل</Button>
-                        </div>
-                      </div>
-                    </Card>
-                  ))}
-                </div>
-                
-                {filteredServices.length === 0 && (
-                  <div className="text-center py-16">
-                    <h3 className="text-xl font-bold">لا توجد خدمات في هذا التصنيف</h3>
-                    <p className="text-muted-foreground mt-2">يرجى اختيار تصنيف آخر أو تعديل معايير البحث</p>
-                  </div>
-                )}
-                
-                {filteredServices.length > 0 && (
-                  <div className="flex justify-center mt-10">
-                    <Button variant="outline" className="rounded-full px-8">تحميل المزيد</Button>
-                  </div>
-                )}
+                <ServicesList 
+                  selectedCategory={selectedCategory}
+                  categories={categories}
+                  filteredServices={filteredServices}
+                  sortOptions={sortOptions}
+                  selectedSort={selectedSort}
+                  setSelectedSort={setSelectedSort}
+                  savedServices={savedServices}
+                  toggleSaveService={toggleSaveService}
+                  governorates={governorates}
+                />
               </main>
             </div>
           </SidebarProvider>
