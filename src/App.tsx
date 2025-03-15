@@ -10,6 +10,8 @@ import Register from "./pages/Register";
 import RegisterSteps from "./pages/RegisterSteps";
 import Services from "./pages/Services";
 import Providers from "./pages/Providers";
+import ServiceDetails from "./pages/ServiceDetails";
+import ProviderProfile from "./pages/ProviderProfile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,7 +28,9 @@ const App = () => (
           <Route path="/register" element={<Register />} />
           <Route path="/register-steps" element={<RegisterSteps />} />
           <Route path="/services" element={<Services />} />
+          <Route path="/service/:id" element={<ServiceDetails />} />
           <Route path="/providers" element={<Providers />} />
+          <Route path="/provider/:id" element={<ProviderProfile />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
