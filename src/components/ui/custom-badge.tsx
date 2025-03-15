@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import React from "react";
 
 interface CustomBadgeProps extends BadgeProps {
-  variant?: "default" | "secondary" | "destructive" | "outline" | "success";
+  // We don't need to redefine the variant property since BadgeProps now includes "success"
 }
 
 export function CustomBadge({ 
@@ -14,10 +14,8 @@ export function CustomBadge({
 }: CustomBadgeProps) {
   return (
     <Badge
-      className={cn(
-        variant === "success" && "bg-green-100 text-green-700 hover:bg-green-100/80",
-        className
-      )}
+      className={cn(className)}
+      variant={variant}
       {...props}
     />
   );
