@@ -13,6 +13,7 @@ import Providers from "./pages/Providers";
 import ServiceDetails from "./pages/ServiceDetails";
 import ProviderProfile from "./pages/ProviderProfile";
 import EditProviderProfile from "./pages/EditProviderProfile";
+import AdminDashboard from "./pages/AdminDashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -33,6 +34,7 @@ const App = () => (
           <Route path="/providers" element={<Providers />} />
           <Route path="/provider/:id" element={<ProviderProfile />} />
           <Route path="/provider/:id/edit" element={<EditProviderProfile />} />
+          <Route path="/admin" element={<AdminDashboard />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
