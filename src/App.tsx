@@ -14,6 +14,13 @@ import ServiceDetails from "./pages/ServiceDetails";
 import ProviderProfile from "./pages/ProviderProfile";
 import EditProviderProfile from "./pages/EditProviderProfile";
 import NotFound from "./pages/NotFound";
+import AdminLayout from "./pages/admin/AdminLayout";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminUsers from "./pages/admin/AdminUsers";
+import AdminCategories from "./pages/admin/AdminCategories";
+import AdminRoles from "./pages/admin/AdminRoles";
+import AdminRegions from "./pages/admin/AdminRegions";
+import AdminServices from "./pages/admin/AdminServices";
 
 const queryClient = new QueryClient();
 
@@ -33,6 +40,17 @@ const App = () => (
           <Route path="/providers" element={<Providers />} />
           <Route path="/provider/:id" element={<ProviderProfile />} />
           <Route path="/provider/:id/edit" element={<EditProviderProfile />} />
+          
+          {/* Admin Routes */}
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<AdminDashboard />} />
+            <Route path="users" element={<AdminUsers />} />
+            <Route path="categories" element={<AdminCategories />} />
+            <Route path="roles" element={<AdminRoles />} />
+            <Route path="regions" element={<AdminRegions />} />
+            <Route path="services" element={<AdminServices />} />
+          </Route>
+          
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
