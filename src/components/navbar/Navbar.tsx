@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { cn } from '@/lib/utils';
 import { Link } from 'react-router-dom';
+import ThemeToggle from "@/components/theme/ThemeToggle";
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -51,6 +52,7 @@ const Navbar = () => {
           </nav>
 
           <div className="hidden md:flex items-center space-x-4 space-x-reverse">
+            <ThemeToggle />
             <Link to="/login">
               <Button variant="outline" className="rounded-full">تسجيل دخول</Button>
             </Link>
@@ -60,12 +62,15 @@ const Navbar = () => {
           </div>
 
           {/* Mobile Menu Button */}
-          <button 
-            className="md:hidden text-foreground"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          >
-            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
+          <div className="md:hidden flex items-center gap-2">
+            <ThemeToggle />
+            <button 
+              className="text-foreground"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            >
+              {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
+          </div>
         </div>
       </div>
 

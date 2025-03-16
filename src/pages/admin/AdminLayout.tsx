@@ -10,6 +10,7 @@ import {
   Briefcase 
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import ThemeToggle from '@/components/theme/ThemeToggle';
 
 const AdminLayout = () => {
   const location = useLocation();
@@ -26,8 +27,9 @@ const AdminLayout = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <header className="bg-primary text-primary-foreground py-4 px-6">
-        <div className="container mx-auto">
+        <div className="container mx-auto flex justify-between items-center">
           <h1 className="text-2xl font-bold">لوحة إدارة خدماتك</h1>
+          <ThemeToggle className="bg-primary-foreground/10 hover:bg-primary-foreground/20" />
         </div>
       </header>
       
