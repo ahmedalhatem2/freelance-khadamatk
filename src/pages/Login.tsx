@@ -1,18 +1,42 @@
 
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Mail, Lock, LogIn } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/providers/AuthProvider";
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
+  
+  // Get auth context
+  const { login, isLoading, error, isAuthenticated } = useAuth();
+  
+  // Redirect if already logged in
+  useEffect(() => {
+    if (isAuthenticated) {
+      // Navigate to the original intended page or home
+      const from = (location.state as any)?.from?.pathname || '/';
+      navigate(from, { replace: true });
+    }
+  }, [isAuthenticated, navigate, location]);
+  
+  // Show error toast when auth error occurs
+  useEffect(() => {
+    if (error) {
+      toast({
+        title: "خطأ في تسجيل الدخول",
+        description: error,
+        variant: "destructive"
+      });
+    }
+  }, [error, toast]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,28 +50,8 @@ const Login = () => {
       return;
     }
     
-    setLoading(true);
-    
-    // Simulating authentication - replace with actual auth
-    try {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      toast({
-        title: "تم تسجيل الدخول بنجاح",
-        description: "مرحبًا بك في منصة خدماتك"
-      });
-      
-      navigate('/');
-    } catch (error) {
-      toast({
-        title: "فشل تسجيل الدخول",
-        description: "يرجى التحقق من بيانات الاعتماد الخاصة بك والمحاولة مرة أخرى",
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(false);
-    }
+    // Call login method from auth context
+    await login(email, password);
   };
 
   const handleGoogleLogin = () => {
@@ -80,7 +84,7 @@ const Login = () => {
                     className="pr-10"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    disabled={loading}
+                    disabled={isLoading}
                   />
                 </div>
               </div>
@@ -94,7 +98,7 @@ const Login = () => {
                     className="pr-10"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    disabled={loading}
+                    disabled={isLoading}
                   />
                 </div>
               </div>
@@ -108,9 +112,9 @@ const Login = () => {
               <Button
                 type="submit"
                 className="w-full rounded-full py-6 flex items-center justify-center gap-2"
-                disabled={loading}
+                disabled={isLoading}
               >
-                {loading ? "جاري تسجيل الدخول..." : "تسجيل الدخول"}
+                {isLoading ? "جاري تسجيل الدخول..." : "تسجيل الدخول"}
                 <LogIn className="h-5 w-5" />
               </Button>
             </form>
