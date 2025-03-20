@@ -51,9 +51,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setUser(parsedUser);
       
       if (parsedUser.role_id === 1) {
-        setUserRole('provider');
-      } else if (parsedUser.role_id === 2) {
         setUserRole('admin');
+      } else if (parsedUser.role_id === 2) {
+        setUserRole('provider');
       } else {
         setUserRole('client');
       }

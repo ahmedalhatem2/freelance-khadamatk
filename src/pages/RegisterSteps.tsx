@@ -11,7 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { API_BASE_URL } from '@/config/api';
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
-type UserType = 'provider' | 'customer' | null;
+type UserType = 'provider' | 'client' | null;
 type RegisterFormData = {
   userType: UserType;
   firstName: string;
@@ -210,7 +210,7 @@ const RegisterSteps = () => {
       }
       
       // Send registration request
-      const response = await fetch(`${API_BASE_URL}/signup`, {
+      const response = await fetch(`${API_BASE_URL}/register`, {
         method: 'POST',
         body: formDataObj,
       });
@@ -279,11 +279,11 @@ const RegisterSteps = () => {
                 
                 <div 
                   className={`border rounded-xl p-6 text-center cursor-pointer transition-all ${
-                    formData.userType === 'customer' 
+                    formData.userType === 'client' 
                       ? 'border-primary bg-primary/5' 
                       : 'hover:bg-secondary'
                   }`}
-                  onClick={() => handleSelectUserType('customer')}
+                  onClick={() => handleSelectUserType('client')}
                 >
                   <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
                     <UserPlus className="h-8 w-8 text-primary" />
@@ -291,7 +291,7 @@ const RegisterSteps = () => {
                   <h3 className="text-xl font-bold mb-2">عميل</h3>
                   <p className="text-muted-foreground">سجل كعميل للبحث عن الخدمات وتوظيف المستقلين</p>
                   
-                  {formData.userType === 'customer' && (
+                  {formData.userType === 'client' && (
                     <div className="absolute top-4 left-4">
                       <CheckCircle2 className="h-6 w-6 text-primary" />
                     </div>

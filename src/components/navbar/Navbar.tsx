@@ -194,7 +194,7 @@ const Navbar = () => {
               <Link to="/login" onClick={() => setMobileMenuOpen(false)}>
                 <Button variant="outline" className="rounded-full w-40">تسجيل دخول</Button>
               </Link>
-              <Link to="/register-steps" onClick={() => setMobileMenuOpen(false)}>
+              <Link to="/register" onClick={() => setMobileMenuOpen(false)}>
                 <Button className="rounded-full w-40">إنشاء حساب</Button>
               </Link>
             </div>
