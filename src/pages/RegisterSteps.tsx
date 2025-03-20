@@ -8,6 +8,8 @@ import { Mail, Lock, User, UserPlus, Phone, MapPin, Upload, CheckCircle2 } from 
 import { useToast } from "@/hooks/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { API_BASE_URL } from '@/config/api';
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 type UserType = 'provider' | 'customer' | null;
 type RegisterFormData = {
@@ -17,7 +19,7 @@ type RegisterFormData = {
   email: string;
   phone: string;
   password: string;
-  profileImage: string | null;
+  profileImage: File | null;
   governorate: string;
   city: string;
   street: string;
@@ -40,24 +42,26 @@ const RegisterSteps = () => {
     detailedAddress: '',
   });
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
   const governorates = [
-    { value: 'damascus', label: 'دمشق' },
-    { value: 'aleppo', label: 'حلب' },
-    { value: 'homs', label: 'حمص' },
-    { value: 'latakia', label: 'اللاذقية' },
-    { value: 'hama', label: 'حماة' },
-    { value: 'tartus', label: 'طرطوس' },
-    { value: 'daraa', label: 'درعا' },
-    { value: 'idlib', label: 'إدلب' },
-    { value: 'alhasakah', label: 'الحسكة' },
-    { value: 'deirezzor', label: 'دير الزور' },
-    { value: 'raqqa', label: 'الرقة' },
-    { value: 'suwayda', label: 'السويداء' },
-    { value: 'quneitra', label: 'القنيطرة' },
-    { value: 'damascusCountryside', label: 'ريف دمشق' },
+    { value: '1', label: 'دمشق' },
+    { value: '2', label: 'حلب' },
+    { value: '3', label: 'حمص' },
+    { value: '4', label: 'اللاذقية' },
+    { value: '5', label: 'حماة' },
+    { value: '6', label: 'طرطوس' },
+    { value: '7', label: 'درعا' },
+    { value: '8', label: 'إدلب' },
+    { value: '9', label: 'الحسكة' },
+    { value: '10', label: 'دير الزور' },
+    { value: '11', label: 'الرقة' },
+    { value: '12', label: 'السويداء' },
+    { value: '13', label: 'القنيطرة' },
+    { value: '14', label: 'ريف دمشق' },
   ];
 
   const handleSelectUserType = (type: UserType) => {
@@ -76,11 +80,12 @@ const RegisterSteps = () => {
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFormData({ ...formData, profileImage: reader.result as string });
-      };
-      reader.readAsDataURL(file);
+      // Create object URL for preview
+      const imageUrl = URL.createObjectURL(file);
+      setPreviewImage(imageUrl);
+      
+      // Store the file object for upload
+      setFormData({ ...formData, profileImage: file });
     }
   };
 
@@ -175,21 +180,61 @@ const RegisterSteps = () => {
     }
     
     setLoading(true);
+    setError(null);
     
     try {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Create FormData object for multipart/form-data request (for file upload)
+      const formDataObj = new FormData();
+      
+      // Add all form fields to FormData
+      formDataObj.append('first_name', formData.firstName);
+      formDataObj.append('last_name', formData.lastName);
+      formDataObj.append('email', formData.email);
+      formDataObj.append('phone', formData.phone);
+      formDataObj.append('password', formData.password);
+      formDataObj.append('status', 'active');
+      
+      // Set role_id based on user type
+      const roleId = formData.userType === 'provider' ? '2' : '3';
+      formDataObj.append('role_id', roleId);
+      
+      // Add address details
+      formDataObj.append('region_id', formData.governorate);
+      formDataObj.append('city', formData.city);
+      formDataObj.append('street', formData.street);
+      formDataObj.append('address', formData.detailedAddress);
+      
+      // Add profile image if available
+      if (formData.profileImage) {
+        formDataObj.append('image', formData.profileImage);
+      }
+      
+      // Send registration request
+      const response = await fetch(`${API_BASE_URL}/signup`, {
+        method: 'POST',
+        body: formDataObj,
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'حدث خطأ أثناء التسجيل');
+      }
+      
+      const userData = await response.json();
       
       toast({
         title: "تم إنشاء الحساب بنجاح",
-        description: `مرحباً ${formData.firstName}! يمكنك الآن تسجيل الدخول إلى منصة خدماتك`
+        description: `مرحباً ${userData.first_name}! يمكنك الآن تسجيل الدخول إلى منصة خدماتك`
       });
       
+      // Navigate to login page after successful registration
       navigate('/login');
     } catch (error) {
+      setError(error instanceof Error ? error.message : 'حدث خطأ أثناء التسجيل، يرجى المحاولة مرة أخرى');
+      
       toast({
         title: "فشل إنشاء الحساب",
-        description: "حدث خطأ أثناء التسجيل، يرجى المحاولة مرة أخرى",
+        description: error instanceof Error ? error.message : 'حدث خطأ أثناء التسجيل، يرجى المحاولة مرة أخرى',
         variant: "destructive"
       });
     } finally {
@@ -380,10 +425,16 @@ const RegisterSteps = () => {
             </CardHeader>
             
             <CardContent className="space-y-6">
+              {error && (
+                <Alert variant="destructive" className="mb-4">
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
+              
               <div className="flex flex-col items-center justify-center">
                 <Avatar className="w-32 h-32 border-2 border-primary/20 mb-4">
-                  {formData.profileImage ? (
-                    <AvatarImage src={formData.profileImage} alt="Profile" />
+                  {previewImage ? (
+                    <AvatarImage src={previewImage} alt="Profile" />
                   ) : (
                     <AvatarFallback className="bg-primary/10 text-primary">
                       {formData.firstName && formData.lastName 
