@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
@@ -14,15 +15,19 @@ const Login = () => {
   const location = useLocation();
   const { toast } = useToast();
   
+  // Get auth context
   const { login, isLoading, error, isAuthenticated } = useAuth();
   
+  // Redirect if already logged in
   useEffect(() => {
     if (isAuthenticated) {
+      // Navigate to the original intended page or home
       const from = (location.state as any)?.from?.pathname || '/';
       navigate(from, { replace: true });
     }
   }, [isAuthenticated, navigate, location]);
   
+  // Show error toast when auth error occurs
   useEffect(() => {
     if (error) {
       toast({
@@ -45,10 +50,12 @@ const Login = () => {
       return;
     }
     
+    // Call login method from auth context
     await login(email, password);
   };
 
   const handleGoogleLogin = () => {
+    // TODO: Implement Google authentication
     toast({
       title: "تسجيل الدخول باستخدام Google",
       description: "هذه الميزة قيد التطوير"
@@ -126,7 +133,7 @@ const Login = () => {
               variant="outline"
               className="w-full rounded-full py-6 bg-white hover:bg-gray-50"
               onClick={handleGoogleLogin}
-              disabled={isLoading}
+              disabled={loading}
             >
               <svg className="h-5 w-5 ml-2" viewBox="0 0 24 24">
                 <path
