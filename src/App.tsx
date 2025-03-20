@@ -10,7 +10,6 @@ import PrivateRoute from "./components/auth/PrivateRoute";
 
 import Index from "./pages/Index";
 import Login from "./pages/Login";
-import Register from "./pages/Register";
 import RegisterSteps from "./pages/RegisterSteps";
 import Services from "./pages/Services";
 import Providers from "./pages/Providers";
@@ -40,8 +39,7 @@ const App = () => (
               {/* Public routes */}
               <Route path="/" element={<Index />} />
               <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/register-steps" element={<RegisterSteps />} />
+              <Route path="/register" element={<RegisterSteps />} />
               <Route path="/services" element={<Services />} />
               <Route path="/service/:id" element={<ServiceDetails />} />
               <Route path="/providers" element={<Providers />} />
