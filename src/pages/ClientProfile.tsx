@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useAuth } from '@/providers/AuthProvider';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -135,7 +134,7 @@ const ClientProfile = () => {
                           <CustomBadge 
                             variant={
                               service.status === 'completed' ? 'success' : 
-                              service.status === 'in-progress' ? 'warning' : 'secondary'
+                              service.status === 'in-progress' ? 'secondary' : 'secondary'
                             }
                           >
                             {service.status === 'completed' ? 'مكتمل' : 

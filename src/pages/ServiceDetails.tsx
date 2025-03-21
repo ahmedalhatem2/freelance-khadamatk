@@ -166,7 +166,7 @@ const ServiceDetails = () => {
                 <h2 className="text-xl font-bold mb-4">مقدم الخدمة</h2>
                 <div className="flex items-center gap-4">
                   <Avatar className="w-16 h-16 border-2 border-primary/20">
-                    <AvatarImage src={service.profile.user.image || undefined} alt={`${service.profile.user.first_name} ${service.profile.user.last_name}`} />
+                    <AvatarImage src={service.profile.user.image} alt={`${service.profile.user.first_name} ${service.profile.user.last_name}`} />
                     <AvatarFallback>{getProviderInitials()}</AvatarFallback>
                   </Avatar>
                   <div>

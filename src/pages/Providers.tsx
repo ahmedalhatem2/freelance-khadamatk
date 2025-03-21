@@ -1,7 +1,5 @@
 
 import React, { useState } from 'react';
-import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
@@ -14,6 +12,7 @@ import Footer from "@/components/footer/Footer";
 
 const Providers = () => {
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const categories = [
     { id: "all", name: "جميع المستقلين", count: 187 },
@@ -111,6 +110,10 @@ const Providers = () => {
     }
   ];
 
+  const toggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen);
+  };
+
   const filteredFreelancers = selectedCategory === "all" 
     ? freelancers 
     : freelancers.filter(freelancer => freelancer.category === selectedCategory);
@@ -121,188 +124,187 @@ const Providers = () => {
       
       <div className="container mx-auto mt-24 px-4 flex-grow">
         <div className="flex flex-col md:flex-row gap-8 py-10">
-          <SidebarProvider className="w-full">
-            <div className="w-full flex flex-col md:flex-row gap-6">
-              <aside className="md:w-1/4 md:static md:block">
-                <Sidebar className="p-4 rounded-xl bg-card border shadow-sm">
-                  <SidebarContent>
-                    <div className="relative mb-6">
-                      <Input 
-                        placeholder="ابحث عن مستقل..." 
-                        className="pr-10 rounded-full" 
-                      />
-                      <Search className="absolute top-1/2 transform -translate-y-1/2 right-3 h-5 w-5 text-muted-foreground" />
-                    </div>
-                    
-                    <h3 className="text-lg font-bold mb-4">التخصصات</h3>
-                    <SidebarGroup>
-                      <SidebarGroupContent>
-                        <SidebarMenu>
-                          {categories.map((category) => (
-                            <SidebarMenuItem key={category.id}>
-                              <SidebarMenuButton 
-                                onClick={() => setSelectedCategory(category.id)}
-                                className={`justify-between w-full rounded-lg transition-colors ${selectedCategory === category.id ? 'bg-primary/10 text-primary' : ''}`}
-                              >
-                                <span>{category.name}</span>
-                                <Badge variant="secondary" className="rounded-full">
-                                  {category.count}
-                                </Badge>
-                              </SidebarMenuButton>
-                            </SidebarMenuItem>
-                          ))}
-                        </SidebarMenu>
-                      </SidebarGroupContent>
-                    </SidebarGroup>
-                    
-                    <Separator className="my-6" />
-                    
-                    <div className="space-y-4">
-                      <h3 className="text-lg font-bold mb-4">السعر بالساعة</h3>
-                      <div className="flex gap-3">
-                        <Input type="number" placeholder="من" />
-                        <Input type="number" placeholder="إلى" />
-                      </div>
-                      <Button className="w-full rounded-full">تطبيق</Button>
-                    </div>
-                    
-                    <Separator className="my-6" />
-                    
-                    <div className="space-y-4">
-                      <h3 className="text-lg font-bold mb-4">التقييم</h3>
-                      <div className="space-y-2">
-                        {[5, 4, 3, 2, 1].map((rating) => (
-                          <label key={rating} className="flex items-center space-x-reverse space-x-2 cursor-pointer">
-                            <input type="checkbox" className="w-4 h-4 text-primary border-gray-300 rounded" />
-                            <div className="flex items-center gap-1 text-amber-400">
-                              {Array(rating).fill(0).map((_, i) => (
-                                <Star key={i} className="w-4 h-4 fill-amber-400" />
-                              ))}
-                              <span className="text-foreground mr-1">وأعلى</span>
-                            </div>
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-                    
-                    <Separator className="my-6" />
-                    
-                    <div className="space-y-4">
-                      <h3 className="text-lg font-bold mb-4">المحافظة</h3>
-                      <select className="w-full p-2 border rounded-lg">
-                        <option value="">جميع المحافظات</option>
-                        <option value="damascus">دمشق</option>
-                        <option value="aleppo">حلب</option>
-                        <option value="homs">حمص</option>
-                        <option value="latakia">اللاذقية</option>
-                        <option value="hama">حماة</option>
-                      </select>
-                    </div>
-                  </SidebarContent>
-                </Sidebar>
-                <div className="md:hidden mt-4">
-                  <SidebarTrigger className="w-full rounded-full">
-                    فلترة المستقلين
-                  </SidebarTrigger>
-                </div>
-              </aside>
+          <div className="w-full flex flex-col md:flex-row gap-6">
+            {/* Mobile sidebar trigger */}
+            <div className="md:hidden mb-4">
+              <Button 
+                onClick={toggleSidebar} 
+                variant="outline" 
+                className="w-full justify-between"
+              >
+                <span>فلترة المستقلين</span>
+                <Search className="h-5 w-5" />
+              </Button>
+            </div>
+            
+            {/* Sidebar */}
+            <aside className={`w-full md:w-64 bg-card border shadow-sm rounded-xl p-4 ${sidebarOpen ? 'block' : 'hidden'} md:block`}>
+              <div className="relative mb-6">
+                <Input 
+                  placeholder="ابحث عن مستقل..." 
+                  className="pr-10 rounded-full" 
+                />
+                <Search className="absolute top-1/2 transform -translate-y-1/2 right-3 h-5 w-5 text-muted-foreground" />
+              </div>
               
-              <main className="md:w-3/4">
-                <div className="flex flex-col md:flex-row justify-between items-center mb-6">
-                  <h1 className="text-2xl font-bold">{
-                    selectedCategory === "all" 
-                      ? "جميع المستقلين" 
-                      : categories.find(c => c.id === selectedCategory)?.name
-                  }</h1>
-                  <div className="flex gap-2 mt-4 md:mt-0">
-                    <select className="bg-card border rounded-lg p-2 text-sm">
-                      <option>الأعلى تقييماً</option>
-                      <option>الأكثر مشاريع</option>
-                      <option>السعر: من الأعلى للأقل</option>
-                      <option>السعر: من الأقل للأعلى</option>
-                    </select>
-                  </div>
+              <h3 className="text-lg font-bold mb-4">التخصصات</h3>
+              <div className="space-y-1">
+                {categories.map((category) => (
+                  <Button 
+                    key={category.id}
+                    variant="ghost"
+                    onClick={() => setSelectedCategory(category.id)}
+                    className={`justify-between w-full ${selectedCategory === category.id ? 'bg-primary/10 text-primary' : ''}`}
+                  >
+                    <span>{category.name}</span>
+                    <Badge variant="secondary" className="rounded-full">
+                      {category.count}
+                    </Badge>
+                  </Button>
+                ))}
+              </div>
+              
+              <Separator className="my-6" />
+              
+              <div className="space-y-4">
+                <h3 className="text-lg font-bold mb-4">السعر بالساعة</h3>
+                <div className="flex gap-3">
+                  <Input type="number" placeholder="من" />
+                  <Input type="number" placeholder="إلى" />
                 </div>
-                
-                <div className="space-y-6">
-                  {filteredFreelancers.map((freelancer) => (
-                    <Card key={freelancer.id} className="overflow-hidden card-hover">
-                      <div className="p-6">
-                        <div className="flex flex-col md:flex-row gap-6">
-                          <div className="flex flex-col items-center md:w-1/4">
-                            <Avatar className="w-24 h-24 border-2 border-primary/20">
-                              <img src={freelancer.avatar} alt={freelancer.name} />
-                            </Avatar>
-                            <h3 className="font-bold text-xl mt-3">{freelancer.name}</h3>
-                            <p className="text-muted-foreground text-center">{freelancer.title}</p>
-                            
-                            <div className="flex items-center gap-1 mt-2">
-                              <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
-                              <span className="font-medium">{freelancer.rating}</span>
-                              <span className="text-muted-foreground text-sm">({freelancer.reviews})</span>
-                            </div>
-                            
-                            <div className="flex items-center gap-1 mt-2 text-muted-foreground">
-                              <MapPin className="h-4 w-4" />
-                              <span className="text-sm">{freelancer.location}</span>
-                            </div>
+                <Button className="w-full rounded-full">تطبيق</Button>
+              </div>
+              
+              <Separator className="my-6" />
+              
+              <div className="space-y-4">
+                <h3 className="text-lg font-bold mb-4">التقييم</h3>
+                <div className="space-y-2">
+                  {[5, 4, 3, 2, 1].map((rating) => (
+                    <label key={rating} className="flex items-center space-x-reverse space-x-2 cursor-pointer">
+                      <input type="checkbox" className="w-4 h-4 text-primary border-gray-300 rounded" />
+                      <div className="flex items-center gap-1 text-amber-400">
+                        {Array(rating).fill(0).map((_, i) => (
+                          <Star key={i} className="w-4 h-4 fill-amber-400" />
+                        ))}
+                        <span className="text-foreground mr-1">وأعلى</span>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              </div>
+              
+              <Separator className="my-6" />
+              
+              <div className="space-y-4">
+                <h3 className="text-lg font-bold mb-4">المحافظة</h3>
+                <select className="w-full p-2 border rounded-lg">
+                  <option value="">جميع المحافظات</option>
+                  <option value="damascus">دمشق</option>
+                  <option value="aleppo">حلب</option>
+                  <option value="homs">حمص</option>
+                  <option value="latakia">اللاذقية</option>
+                  <option value="hama">حماة</option>
+                </select>
+              </div>
+            </aside>
+            
+            {/* Main content */}
+            <main className="w-full md:flex-1">
+              <div className="flex flex-col md:flex-row justify-between items-center mb-6">
+                <h1 className="text-2xl font-bold">{
+                  selectedCategory === "all" 
+                    ? "جميع المستقلين" 
+                    : categories.find(c => c.id === selectedCategory)?.name
+                }</h1>
+                <div className="flex gap-2 mt-4 md:mt-0">
+                  <select className="bg-card border rounded-lg p-2 text-sm">
+                    <option>الأعلى تقييماً</option>
+                    <option>الأكثر مشاريع</option>
+                    <option>السعر: من الأعلى للأقل</option>
+                    <option>السعر: من الأقل للأعلى</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div className="space-y-6">
+                {filteredFreelancers.map((freelancer) => (
+                  <Card key={freelancer.id} className="overflow-hidden card-hover">
+                    <div className="p-6">
+                      <div className="flex flex-col md:flex-row gap-6">
+                        <div className="flex flex-col items-center md:w-1/4">
+                          <Avatar className="w-24 h-24 border-2 border-primary/20">
+                            <img src={freelancer.avatar} alt={freelancer.name} />
+                          </Avatar>
+                          <h3 className="font-bold text-xl mt-3">{freelancer.name}</h3>
+                          <p className="text-muted-foreground text-center">{freelancer.title}</p>
+                          
+                          <div className="flex items-center gap-1 mt-2">
+                            <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
+                            <span className="font-medium">{freelancer.rating}</span>
+                            <span className="text-muted-foreground text-sm">({freelancer.reviews})</span>
                           </div>
                           
-                          <div className="md:w-2/4">
-                            <p className="text-muted-foreground mb-4">{freelancer.bio}</p>
-                            
-                            <div className="flex flex-wrap gap-2 mb-4">
-                              {freelancer.tags.map((tag, i) => (
-                                <Badge key={i} variant="secondary" className="rounded-full">
-                                  {tag}
-                                </Badge>
-                              ))}
-                            </div>
-                            
-                            <div className="flex flex-wrap gap-6 text-sm">
-                              <div className="flex items-center gap-1">
-                                <Briefcase className="h-4 w-4 text-primary" />
-                                <span>{freelancer.completedProjects} مشروع منجز</span>
-                              </div>
-                              <div className="flex items-center gap-1">
-                                <UserCheck className="h-4 w-4 text-green-500" />
-                                <span>متاح للعمل</span>
-                              </div>
-                            </div>
+                          <div className="flex items-center gap-1 mt-2 text-muted-foreground">
+                            <MapPin className="h-4 w-4" />
+                            <span className="text-sm">{freelancer.location}</span>
+                          </div>
+                        </div>
+                        
+                        <div className="md:w-2/4">
+                          <p className="text-muted-foreground mb-4">{freelancer.bio}</p>
+                          
+                          <div className="flex flex-wrap gap-2 mb-4">
+                            {freelancer.tags.map((tag, i) => (
+                              <Badge key={i} variant="secondary" className="rounded-full">
+                                {tag}
+                              </Badge>
+                            ))}
                           </div>
                           
-                          <div className="md:w-1/4 flex flex-col items-center md:items-end gap-4 mt-4 md:mt-0">
-                            <div className="text-center md:text-right">
-                              <p className="text-primary font-bold text-2xl">${freelancer.hourlyRate}</p>
-                              <p className="text-xs text-muted-foreground">في الساعة</p>
+                          <div className="flex flex-wrap gap-6 text-sm">
+                            <div className="flex items-center gap-1">
+                              <Briefcase className="h-4 w-4 text-primary" />
+                              <span>{freelancer.completedProjects} مشروع منجز</span>
                             </div>
-                            
-                            <div className="flex flex-col gap-2 w-full md:w-auto">
-                              <Button className="rounded-full w-full">توظيف</Button>
-                              <Button variant="outline" className="rounded-full w-full">مراسلة</Button>
+                            <div className="flex items-center gap-1">
+                              <UserCheck className="h-4 w-4 text-green-500" />
+                              <span>متاح للعمل</span>
                             </div>
                           </div>
                         </div>
+                        
+                        <div className="md:w-1/4 flex flex-col items-center md:items-end gap-4 mt-4 md:mt-0">
+                          <div className="text-center md:text-right">
+                            <p className="text-primary font-bold text-2xl">${freelancer.hourlyRate}</p>
+                            <p className="text-xs text-muted-foreground">في الساعة</p>
+                          </div>
+                          
+                          <div className="flex flex-col gap-2 w-full md:w-auto">
+                            <Button className="rounded-full w-full">توظيف</Button>
+                            <Button variant="outline" className="rounded-full w-full">مراسلة</Button>
+                          </div>
+                        </div>
                       </div>
-                    </Card>
-                  ))}
+                    </div>
+                  </Card>
+                ))}
+              </div>
+              
+              {filteredFreelancers.length === 0 && (
+                <div className="text-center py-16">
+                  <h3 className="text-xl font-bold">لا يوجد مستقلين في هذا التخصص</h3>
+                  <p className="text-muted-foreground mt-2">يرجى اختيار تخصص آخر أو تعديل معايير البحث</p>
                 </div>
-                
-                {filteredFreelancers.length === 0 && (
-                  <div className="text-center py-16">
-                    <h3 className="text-xl font-bold">لا يوجد مستقلين في هذا التخصص</h3>
-                    <p className="text-muted-foreground mt-2">يرجى اختيار تخصص آخر أو تعديل معايير البحث</p>
-                  </div>
-                )}
-                
-                {filteredFreelancers.length > 0 && (
-                  <div className="flex justify-center mt-10">
-                    <Button variant="outline" className="rounded-full px-8">تحميل المزيد</Button>
-                  </div>
-                )}
-              </main>
-            </div>
-          </SidebarProvider>
+              )}
+              
+              {filteredFreelancers.length > 0 && (
+                <div className="flex justify-center mt-10">
+                  <Button variant="outline" className="rounded-full px-8">تحميل المزيد</Button>
+                </div>
+              )}
+            </main>
+          </div>
         </div>
       </div>
       
