@@ -15,6 +15,8 @@ import Services from "./pages/Services";
 import Providers from "./pages/Providers";
 import ServiceDetails from "./pages/ServiceDetails";
 import ProviderProfile from "./pages/ProviderProfile";
+import ClientProfile from "./pages/ClientProfile";
+import AdminProfile from "./pages/admin/AdminProfile";
 import EditProviderProfile from "./pages/EditProviderProfile";
 import NotFound from "./pages/NotFound";
 import AdminLayout from "./pages/admin/AdminLayout";
@@ -47,6 +49,8 @@ const App = () => (
               
               {/* Protected routes - requires authentication */}
               <Route element={<PrivateRoute />}>
+                <Route path="/provider/me" element={<ProviderProfile />} />
+                <Route path="/profile" element={<ClientProfile />} />
                 <Route path="/provider/:id/edit" element={<EditProviderProfile />} />
               </Route>
               
@@ -54,6 +58,7 @@ const App = () => (
               <Route element={<PrivateRoute allowedRoles={['admin']} />}>
                 <Route path="/admin" element={<AdminLayout />}>
                   <Route index element={<AdminDashboard />} />
+                  <Route path="profile" element={<AdminProfile />} />
                   <Route path="users" element={<AdminUsers />} />
                   <Route path="categories" element={<AdminCategories />} />
                   <Route path="roles" element={<AdminRoles />} />
