@@ -47,12 +47,18 @@ const App = () => (
               <Route path="/providers" element={<Providers />} />
               <Route path="/provider/:id" element={<ProviderProfile />} />
               
-              {/* Protected routes - requires authentication */}
-              <Route element={<PrivateRoute />}>
+              {/* provider routes - requires provider role */}
+              <Route element={<PrivateRoute allowedRoles={['provider']} />}>
                 <Route path="/provider/me" element={<ProviderProfile />} />
-                <Route path="/profile" element={<ClientProfile />} />
-                <Route path="/provider/:id/edit" element={<EditProviderProfile />} />
+                <Route path="/profile/me" element={<ClientProfile />} />
+                <Route path="/provider/edit" element={<EditProviderProfile />} />
               </Route>
+
+              {/* client routes - requires client role */}
+              <Route element={<PrivateRoute allowedRoles={['client']} />}>
+                <Route path="/profile/me" element={<ClientProfile />} />
+              </Route>
+              
               
               {/* Admin routes - requires admin role */}
               <Route element={<PrivateRoute allowedRoles={['admin']} />}>

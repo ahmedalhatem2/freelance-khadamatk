@@ -122,7 +122,7 @@ const Navbar = () => {
                 <Link to="/login">
                   <Button variant="outline" className="rounded-full">تسجيل دخول</Button>
                 </Link>
-                <Link to="/register-steps">
+                <Link to="/register">
                   <Button className="rounded-full">إنشاء حساب</Button>
                 </Link>
               </>
