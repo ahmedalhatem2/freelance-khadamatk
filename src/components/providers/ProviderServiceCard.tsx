@@ -1,85 +1,95 @@
 
 import React from 'react';
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { CustomBadge } from "@/components/ui/custom-badge";
-import { Star, MapPin, Pencil } from "lucide-react";
+import { Edit, Trash2 } from "lucide-react";
 import { Link } from 'react-router-dom';
 
 interface ProviderServiceCardProps {
   service: {
     id: number;
     title: string;
-    category: string;
     price: number;
-    rating: number;
-    reviews: number;
-    image: string;
     status: 'active' | 'inactive' | 'pending';
-    description: string;
-    location: string;
+    image?: string;
   };
-  onEditService: (serviceId: number) => void;
+  onEditService: (id: number) => void;
+  onDeleteService: (id: number) => void;
 }
 
-const ProviderServiceCard = ({ service, onEditService }: ProviderServiceCardProps) => {
+const ProviderServiceCard = ({ service, onEditService, onDeleteService }: ProviderServiceCardProps) => {
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'active':
+        return 'متاحة';
+      case 'inactive':
+        return 'غير متاحة';
+      case 'pending':
+        return 'قيد المراجعة';
+      default:
+        return status;
+    }
+  };
+  
+  const getStatusVariant = (status: string) => {
+    switch (status) {
+      case 'active':
+        return 'success';
+      case 'inactive':
+        return 'secondary';
+      case 'pending':
+        return 'warning';
+      default:
+        return 'default';
+    }
+  };
+  
   return (
     <Card className="overflow-hidden">
       <div className="relative h-40">
         <img 
-          src={service.image} 
-          alt={service.title} 
+          src={service.image || "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?q=80&w=2055&auto=format&fit=crop"} 
+          alt={service.title}
           className="w-full h-full object-cover"
         />
-      </div>
-      <CardContent className="p-4">
-        <div className="flex items-center justify-between mb-2">
-          <h3 className="font-bold text-lg line-clamp-2">{service.title}</h3>
-          <CustomBadge variant={service.status === 'active' ? "success" : "secondary"}>
-            {service.status === 'active' ? 'متاح' : service.status === 'inactive' ? 'غير متاح' : 'قيد المراجعة'}
+        <div className="absolute top-2 left-2">
+          <CustomBadge variant={getStatusVariant(service.status)}>
+            {getStatusText(service.status)}
           </CustomBadge>
         </div>
-        
-        <p className="text-muted-foreground text-sm line-clamp-2 mb-2">{service.description}</p>
-        
-        <div className="flex items-center gap-1 mb-2">
-          <MapPin className="h-4 w-4 text-muted-foreground" />
-          <span className="text-sm text-muted-foreground">{service.location}</span>
+      </div>
+      <CardContent className="p-4">
+        <div className="flex justify-between items-start mb-2">
+          <h3 className="font-bold text-lg truncate">{service.title}</h3>
+          <span className="text-primary font-bold">{service.price.toLocaleString()} ل.س</span>
         </div>
-        
-        <div className="flex items-center gap-1 mb-2">
-          <div className="flex">
-            {[...Array(5)].map((_, i) => (
-              <Star 
-                key={i} 
-                className={`w-4 h-4 ${i < Math.floor(service.rating) ? 'fill-amber-400 text-amber-400' : 'text-gray-300'}`} 
-              />
-            ))}
-          </div>
-          <span className="font-medium">{service.rating}</span>
-          <span className="text-muted-foreground text-sm">({service.reviews} تقييم)</span>
-        </div>
-        
-        <div className="flex flex-wrap gap-1 mb-2">
-          <Badge className="rounded-full">{service.category}</Badge>
-        </div>
-        
-        <p className="text-primary font-bold text-lg">{service.price} ل.س</p>
       </CardContent>
-      <CardFooter className="bg-muted/20 p-4 flex justify-between">
+      <CardFooter className="p-4 pt-0 flex justify-between">
         <Link to={`/service/${service.id}`}>
-          <Button variant="outline" size="sm" className="rounded-full">عرض الخدمة</Button>
+          <Button variant="outline" size="sm">عرض التفاصيل</Button>
         </Link>
-        <Button 
-          variant="outline" 
-          size="sm" 
-          className="rounded-full"
-          onClick={() => onEditService(service.id)}
-        >
-          <Pencil className="h-4 w-4 mr-1" />
-          تعديل
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="h-8 w-8 text-blue-600"
+            onClick={() => onEditService(service.id)}
+          >
+            <Edit className="h-4 w-4" />
+            <span className="sr-only">تعديل</span>
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="h-8 w-8 text-red-600"
+            onClick={() => onDeleteService(service.id)}
+          >
+            <Trash2 className="h-4 w-4" />
+            <span className="sr-only">حذف</span>
+          </Button>
+        </div>
       </CardFooter>
     </Card>
   );
