@@ -80,32 +80,7 @@ const ProviderProfile = () => {
                 setServices(transformedServices);
               } else {
                 // Fallback to mock data
-                setServices([
-                  {
-                    id: 1,
-                    title: "تصميم شعار احترافي",
-                    category: "تصميم",
-                    price: 25000,
-                    rating: 4.8,
-                    reviews: 24,
-                    image: "https://images.unsplash.com/photo-1626785774573-4b799315345d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2071&q=80",
-                    status: "active",
-                    description: "تصميم شعار احترافي لشركتك أو مشروعك مع تسليم كافة الصيغ المطلوبة (AI, PNG, JPG, PDF)",
-                    location: "دمشق",
-                  },
-                  {
-                    id: 2,
-                    title: "تصميم هوية بصرية كاملة",
-                    category: "تصميم",
-                    price: 75000,
-                    rating: 4.6,
-                    reviews: 12,
-                    image: "https://images.unsplash.com/photo-1572044162444-ad60f128bdea?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=870&q=80",
-                    status: "active",
-                    description: "تصميم هوية بصرية كاملة لعلامتك التجارية تشمل الشعار والألوان والخطوط وتطبيقات الهوية",
-                    location: "دمشق",
-                  },
-                ]);
+                // setServices([]);
               }
             }
           } catch (error) {

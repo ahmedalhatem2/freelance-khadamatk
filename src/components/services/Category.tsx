@@ -3,44 +3,52 @@ import React from 'react';
 import { Card } from "@/components/ui/card";
 import { Code, Paintbrush, Music, FileText, Video, BarChart, Globe, Lightbulb } from "lucide-react";
 
-const Services = () => {
-  const services = [
+const Category = () => {
+  const categories = [
     {
+      id:1,
       icon: <Code className="h-8 w-8 text-primary" />,
       title: "برمجة وتطوير",
       description: "تطوير مواقع، تطبيقات جوال، برمجة خاصة"
     },
     {
+      id:2,
       icon: <Paintbrush className="h-8 w-8 text-primary" />,
       title: "تصميم وجرافيك",
       description: "تصميم شعارات، واجهات مستخدم، رسومات"
     },
     {
+      id:3,
       icon: <FileText className="h-8 w-8 text-primary" />,
       title: "كتابة وترجمة",
       description: "محتوى تسويقي، مقالات، ترجمة احترافية"
     },
     {
+      id:4,
       icon: <Video className="h-8 w-8 text-primary" />,
       title: "فيديو وأنيميشن",
       description: "مونتاج، موشن جرافيك، انيميشن"
     },
     {
+      id:5,
       icon: <Music className="h-8 w-8 text-primary" />,
       title: "صوتيات",
       description: "تعليق صوتي، مؤثرات، هندسة صوتية"
     },
     {
+      id:6,
       icon: <BarChart className="h-8 w-8 text-primary" />,
       title: "تسويق وأعمال",
       description: "تسويق الكتروني، استراتيجيات، تحليل بيانات"
     },
     {
+      id:7,
       icon: <Globe className="h-8 w-8 text-primary" />,
       title: "دعم ومساعدة",
       description: "مساعدة افتراضية، دعم العملاء، إدخال بيانات"
     },
     {
+      id:8,
       icon: <Lightbulb className="h-8 w-8 text-primary" />,
       title: "استشارات",
       description: "استشارات قانونية، مالية، تقنية"
@@ -48,7 +56,7 @@ const Services = () => {
   ];
 
   return (
-    <section id="services" className="py-20 px-6">
+    <section id="categories" className="py-20 px-6">
       <div className="container mx-auto">
         <div className="text-center mb-16 max-w-3xl mx-auto">
           <span className="inline-block py-1 px-3 bg-primary/10 text-primary rounded-full text-sm font-medium mb-4">
@@ -61,7 +69,7 @@ const Services = () => {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {services.map((service, index) => (
+          {categories.map((service, index) => (
             <Card 
               key={index} 
               className="p-6 text-center card-hover opacity-0 animate-fade-in"
@@ -80,4 +88,4 @@ const Services = () => {
   );
 };
 
-export default Services;
+export default Category;

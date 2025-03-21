@@ -2,7 +2,7 @@
 import React, { useEffect } from 'react';
 import Navbar from '@/components/navbar/Navbar';
 import Hero from '@/components/hero/Hero';
-import Services from '@/components/services/Services';
+import Services from '@/components/services/Category';
 import Freelancers from '@/components/freelancers/Freelancers';
 import Footer from '@/components/footer/Footer';
 
