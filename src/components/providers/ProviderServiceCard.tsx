@@ -40,7 +40,7 @@ const ProviderServiceCard = ({ service, onEditService, onDeleteService }: Provid
       case 'inactive':
         return 'secondary';
       case 'pending':
-        return 'warning';
+        return 'secondary'; // Changed from 'warning' to 'secondary' to match allowed variants
       default:
         return 'default';
     }

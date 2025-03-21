@@ -2,39 +2,26 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Plus, Loader2 } from "lucide-react";
 import ProviderServiceCard from './ProviderServiceCard';
 import ServiceForm from './ServiceForm';
 import { useAuth } from '@/providers/AuthProvider';
 import { fetchProviderServices, deleteService } from '@/api/services';
-import { Service } from '@/types/api';
 import { toast } from '@/hooks/use-toast';
 
 interface ProviderServicesProps {
   providerId: number;
-  services?: {
-    id: number;
-    title: string;
-    category: string;
-    price: number;
-    rating: number;
-    reviews: number;
-    image: string;
-    status: 'active' | 'inactive' | 'pending';
-    description: string;
-    location: string;
-  }[];
 }
 
-const ProviderServices = ({ providerId, services: initialServices }: ProviderServicesProps) => {
-  const { user, token } = useAuth();
+const ProviderServices = ({ providerId }: ProviderServicesProps) => {
+  const { token } = useAuth();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedServiceId, setSelectedServiceId] = useState<number | null>(null);
-  const [services, setServices] = useState(initialServices || []);
+  const [services, setServices] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   
@@ -50,20 +37,7 @@ const ProviderServices = ({ providerId, services: initialServices }: ProviderSer
     setIsLoading(true);
     try {
       const data = await fetchProviderServices(providerId, token);
-      // Transform the API response to match the expected structure
-      const transformedServices = data.map(service => ({
-        id: service.id,
-        title: service.title,
-        category: service.category_id.toString(),
-        price: service.price,
-        rating: 0, // This information is not directly available from the API
-        reviews: service.rates_count,
-        image: service.image || '',
-        status: service.status as 'active' | 'inactive' | 'pending',
-        description: service.desc,
-        location: service.profile.user.region.name,
-      }));
-      setServices(transformedServices);
+      setServices(data);
     } catch (error) {
       console.error("Failed to fetch provider services:", error);
       toast({
@@ -173,7 +147,13 @@ const ProviderServices = ({ providerId, services: initialServices }: ProviderSer
             {services.map((service) => (
               <ProviderServiceCard 
                 key={service.id} 
-                service={service} 
+                service={{
+                  id: service.id,
+                  title: service.title,
+                  price: service.price,
+                  status: service.status as 'active' | 'inactive' | 'pending',
+                  image: service.image
+                }}
                 onEditService={handleEditService}
                 onDeleteService={handleDeleteService}
               />
@@ -191,7 +171,15 @@ const ProviderServices = ({ providerId, services: initialServices }: ProviderSer
               <ServiceForm 
                 onSubmit={handleFormSubmit} 
                 providerId={providerId}
-                service={selectedService}
+                service={{
+                  id: selectedService.id,
+                  title: selectedService.title,
+                  category: selectedService.category_id.toString(),
+                  price: selectedService.price,
+                  image: selectedService.image,
+                  status: selectedService.status as 'active' | 'inactive' | 'pending',
+                  description: selectedService.desc
+                }}
               />
             )}
           </DialogContent>
