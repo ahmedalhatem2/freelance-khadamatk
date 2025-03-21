@@ -7,7 +7,6 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "./providers/ThemeProvider";
 import { AuthProvider } from "./providers/AuthProvider";
 import PrivateRoute from "./components/auth/PrivateRoute";
-
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import RegisterSteps from "./pages/RegisterSteps";
@@ -45,12 +44,11 @@ const App = () => (
               <Route path="/services" element={<Services />} />
               <Route path="/service/:id" element={<ServiceDetails />} />
               <Route path="/providers" element={<Providers />} />
-              <Route path="/provider/:id" element={<ProviderProfile />} />
+              
               
               {/* provider routes - requires provider role */}
               <Route element={<PrivateRoute allowedRoles={['provider']} />}>
                 <Route path="/provider/me" element={<ProviderProfile />} />
-                <Route path="/profile/me" element={<ClientProfile />} />
                 <Route path="/provider/edit" element={<EditProviderProfile />} />
               </Route>
 
