@@ -2,42 +2,74 @@
 import React from 'react';
 import { useParams } from 'react-router-dom';
 import { Card } from "@/components/ui/card";
-import { Avatar } from "@/components/ui/avatar";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Star, MapPin, Phone } from "lucide-react";
+import { Star, MapPin, MessageCircle, Phone } from "lucide-react";
 import Navbar from "@/components/navbar/Navbar";
 import { Separator } from "@/components/ui/separator";
 import Footer from "@/components/footer/Footer";
+import { useQuery } from "@tanstack/react-query";
+import { fetchServiceById } from "@/api/services";
+import { toast } from "@/hooks/use-toast";
 
 const ServiceDetails = () => {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
   
-  // In a real application, this would be fetched from an API
-  const service = {
-    id: 1,
-    title: "تصميم موقع إلكتروني احترافي متجاوب",
-    description: "تصميم موقع إلكتروني احترافي متجاوب مع جميع الأجهزة باستخدام أحدث التقنيات. يشمل تصميم الموقع وبرمجته وتجهيزه للنشر على الإنترنت. نضمن لك موقع سريع وآمن ومتوافق مع معايير محركات البحث.",
-    category: "برمجة وتطوير",
-    price: 150000,
-    rating: 4.8,
-    reviews: 124,
-    image: "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?q=80&w=2055&auto=format&fit=crop",
-    tags: ["تطوير ويب", "HTML", "CSS", "React"],
-    address: {
-      region: "دمشق",
-      city: "دمشق",
-      street: "شارع بغداد",
-      details: "بناء رقم 15، طابق 3"
-    },
-    provider: {
-      id: 1,
-      name: "أحمد محمد",
-      avatar: "https://i.pravatar.cc/150?img=11",
-      title: "مطور واجهات أمامية",
-      rating: 4.9,
-      reviews: 124
+  const { 
+    data: service, 
+    isLoading,
+    error
+  } = useQuery({
+    queryKey: ['service', id],
+    queryFn: () => fetchServiceById(id as string),
+    enabled: !!id
+  });
+
+  React.useEffect(() => {
+    if (error) {
+      toast({
+        variant: "destructive",
+        title: "خطأ في جلب تفاصيل الخدمة",
+        description: "حدث خطأ أثناء محاولة جلب تفاصيل الخدمة. يرجى المحاولة مرة أخرى.",
+      });
     }
+  }, [error]);
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col min-h-screen bg-background">
+        <Navbar />
+        <div className="container mx-auto mt-24 px-4 flex-grow flex justify-center items-center">
+          <p className="text-lg">جاري تحميل تفاصيل الخدمة...</p>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (!service) {
+    return (
+      <div className="flex flex-col min-h-screen bg-background">
+        <Navbar />
+        <div className="container mx-auto mt-24 px-4 flex-grow flex justify-center items-center">
+          <p className="text-lg">الخدمة غير موجودة</p>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  // Calculate average rating
+  const averageRating = service.rates.length 
+    ? service.rates.reduce((sum, rate) => sum + rate.num_star, 0) / service.rates.length 
+    : 0;
+
+  // Get provider initials for avatar fallback
+  const getProviderInitials = () => {
+    const firstName = service.profile.user.first_name;
+    const lastName = service.profile.user.last_name;
+    return `${firstName.charAt(0)}${lastName.charAt(0)}`;
   };
 
   return (
@@ -51,7 +83,7 @@ const ServiceDetails = () => {
               <Card className="overflow-hidden">
                 <div className="relative h-[300px]">
                   <img 
-                    src={service.image} 
+                    src={service.image || "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?q=80&w=2055&auto=format&fit=crop"} 
                     alt={service.title} 
                     className="w-full h-full object-cover"
                   />
@@ -61,23 +93,23 @@ const ServiceDetails = () => {
                     <div>
                       <h1 className="text-2xl font-bold">{service.title}</h1>
                       <div className="flex items-center gap-2 mt-2">
-                        <Badge className="rounded-full">{service.category}</Badge>
+                        <Badge className="rounded-full">{service.category.name}</Badge>
                         <div className="flex items-center">
                           <div className="flex">
                             {[...Array(5)].map((_, i) => (
                               <Star 
                                 key={i} 
-                                className={`w-4 h-4 ${i < Math.floor(service.rating) ? 'fill-amber-400 text-amber-400' : 'text-gray-300'}`} 
+                                className={`w-4 h-4 ${i < Math.floor(averageRating) ? 'fill-amber-400 text-amber-400' : 'text-gray-300'}`} 
                               />
                             ))}
                           </div>
-                          <span className="text-sm ml-1">{service.rating}</span>
-                          <span className="text-muted-foreground text-sm mr-1">({service.reviews} تقييم)</span>
+                          <span className="text-sm ml-1">{averageRating.toFixed(1)}</span>
+                          <span className="text-muted-foreground text-sm mr-1">({service.rates_count} تقييم)</span>
                         </div>
                       </div>
                     </div>
                     <div className="mt-4 md:mt-0">
-                      <p className="text-primary font-bold text-2xl">{service.price} ل.س</p>
+                      <p className="text-primary font-bold text-2xl">{service.price.toLocaleString()} ل.س</p>
                     </div>
                   </div>
                   
@@ -86,7 +118,7 @@ const ServiceDetails = () => {
                   <div className="space-y-6">
                     <div>
                       <h2 className="text-xl font-bold mb-3">وصف الخدمة</h2>
-                      <p className="text-muted-foreground">{service.description}</p>
+                      <p className="text-muted-foreground">{service.desc}</p>
                     </div>
                     
                     <div>
@@ -94,12 +126,36 @@ const ServiceDetails = () => {
                       <div className="flex items-start gap-2">
                         <MapPin className="h-5 w-5 text-primary mt-0.5" />
                         <div>
-                          <p>{service.address.region}، {service.address.city}</p>
-                          <p className="text-muted-foreground">{service.address.street}</p>
-                          <p className="text-muted-foreground">{service.address.details}</p>
+                          <p>{service.profile.user.region.name}</p>
                         </div>
                       </div>
                     </div>
+
+                    {service.rates.length > 0 && (
+                      <div>
+                        <h2 className="text-xl font-bold mb-3">التقييمات</h2>
+                        <div className="space-y-4">
+                          {service.rates.slice(0, 3).map(rate => (
+                            <Card key={rate.id} className="p-4">
+                              <div className="flex items-start gap-2">
+                                <div className="flex">
+                                  {[...Array(5)].map((_, i) => (
+                                    <Star 
+                                      key={i} 
+                                      className={`w-4 h-4 ${i < rate.num_star ? 'fill-amber-400 text-amber-400' : 'text-gray-300'}`} 
+                                    />
+                                  ))}
+                                </div>
+                                <p className="text-sm text-muted-foreground mt-0.5">
+                                  {new Date(rate.created_at).toLocaleDateString('ar')}
+                                </p>
+                              </div>
+                              <p className="mt-2">{rate.comment}</p>
+                            </Card>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </Card>
@@ -110,22 +166,23 @@ const ServiceDetails = () => {
                 <h2 className="text-xl font-bold mb-4">مقدم الخدمة</h2>
                 <div className="flex items-center gap-4">
                   <Avatar className="w-16 h-16 border-2 border-primary/20">
-                    <img src={service.provider.avatar} alt={service.provider.name} />
+                    <AvatarImage src={service.profile.user.image} alt={`${service.profile.user.first_name} ${service.profile.user.last_name}`} />
+                    <AvatarFallback>{getProviderInitials()}</AvatarFallback>
                   </Avatar>
                   <div>
-                    <h3 className="font-bold">{service.provider.name}</h3>
-                    <p className="text-muted-foreground text-sm">{service.provider.title}</p>
+                    <h3 className="font-bold">{service.profile.user.first_name} {service.profile.user.last_name}</h3>
+                    <p className="text-muted-foreground text-sm">{service.profile.about}</p>
                     <div className="flex items-center mt-1">
                       <div className="flex">
                         {[...Array(5)].map((_, i) => (
                           <Star 
                             key={i} 
-                            className={`w-3 h-3 ${i < Math.floor(service.provider.rating) ? 'fill-amber-400 text-amber-400' : 'text-gray-300'}`} 
+                            className={`w-3 h-3 ${i < Math.floor(averageRating) ? 'fill-amber-400 text-amber-400' : 'text-gray-300'}`} 
                           />
                         ))}
                       </div>
-                      <span className="text-xs ml-1">{service.provider.rating}</span>
-                      <span className="text-muted-foreground text-xs mr-1">({service.provider.reviews})</span>
+                      <span className="text-xs ml-1">{averageRating.toFixed(1)}</span>
+                      <span className="text-muted-foreground text-xs mr-1">({service.rates_count})</span>
                     </div>
                   </div>
                 </div>
@@ -134,7 +191,14 @@ const ServiceDetails = () => {
                 
                 <div className="space-y-4">
                   <Button className="w-full rounded-full">طلب الخدمة</Button>
-                  <Button variant="outline" className="w-full rounded-full">التواصل مع المزود</Button>
+                  <Button variant="outline" className="w-full rounded-full">
+                    <MessageCircle className="w-4 h-4 ml-2" />
+                    التواصل مع المزود
+                  </Button>
+                  <Button variant="outline" className="w-full rounded-full">
+                    <Phone className="w-4 h-4 ml-2" />
+                    {service.profile.user.phone}
+                  </Button>
                 </div>
               </Card>
             </div>

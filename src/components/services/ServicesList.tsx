@@ -3,14 +3,15 @@ import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import ServiceCard from './ServiceCard';
+import { Service, Category } from '@/types/api';
 
 interface ServicesListProps {
-  services: any[];
-  filteredServices: any[];
+  services: Service[];
+  filteredServices: Service[];
   selectedCategory: string;
   selectedSort: string;
   setSelectedSort: (value: string) => void;
-  categories: any[];
+  categories: Category[];
 }
 
 const ServicesList = ({ 
@@ -35,7 +36,7 @@ const ServicesList = ({
         <h1 className="text-2xl font-bold">{
           selectedCategory === "all" 
             ? "جميع الخدمات" 
-            : categories.find(c => c.id === selectedCategory)?.name
+            : categories.find(c => c.id.toString() === selectedCategory)?.name || "الخدمات"
         }</h1>
         <div className="flex gap-2 mt-4 md:mt-0">
           <Select 
