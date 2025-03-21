@@ -19,6 +19,7 @@ export interface User {
   email: string;
   region_id: number;
   region: Region;
+  image: string;
 }
 
 export interface ProviderProfile {

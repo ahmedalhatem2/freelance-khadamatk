@@ -22,7 +22,7 @@ export const fetchServices = async (): Promise<Service[]> => {
 // Fetch a single service by ID
 export const fetchServiceById = async (id: string | number): Promise<Service> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/service/servicescard/${id}`);
+    const response = await fetch(`${API_BASE_URL}/service/servicecard/${id}`);
     
     if (!response.ok) {
       throw new Error(`Error fetching service: ${response.status}`);
