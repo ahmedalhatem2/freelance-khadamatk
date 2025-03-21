@@ -20,10 +20,11 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";import { Button } from "@/components/ui/button";
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Link } from "react-router-dom";
-import { useAuth } from "@/providers/AuthProvider";
+import { useAuth } from "@/context/AuthProvider";
 
 // Get user initials for avatar fallback
 
@@ -33,12 +34,12 @@ const AdminLayout = () => {
     if (!user) return "U";
     return `${user.first_name.charAt(0)}${user.last_name.charAt(0)}`;
   };
-  
+
   const handleLogout = () => {
     logout();
   };
   const location = useLocation();
-  
+
   const navItems = [
     {
       path: "/admin",
@@ -75,7 +76,6 @@ const AdminLayout = () => {
       label: "الخدمات",
       icon: <Briefcase className="h-5 w-5" />,
     },
-
   ];
 
   return (
@@ -84,51 +84,51 @@ const AdminLayout = () => {
         <div className="container mx-auto flex justify-between items-center">
           <h1 className="text-2xl font-bold">لوحة إدارة خدماتك</h1>
           <div className="hidden md:flex items-center space-x-4 space-x-reverse">
-          <ThemeToggle className="bg-primary-foreground/10 hover:bg-primary-foreground/20" />
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                className="relative h-10 w-10 rounded-full"
-              >
-                <Avatar className="h-10 w-10">
-                  <AvatarImage
-                    src={user?.image || undefined}
-                    alt={user?.first_name}
-                  />
-                  <AvatarFallback>{getUserInitials()}</AvatarFallback>
-                </Avatar>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuLabel>حسابي</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              {userRole === "admin" && (
-                <>
-                  <DropdownMenuItem asChild>
-                    <Link to={`/admin/profile`} className="cursor-pointer">
-                      <User className="ml-2 h-4 w-4" />
-                      <span>الملف الشخصي</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to="/admin" className="cursor-pointer">
-                      <Bolt className="ml-2 h-4 w-4" />
-                      <span>لوحة التحكم</span>
-                    </Link>
-                  </DropdownMenuItem>
-                </>
-              )}
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onClick={handleLogout}
-                className="cursor-pointer"
-              >
-                <LogOut className="ml-2 h-4 w-4" />
-                <span>تسجيل الخروج</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+            <ThemeToggle className="bg-primary-foreground/10 hover:bg-primary-foreground/20" />
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  className="relative h-10 w-10 rounded-full"
+                >
+                  <Avatar className="h-10 w-10">
+                    <AvatarImage
+                      src={user?.image || undefined}
+                      alt={user?.first_name}
+                    />
+                    <AvatarFallback>{getUserInitials()}</AvatarFallback>
+                  </Avatar>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel>حسابي</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {userRole === "admin" && (
+                  <>
+                    <DropdownMenuItem asChild>
+                      <Link to={`/admin/profile`} className="cursor-pointer">
+                        <User className="ml-2 h-4 w-4" />
+                        <span>الملف الشخصي</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/admin" className="cursor-pointer">
+                        <Bolt className="ml-2 h-4 w-4" />
+                        <span>لوحة التحكم</span>
+                      </Link>
+                    </DropdownMenuItem>
+                  </>
+                )}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={handleLogout}
+                  className="cursor-pointer"
+                >
+                  <LogOut className="ml-2 h-4 w-4" />
+                  <span>تسجيل الخروج</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </header>

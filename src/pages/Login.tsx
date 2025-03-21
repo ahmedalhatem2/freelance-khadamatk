@@ -1,57 +1,64 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, Link, useLocation } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/card";
 import { Mail, Lock, LogIn } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/providers/AuthProvider";
+import { useAuth } from "@/context/AuthProvider";
 
 const Login = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
-  
+
   const { login, isLoading, error, isAuthenticated } = useAuth();
-  
+
   useEffect(() => {
     if (isAuthenticated) {
-      const from = (location.state as any)?.from?.pathname || '/';
+      const from = (location.state as any)?.from?.pathname || "/";
       navigate(from, { replace: true });
     }
   }, [isAuthenticated, navigate, location]);
-  
+
   useEffect(() => {
     if (error) {
       toast({
         title: "خطأ في تسجيل الدخول",
         description: error,
-        variant: "destructive"
+        variant: "destructive",
       });
     }
   }, [error, toast]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!email || !password) {
       toast({
         title: "خطأ في المدخلات",
         description: "يرجى إدخال البريد الإلكتروني وكلمة المرور",
-        variant: "destructive"
+        variant: "destructive",
       });
       return;
     }
-    
+
     await login(email, password);
   };
 
   const handleGoogleLogin = () => {
     toast({
       title: "تسجيل الدخول باستخدام Google",
-      description: "هذه الميزة قيد التطوير"
+      description: "هذه الميزة قيد التطوير",
     });
   };
 
@@ -61,11 +68,9 @@ const Login = () => {
         <Card className="glass">
           <CardHeader className="space-y-2 text-center">
             <CardTitle className="text-3xl font-bold">تسجيل الدخول</CardTitle>
-            <CardDescription>
-              أدخل بياناتك للوصول إلى حسابك
-            </CardDescription>
+            <CardDescription>أدخل بياناتك للوصول إلى حسابك</CardDescription>
           </CardHeader>
-          
+
           <CardContent className="space-y-4">
             <form onSubmit={handleSubmit} className="space-y-5">
               <div className="space-y-1">
@@ -81,7 +86,7 @@ const Login = () => {
                   />
                 </div>
               </div>
-              
+
               <div className="space-y-1">
                 <div className="relative">
                   <Lock className="absolute right-3 top-3 h-5 w-5 text-muted-foreground" />
@@ -95,13 +100,16 @@ const Login = () => {
                   />
                 </div>
               </div>
-              
+
               <div className="flex items-center justify-end">
-                <Link to="/forgot-password" className="text-sm font-medium text-primary hover:underline">
+                <Link
+                  to="/forgot-password"
+                  className="text-sm font-medium text-primary hover:underline"
+                >
                   نسيت كلمة المرور؟
                 </Link>
               </div>
-              
+
               <Button
                 type="submit"
                 className="w-full rounded-full py-6 flex items-center justify-center gap-2"
@@ -111,16 +119,18 @@ const Login = () => {
                 <LogIn className="h-5 w-5" />
               </Button>
             </form>
-            
+
             <div className="relative my-4">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-muted"></div>
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card px-2 text-muted-foreground">أو تسجيل الدخول باستخدام</span>
+                <span className="bg-card px-2 text-muted-foreground">
+                  أو تسجيل الدخول باستخدام
+                </span>
               </div>
             </div>
-            
+
             <Button
               type="button"
               variant="outline"
@@ -150,11 +160,14 @@ const Login = () => {
               تسجيل الدخول باستخدام Google
             </Button>
           </CardContent>
-          
+
           <CardFooter className="flex justify-center">
             <p className="text-center text-sm text-muted-foreground">
               ليس لديك حساب؟{" "}
-              <Link to="/register" className="font-medium text-primary hover:underline">
+              <Link
+                to="/register"
+                className="font-medium text-primary hover:underline"
+              >
                 إنشاء حساب جديد
               </Link>
             </p>

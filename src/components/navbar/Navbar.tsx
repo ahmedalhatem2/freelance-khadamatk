@@ -4,7 +4,7 @@ import { Menu, X, User, LogOut, Bolt } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
 import ThemeToggle from "@/components/theme/ThemeToggle";
-import { useAuth } from "@/providers/AuthProvider";
+import { useAuth } from "@/context/AuthProvider";
 import {
   DropdownMenu,
   DropdownMenuContent,

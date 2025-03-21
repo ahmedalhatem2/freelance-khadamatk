@@ -64,22 +64,22 @@ const Category = () => {
           </span>
           <h2 className="section-title opacity-0 animate-fade-in">استكشف مجالات العمل المتاحة</h2>
           <p className="section-subtitle opacity-0 animate-fade-in animate-delay-100">
-            نقدم مجموعة متنوعة من الخدمات الاحترافية لتلبية احتياجات مشروعك الخاصة
+            نقدم مجموعة متنوعة من الخدمات الاحترافية لتلبية احتياجاتك
           </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {categories.map((service, index) => (
+          {categories.map((category, index) => (
             <Card 
               key={index} 
               className="p-6 text-center card-hover opacity-0 animate-fade-in"
               style={{ animationDelay: `${(index * 100) + 200}ms` }}
             >
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-5 mx-auto">
-                {service.icon}
+                {category.icon}
               </div>
-              <h3 className="text-xl font-bold mb-3">{service.title}</h3>
-              <p className="text-muted-foreground">{service.description}</p>
+              <h3 className="text-xl font-bold mb-3">{category.title}</h3>
+              <p className="text-muted-foreground">{category.description}</p>
             </Card>
           ))}
         </div>

@@ -1,6 +1,5 @@
-
-import React from 'react';
-import { useAuth } from '@/providers/AuthProvider';
+import React from "react";
+import { useAuth } from "@/context/AuthProvider";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -9,21 +8,26 @@ import { CustomBadge } from "@/components/ui/custom-badge";
 
 const AdminProfile = () => {
   const { user } = useAuth();
-  
+
   if (!user) {
     return <div className="p-6 text-center">جاري تحميل البيانات...</div>;
   }
-  
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">الملف الشخصي</h1>
       </div>
-      
+
       <Card>
         <CardHeader className="flex flex-row items-center gap-4 pb-2">
           <Avatar className="h-20 w-20 border-2 border-primary/20">
-            <img src={user.image || "https://randomuser.me/api/portraits/men/1.jpg"} alt={`${user.first_name} ${user.last_name}`} />
+            <img
+              src={
+                user.image || "https://randomuser.me/api/portraits/men/1.jpg"
+              }
+              alt={`${user.first_name} ${user.last_name}`}
+            />
           </Avatar>
           <div className="flex-1">
             <div className="flex flex-wrap items-center justify-between gap-2">
@@ -38,7 +42,11 @@ const AdminProfile = () => {
               </div>
               <div className="flex gap-2">
                 <CustomBadge variant="success">نشط</CustomBadge>
-                <Button variant="outline" size="sm" className="rounded-full gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="rounded-full gap-2"
+                >
                   <User className="h-4 w-4" />
                   تعديل الملف الشخصي
                 </Button>
@@ -70,7 +78,7 @@ const AdminProfile = () => {
                 </div>
               </div>
             </div>
-            
+
             <div>
               <h3 className="font-semibold text-lg mb-3">إحصائيات النظام</h3>
               <div className="grid grid-cols-2 gap-4">
@@ -101,20 +109,26 @@ const AdminProfile = () => {
               </div>
             </div>
           </div>
-          
+
           <div className="mt-6">
             <h3 className="font-semibold text-lg mb-3">أحدث النشاطات</h3>
             <div className="space-y-3">
               <div className="p-3 bg-muted rounded-md">
-                <p className="text-sm">تم إضافة مزود خدمة جديد <strong>محمد أحمد</strong></p>
+                <p className="text-sm">
+                  تم إضافة مزود خدمة جديد <strong>محمد أحمد</strong>
+                </p>
                 <p className="text-xs text-muted-foreground">منذ ساعتين</p>
               </div>
               <div className="p-3 bg-muted rounded-md">
-                <p className="text-sm">تم تعديل فئة <strong>تصميم</strong></p>
+                <p className="text-sm">
+                  تم تعديل فئة <strong>تصميم</strong>
+                </p>
                 <p className="text-xs text-muted-foreground">منذ 3 ساعات</p>
               </div>
               <div className="p-3 bg-muted rounded-md">
-                <p className="text-sm">تم إضافة منطقة جديدة <strong>حلب</strong></p>
+                <p className="text-sm">
+                  تم إضافة منطقة جديدة <strong>حلب</strong>
+                </p>
                 <p className="text-xs text-muted-foreground">منذ يوم واحد</p>
               </div>
             </div>

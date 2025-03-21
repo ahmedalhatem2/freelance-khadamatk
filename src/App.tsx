@@ -1,11 +1,10 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "./providers/ThemeProvider";
-import { AuthProvider } from "./providers/AuthProvider";
+import { AuthProvider } from "./context/AuthProvider";
 import PrivateRoute from "./components/auth/PrivateRoute";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
@@ -44,22 +43,23 @@ const App = () => (
               <Route path="/services" element={<Services />} />
               <Route path="/service/:id" element={<ServiceDetails />} />
               <Route path="/providers" element={<Providers />} />
-              
-              
+
               {/* provider routes - requires provider role */}
-              <Route element={<PrivateRoute allowedRoles={['provider']} />}>
+              <Route element={<PrivateRoute allowedRoles={["provider"]} />}>
                 <Route path="/provider/me" element={<ProviderProfile />} />
-                <Route path="/provider/edit" element={<EditProviderProfile />} />
+                <Route
+                  path="/provider/edit"
+                  element={<EditProviderProfile />}
+                />
               </Route>
 
               {/* client routes - requires client role */}
-              <Route element={<PrivateRoute allowedRoles={['client']} />}>
+              <Route element={<PrivateRoute allowedRoles={["client"]} />}>
                 <Route path="/profile/me" element={<ClientProfile />} />
               </Route>
-              
-              
+
               {/* Admin routes - requires admin role */}
-              <Route element={<PrivateRoute allowedRoles={['admin']} />}>
+              <Route element={<PrivateRoute allowedRoles={["admin"]} />}>
                 <Route path="/admin" element={<AdminLayout />}>
                   <Route index element={<AdminDashboard />} />
                   <Route path="profile" element={<AdminProfile />} />
@@ -70,7 +70,7 @@ const App = () => (
                   <Route path="services" element={<AdminServices />} />
                 </Route>
               </Route>
-              
+
               {/* Catch-all route */}
               <Route path="*" element={<NotFound />} />
             </Routes>
