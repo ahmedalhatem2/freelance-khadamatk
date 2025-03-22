@@ -23,15 +23,20 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 
 // Mock regions data
 const regionsData = [
-  { id: 1, name: 'الرياض' },
-  { id: 2, name: 'جدة' },
-  { id: 3, name: 'الدمام' },
-  { id: 4, name: 'مكة المكرمة' },
-  { id: 5, name: 'المدينة المنورة' },
-  { id: 6, name: 'الخبر' },
-  { id: 7, name: 'الطائف' },
-  { id: 8, name: 'تبوك' },
-  { id: 9, name: 'القصيم' },
+  { id: '1', name: 'دمشق' },
+  { id: '2', name: 'حلب' },
+  { id: '3', name: 'حمص' },
+  { id: '4', name: 'اللاذقية' },
+  { id: '5', name: 'حماة' },
+  { id: '6', name: 'طرطوس' },
+  { id: '7', name: 'درعا' },
+  { id: '8', name: 'إدلب' },
+  { id: '9', name: 'الحسكة' },
+  { id: '10', name: 'دير الزور' },
+  { id: '11', name: 'الرقة' },
+  { id: '12', name: 'السويداء' },
+  { id: '13', name: 'القنيطرة' },
+  { id: '14', name: 'ريف دمشق' },
 ];
 
 const AdminRegions = () => {

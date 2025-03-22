@@ -26,7 +26,7 @@ const users = [
     id: 1,
     first_name: 'أحمد',
     last_name: 'محمد',
-    image: 'https://i.pravatar.cc/150?img=1',
+    image: 'https://avatars.hsoubcdn.com/d47c59f0d529e4ab8a36b2427d1b63d1?s=128',
     phone: '0501234567',
     email: 'ahmed@example.com',
     status: 'active',
@@ -50,7 +50,7 @@ const users = [
     id: 2,
     first_name: 'سارة',
     last_name: 'علي',
-    image: 'https://i.pravatar.cc/150?img=5',
+    image: '',
     phone: '0507654321',
     email: 'sara@example.com',
     status: 'inactive',
@@ -68,7 +68,7 @@ const users = [
     id: 3,
     first_name: 'محمد',
     last_name: 'عبدالله',
-    image: 'https://i.pravatar.cc/150?img=3',
+    image: 'https://avatars.hsoubcdn.com/43e0d7378fe65d3d166dd4bf0d58261c?s=128',
     phone: '0509876543',
     email: 'mohammed@example.com',
     status: 'active',
@@ -242,7 +242,7 @@ const UserCard = ({ user }: { user: any }) => {
                             </div>
                             <div className="flex justify-between items-center mt-2">
                               <span className="text-sm text-muted-foreground">#{service.id}</span>
-                              <span className="font-medium">{service.price} ر.س</span>
+                              <span className="font-medium">{service.price} ل.س</span>
                             </div>
                           </div>
                         ))

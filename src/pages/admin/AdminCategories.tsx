@@ -25,13 +25,15 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 
 // Mock category data
 const categoriesData = [
-  { id: 1, name: 'تصميم', servicesCount: 24 },
-  { id: 2, name: 'برمجة', servicesCount: 16 },
-  { id: 3, name: 'تسويق', servicesCount: 32 },
-  { id: 4, name: 'ترجمة', servicesCount: 8 },
-  { id: 5, name: 'كتابة محتوى', servicesCount: 20 },
-  { id: 6, name: 'تحرير فيديو', servicesCount: 15 },
-  { id: 7, name: 'تعليم', servicesCount: 12 },
+  { id: 1, name: 'برمجة و تطوير', servicesCount: 24 },
+  { id: 2, name: 'تصميم و غرافيك', servicesCount: 16 },
+  { id: 3, name: 'الفيديو و الأنيميشن', servicesCount: 32 },
+  { id: 4, name: 'خدمات كهربائية', servicesCount: 8 },
+  { id: 5, name: 'خدمات هندسية ', servicesCount: 20 },
+  { id: 6, name: 'خدمات لوجستية', servicesCount: 15 },
+  { id: 7, name: 'خدمات منزلية', servicesCount: 12 },
+  { id: 8, name: 'خدمات نجارة', servicesCount: 6 },
+
 ];
 
 const AdminCategories = () => {

@@ -1,29 +1,15 @@
-import React, { useState, useEffect } from "react";
+
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Plus, Loader2 } from "lucide-react";
-import ProviderServiceCard from "./ProviderServiceCard";
-import ServiceForm from "./ServiceForm";
-import { useAuth } from "@/context/AuthProvider";
-import { fetchProviderServices, deleteService } from "@/api/services";
-import { toast } from "@/hooks/use-toast";
+import ProviderServiceCard from './ProviderServiceCard';
+import ServiceForm from './ServiceForm';
+import { useAuth } from '@/context/AuthProvider';
+import { fetchProviderServices, deleteService } from '@/api/services';
+import { toast } from '@/hooks/use-toast';
 
 interface ProviderServicesProps {
   providerId: number;
@@ -34,22 +20,20 @@ const ProviderServices = ({ providerId }: ProviderServicesProps) => {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [selectedServiceId, setSelectedServiceId] = useState<number | null>(
-    null
-  );
+  const [selectedServiceId, setSelectedServiceId] = useState<number | null>(null);
   const [services, setServices] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-
+  
   useEffect(() => {
     if (token) {
       fetchServices();
     }
   }, [token, providerId]);
-
+  
   const fetchServices = async () => {
     if (!token) return;
-
+    
     setIsLoading(true);
     try {
       const data = await fetchProviderServices(providerId, token);
@@ -65,27 +49,25 @@ const ProviderServices = ({ providerId }: ProviderServicesProps) => {
       setIsLoading(false);
     }
   };
-
+  
   const handleEditService = (serviceId: number) => {
     setSelectedServiceId(serviceId);
     setIsEditDialogOpen(true);
   };
-
+  
   const handleDeleteService = (serviceId: number) => {
     setSelectedServiceId(serviceId);
     setIsDeleteDialogOpen(true);
   };
-
+  
   const confirmDeleteService = async () => {
     if (!selectedServiceId || !token) return;
-
+    
     setIsDeleting(true);
     try {
       await deleteService(selectedServiceId, token);
       // Remove the service from the local state
-      setServices((prevServices) =>
-        prevServices.filter((service) => service.id !== selectedServiceId)
-      );
+      setServices(prevServices => prevServices.filter(service => service.id !== selectedServiceId));
       setIsDeleteDialogOpen(false);
       toast({
         title: "تم الحذف بنجاح",
@@ -102,17 +84,15 @@ const ProviderServices = ({ providerId }: ProviderServicesProps) => {
       setIsDeleting(false);
     }
   };
-
+  
   const handleFormSubmit = () => {
     setIsAddDialogOpen(false);
     setIsEditDialogOpen(false);
     fetchServices(); // Refresh the services list
   };
-
-  const selectedService = services.find(
-    (service) => service.id === selectedServiceId
-  );
-
+  
+  const selectedService = services.find(service => service.id === selectedServiceId);
+  
   if (isLoading && services.length === 0) {
     return (
       <Card className="mb-6">
@@ -126,7 +106,7 @@ const ProviderServices = ({ providerId }: ProviderServicesProps) => {
       </Card>
     );
   }
-
+  
   return (
     <Card className="mb-6">
       <CardHeader className="flex-row items-center justify-between pb-2">
@@ -142,7 +122,10 @@ const ProviderServices = ({ providerId }: ProviderServicesProps) => {
             <DialogHeader>
               <DialogTitle>إضافة خدمة جديدة</DialogTitle>
             </DialogHeader>
-            <ServiceForm onSubmit={handleFormSubmit} providerId={providerId} />
+            <ServiceForm 
+              onSubmit={handleFormSubmit} 
+              providerId={providerId}
+            />
           </DialogContent>
         </Dialog>
       </CardHeader>
@@ -150,8 +133,8 @@ const ProviderServices = ({ providerId }: ProviderServicesProps) => {
         {services.length === 0 ? (
           <div className="text-center py-8">
             <p className="text-muted-foreground">لا توجد خدمات لعرضها</p>
-            <Button
-              variant="outline"
+            <Button 
+              variant="outline" 
               className="mt-4 rounded-full"
               onClick={() => setIsAddDialogOpen(true)}
             >
@@ -162,14 +145,14 @@ const ProviderServices = ({ providerId }: ProviderServicesProps) => {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {services.map((service) => (
-              <ProviderServiceCard
-                key={service.id}
+              <ProviderServiceCard 
+                key={service.id} 
                 service={{
                   id: service.id,
                   title: service.title,
                   price: service.price,
-                  status: service.status as "active" | "inactive" | "pending",
-                  image: service.image,
+                  status: service.status as 'active' | 'inactive' | 'pending',
+                  image: service.image
                 }}
                 onEditService={handleEditService}
                 onDeleteService={handleDeleteService}
@@ -177,7 +160,7 @@ const ProviderServices = ({ providerId }: ProviderServicesProps) => {
             ))}
           </div>
         )}
-
+        
         {/* Edit Service Dialog */}
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
           <DialogContent className="sm:max-w-[600px]">
@@ -185,8 +168,8 @@ const ProviderServices = ({ providerId }: ProviderServicesProps) => {
               <DialogTitle>تعديل الخدمة</DialogTitle>
             </DialogHeader>
             {selectedService && (
-              <ServiceForm
-                onSubmit={handleFormSubmit}
+              <ServiceForm 
+                onSubmit={handleFormSubmit} 
                 providerId={providerId}
                 service={{
                   id: selectedService.id,
@@ -194,35 +177,27 @@ const ProviderServices = ({ providerId }: ProviderServicesProps) => {
                   category: selectedService.category_id.toString(),
                   price: selectedService.price,
                   image: selectedService.image,
-                  status: selectedService.status as
-                    | "active"
-                    | "inactive"
-                    | "pending",
-                  description: selectedService.desc,
+                  status: selectedService.status as 'active' | 'inactive' | 'pending',
+                  description: selectedService.desc
                 }}
               />
             )}
           </DialogContent>
         </Dialog>
-
+        
         {/* Delete Service Dialog */}
-        <AlertDialog
-          open={isDeleteDialogOpen}
-          onOpenChange={setIsDeleteDialogOpen}
-        >
+        <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>
-                هل أنت متأكد من حذف هذه الخدمة؟
-              </AlertDialogTitle>
+              <AlertDialogTitle>هل أنت متأكد من حذف هذه الخدمة؟</AlertDialogTitle>
               <AlertDialogDescription>
                 هذا الإجراء لا يمكن التراجع عنه. سيتم حذف الخدمة بشكل نهائي.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel disabled={isDeleting}>إلغاء</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={confirmDeleteService}
+              <AlertDialogAction 
+                onClick={confirmDeleteService} 
                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                 disabled={isDeleting}
               >
@@ -231,9 +206,7 @@ const ProviderServices = ({ providerId }: ProviderServicesProps) => {
                     <Loader2 className="ml-2 h-4 w-4 animate-spin" />
                     جاري الحذف...
                   </>
-                ) : (
-                  "حذف"
-                )}
+                ) : 'حذف'}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

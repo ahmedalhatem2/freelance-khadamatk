@@ -23,10 +23,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 
 // Mock roles data
 const rolesData = [
-  { id: 1, name: 'عميل' },
+  { id: 1, name: 'مدير' },
   { id: 2, name: 'مزود خدمة' },
-  { id: 3, name: 'مدير' },
-  { id: 4, name: 'مشرف' }
+  { id: 3, name: 'عميل' },
+  // { id: 4, name: 'مشرف' }
 ];
 
 const AdminRoles = () => {
