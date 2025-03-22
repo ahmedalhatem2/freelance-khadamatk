@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -14,7 +13,6 @@ import Services from "./pages/Services";
 import Providers from "./pages/Providers";
 import ServiceDetails from "./pages/ServiceDetails";
 import ProviderProfile from "./pages/ProviderProfile";
-import ProviderDetails from "./pages/ProviderDetails";
 import ClientProfile from "./pages/ClientProfile";
 import AdminProfile from "./pages/admin/AdminProfile";
 import EditProviderProfile from "./pages/EditProviderProfile";
@@ -45,7 +43,6 @@ const App = () => (
               <Route path="/services" element={<Services />} />
               <Route path="/service/:id" element={<ServiceDetails />} />
               <Route path="/providers" element={<Providers />} />
-              <Route path="/provider/:id" element={<ProviderDetails />} />
 
               {/* provider routes - requires provider role */}
               <Route element={<PrivateRoute allowedRoles={["provider"]} />}>

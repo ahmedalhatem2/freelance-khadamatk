@@ -19,13 +19,8 @@ import { fetchServices, fetchCategories } from "@/api/services";
 import { Service, Category } from "@/types/api";
 import ServicesList from "@/components/services/ServicesList";
 import { toast } from "@/hooks/use-toast";
-import { useLocation } from 'react-router-dom';
 
 const Services = () => {
-  const location = useLocation();
-  const queryParams = new URLSearchParams(location.search);
-  const categoryParam = queryParams.get("category");
-  
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedSort, setSelectedSort] = useState("newest");
   const [selectedGovernorate, setSelectedGovernorate] = useState("all");
@@ -54,19 +49,6 @@ const Services = () => {
     queryKey: ["services"],
     queryFn: fetchServices
   });
-
-  // Set category from URL parameter on initial load
-  useEffect(() => {
-    if (categoryParam && categories.length > 0) {
-      const categoryExists = categories.some(
-        category => category.id.toString() === categoryParam
-      );
-      
-      if (categoryExists) {
-        setSelectedCategory(categoryParam);
-      }
-    }
-  }, [categoryParam, categories]);
 
   useEffect(() => {
     if (categoriesError) {
