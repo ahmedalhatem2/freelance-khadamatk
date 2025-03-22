@@ -24,7 +24,7 @@ const AdminProfile = () => {
           <Avatar className="h-20 w-20 border-2 border-primary/20">
             <img
               src={
-                user.image || "https://randomuser.me/api/portraits/men/1.jpg"
+                user.image || "https://pbs.twimg.com/profile_images/1669434861680054273/qHgWVO0G_400x400.jpg"
               }
               alt={`${user.first_name} ${user.last_name}`}
             />

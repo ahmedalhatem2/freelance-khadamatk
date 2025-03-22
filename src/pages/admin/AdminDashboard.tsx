@@ -13,37 +13,37 @@ import {
 const statsData = [
   { 
     title: 'إجمالي المستخدمين', 
-    value: '2,384', 
+    value: '4', 
     icon: <Users className="h-8 w-8 text-primary" />,
-    change: '+12%'
+    change: '+25%'
   },
   { 
     title: 'عدد المزودين', 
-    value: '967', 
+    value: '3', 
     icon: <Users className="h-8 w-8 text-blue-500" />,
-    change: '+8%'
+    change: '+66%'
   },
   { 
     title: 'عدد العملاء', 
-    value: '1,417', 
+    value: '2', 
     icon: <Users className="h-8 w-8 text-indigo-500" />,
-    change: '+15%'
+    change: '+50%'
   },
   { 
     title: 'إجمالي الخدمات', 
-    value: '4,592', 
+    value: '9', 
     icon: <Briefcase className="h-8 w-8 text-emerald-500" />,
-    change: '+24%'
+    change: '+25%'
   },
   { 
     title: 'التصنيفات', 
-    value: '32', 
+    value: '8', 
     icon: <Tag className="h-8 w-8 text-yellow-500" />,
-    change: '+2'
+    change: ''
   },
   { 
     title: 'المناطق', 
-    value: '28', 
+    value: '14', 
     icon: <Map className="h-8 w-8 text-rose-500" />,
     change: ''
   }
@@ -116,7 +116,7 @@ const AdminDashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {Array.from({ length: 5 }).map((_, i) => (
+              {Array.from({ length: 9 }).map((_, i) => (
                 <div key={i} className="flex items-center gap-3 p-2 hover:bg-muted rounded-md">
                   <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center">
                     <Briefcase className="h-5 w-5 text-emerald-500" />

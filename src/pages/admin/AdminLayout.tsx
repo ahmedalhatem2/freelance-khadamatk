@@ -89,11 +89,11 @@ const AdminLayout = () => {
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="ghost"
-                  className="relative h-10 w-10 rounded-full"
+                  className="relative h-10 w-10 rounded-full "
                 >
-                  <Avatar className="h-10 w-10">
+                  <Avatar className="h-10 w-10 bg-red-500">
                     <AvatarImage
-                      src={user?.image || undefined}
+                      src={user?.image || 'https://pbs.twimg.com/profile_images/1669434861680054273/qHgWVO0G_400x400.jpg'}
                       alt={user?.first_name}
                     />
                     <AvatarFallback>{getUserInitials()}</AvatarFallback>
