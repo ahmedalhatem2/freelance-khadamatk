@@ -4,8 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
 import khadamatkImg from "@/assets/images/k1.jpg"
 import { Link } from "react-router-dom";
+import { useAuth } from "@/context/AuthProvider";
 
 const Hero = () => {
+  const { isAuthenticated, user, logout, userRole } = useAuth();
   return <section className="relative min-h-screen pt-32 pb-20 flex items-center">
       {/* Background Elements */}
       <div className="absolute inset-0 -z-10 overflow-hidden">
@@ -25,7 +27,7 @@ const Hero = () => {
             <p className="text-muted-foreground text-lg mb-8 opacity-0 animate-fade-in animate-delay-300">
               مكان واحد يجمع بينك وبين المحترفين في مختلف المجالات. اختر أفضل الخدمات لإنجاز اعمالك!
             </p>
-            
+            {!isAuthenticated?  (
             <div className="flex flex-col sm:flex-row gap-4 mb-8 opacity-0 animate-fade-in animate-delay-400">
               <Button asChild className="rounded-full text-base py-6 flex-1">
                 <Link to="/register?type=client">أبدأ كعميل</Link>
@@ -34,7 +36,7 @@ const Hero = () => {
                 <Link to="/register?type=provider">سجل كمزود خدمة</Link>
               </Button>
             </div>
-            
+            ):(<></>)}
             <div className="glass p-2 rounded-full flex items-center opacity-0 animate-fade-in animate-delay-500 bg-slate-100">
               <Search className="mx-3 text-muted-foreground" size={20} />
               <input type="text" placeholder="ابحث عن مهارة أو خدمة..." className="flex-1 bg-transparent border-0 outline-none py-2 text-foreground placeholder:text-muted-foreground" />
@@ -47,7 +49,7 @@ const Hero = () => {
                     <span className="text-xs font-medium">{i}</span>
                   </div>)}
               </div>
-              <p>+1,000 مزود خدمة محترف</p>
+              <p>+9 مزود خدمة محترف</p>
             </div>
           </div>
           
