@@ -40,7 +40,7 @@ const Category = () => {
       id: 6,
       icon: <Paintbrush className="h-8 w-8 text-primary" />,
       title: "فن وإبداع",
-      description: "تصميم، رسم، تصوير، موسيقى"
+      description: "تصميم، فيديو، تصوير، غرافيك"
     },
     {
       id: 7,

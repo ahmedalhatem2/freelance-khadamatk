@@ -2,6 +2,7 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
+import khadamatkImg from "@/assets/images/k1.jpg"
 
 const Hero = () => {
   return <section className="relative min-h-screen pt-32 pb-20 flex items-center">
@@ -15,17 +16,17 @@ const Hero = () => {
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div className="order-2 md:order-1">
             <span className="inline-block py-1 px-3 bg-primary/10 text-primary rounded-full text-sm font-medium mb-6 opacity-0 animate-fade-in animate-delay-100">
-              منصة الخدمات الأولى في المنطقة العربية
+              منصة الخدمات الأولى في سورية
             </span>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6 opacity-0 animate-fade-in animate-delay-200">
               اعثر على <span className="text-primary">أفضل مزودي الخدمات</span> لإنجاز أعمالك
             </h1>
             <p className="text-muted-foreground text-lg mb-8 opacity-0 animate-fade-in animate-delay-300">
-              منصة خدماتك تجمع بينك وبين المحترفين في مختلف المجالات. أطلق مشروعك واختر من بين آلاف الخدمات المتاحة!
+              منصة خدماتك تجمع بينك وبين المحترفين في مختلف المجالات. اختر أفضل الخدمات لإنجاز اعمالك!
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 mb-8 opacity-0 animate-fade-in animate-delay-400">
-              <Button className="rounded-full text-base py-6 flex-1">أبدأ كصاحب مشروع</Button>
+              <Button className="rounded-full text-base py-6 flex-1">أبدأ كعميل </Button>
               <Button variant="outline" className="rounded-full text-base py-6 flex-1">سجل كمزود خدمة</Button>
             </div>
             
@@ -41,7 +42,7 @@ const Hero = () => {
                     <span className="text-xs font-medium">{i}</span>
                   </div>)}
               </div>
-              <p>+10,000 مزود خدمة محترف</p>
+              <p>+1,000 مزود خدمة محترف</p>
             </div>
           </div>
           
@@ -49,7 +50,7 @@ const Hero = () => {
             <div className="relative">
               <div className="absolute -inset-4 bg-gradient-to-tr from-primary/20 to-blue-200/20 rounded-2xl blur-xl -z-10"></div>
               <div className="glass rounded-2xl overflow-hidden shadow-xl">
-                <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1471&q=80" alt="Team collaborating" className="w-full object-cover object-center h-96 md:h-[450px]" />
+                <img src={khadamatkImg} alt="khadamatkImg" className="w-full object-cover object-center h-96 md:h-[450px]" />
               </div>
             </div>
           </div>
