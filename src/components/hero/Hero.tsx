@@ -5,6 +5,7 @@ import { Search } from "lucide-react";
 import khadamatkImg from "@/assets/images/k1.jpg"
 import { Link } from "react-router-dom";
 import { useAuth } from "@/context/AuthProvider";
+import { cn } from '@/lib/utils';
 
 const Hero = () => {
   const { isAuthenticated, user, logout, userRole } = useAuth();
@@ -21,7 +22,8 @@ const Hero = () => {
             <span className="inline-block py-1 px-3 bg-primary/10 text-primary rounded-full text-sm font-medium mb-6 opacity-0 animate-fade-in animate-delay-100">
               منصة الخدمات الأولى في سورية
             </span>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6 opacity-0 animate-fade-in animate-delay-200">
+            <h1  className={cn("line-height:1.3",
+              "text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6 opacity-0 animate-fade-in animate-delay-200")}>
               اعثر على <span className="text-primary">أفضل مزودي الخدمات</span> لإنجاز أعمالك
             </h1>
             <p className="text-muted-foreground text-lg mb-8 opacity-0 animate-fade-in animate-delay-300">
