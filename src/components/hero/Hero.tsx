@@ -3,6 +3,7 @@ import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
 import khadamatkImg from "@/assets/images/k1.jpg"
+import { Link } from "react-router-dom";
 
 const Hero = () => {
   return <section className="relative min-h-screen pt-32 pb-20 flex items-center">
@@ -22,12 +23,16 @@ const Hero = () => {
               اعثر على <span className="text-primary">أفضل مزودي الخدمات</span> لإنجاز أعمالك
             </h1>
             <p className="text-muted-foreground text-lg mb-8 opacity-0 animate-fade-in animate-delay-300">
-              منصة خدماتك تجمع بينك وبين المحترفين في مختلف المجالات. اختر أفضل الخدمات لإنجاز اعمالك!
+              مكان واحد يجمع بينك وبين المحترفين في مختلف المجالات. اختر أفضل الخدمات لإنجاز اعمالك!
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 mb-8 opacity-0 animate-fade-in animate-delay-400">
-              <Button className="rounded-full text-base py-6 flex-1">أبدأ كعميل </Button>
-              <Button variant="outline" className="rounded-full text-base py-6 flex-1">سجل كمزود خدمة</Button>
+              <Button asChild className="rounded-full text-base py-6 flex-1">
+                <Link to="/register?type=client">أبدأ كعميل</Link>
+              </Button>
+              <Button asChild variant="outline" className="rounded-full text-base py-6 flex-1">
+                <Link to="/register?type=provider">سجل كمزود خدمة</Link>
+              </Button>
             </div>
             
             <div className="glass p-2 rounded-full flex items-center opacity-0 animate-fade-in animate-delay-500 bg-slate-100">

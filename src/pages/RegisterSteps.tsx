@@ -1,6 +1,5 @@
-
-import React, { useState, useCallback } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useState, useCallback, useEffect } from 'react';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
@@ -27,6 +26,7 @@ type RegisterFormData = {
 };
 
 const RegisterSteps = () => {
+  const location = useLocation();
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState<RegisterFormData>({
     userType: null,
@@ -46,6 +46,17 @@ const RegisterSteps = () => {
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const userType = searchParams.get('type') as UserType;
+    
+    if (userType && (userType === 'client' || userType === 'provider')) {
+      setFormData(prev => ({ ...prev, userType }));
+      
+      setStep(2);
+    }
+  }, [location.search]);
 
   const governorates = [
     { value: '1', label: 'دمشق' },
@@ -80,11 +91,9 @@ const RegisterSteps = () => {
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // Create object URL for preview
       const imageUrl = URL.createObjectURL(file);
       setPreviewImage(imageUrl);
       
-      // Store the file object for upload
       setFormData({ ...formData, profileImage: file });
     }
   };
@@ -111,7 +120,6 @@ const RegisterSteps = () => {
       return false;
     }
     
-    // Simple email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
       toast({
@@ -122,7 +130,6 @@ const RegisterSteps = () => {
       return false;
     }
     
-    // Simple phone validation (10 digits)
     const phoneRegex = /^\d{10}$/;
     if (!phoneRegex.test(formData.phone)) {
       toast({
@@ -133,7 +140,6 @@ const RegisterSteps = () => {
       return false;
     }
     
-    // Password length validation
     if (formData.password.length < 8) {
       toast({
         title: "كلمة المرور قصيرة جداً",
@@ -183,10 +189,8 @@ const RegisterSteps = () => {
     setError(null);
     
     try {
-      // Create FormData object for multipart/form-data request (for file upload)
       const formDataObj = new FormData();
       
-      // Add all form fields to FormData
       formDataObj.append('first_name', formData.firstName);
       formDataObj.append('last_name', formData.lastName);
       formDataObj.append('email', formData.email);
@@ -194,22 +198,18 @@ const RegisterSteps = () => {
       formDataObj.append('password', formData.password);
       formDataObj.append('status', 'active');
       
-      // Set role_id based on user type
       const roleId = formData.userType === 'provider' ? '2' : '3';
       formDataObj.append('role_id', roleId);
       
-      // Add address details
       formDataObj.append('region_id', formData.governorate);
       formDataObj.append('city', formData.city);
       formDataObj.append('street', formData.street);
       formDataObj.append('address', formData.detailedAddress);
       
-      // Add profile image if available
       if (formData.profileImage) {
         formDataObj.append('image', formData.profileImage);
       }
       
-      // Send registration request
       const response = await fetch(`${API_BASE_URL}/register`, {
         method: 'POST',
         body: formDataObj,
@@ -227,7 +227,6 @@ const RegisterSteps = () => {
         description: `مرحباً ${userData.first_name}! يمكنك الآن تسجيل الدخول إلى منصة خدماتك`
       });
       
-      // Navigate to login page after successful registration
       navigate('/login');
     } catch (error) {
       setError(error instanceof Error ? error.message : 'حدث خطأ أثناء التسجيل، يرجى المحاولة مرة أخرى');
@@ -267,8 +266,8 @@ const RegisterSteps = () => {
                   <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
                     <User className="h-8 w-8 text-primary" />
                   </div>
-                  <h3 className="text-xl font-bold mb-2">مقدم خدمة</h3>
-                  <p className="text-muted-foreground">سجل كمقدم خدمة للعمل وتقديم خدماتك للعملاء</p>
+                  <h3 className="text-xl font-bold mb-2">مزود خدمة</h3>
+                  <p className="text-muted-foreground">سجل كمزود خدمة للعمل وتقديم خدماتك للعملاء</p>
                   
                   {formData.userType === 'provider' && (
                     <div className="absolute top-4 left-4">
@@ -289,7 +288,7 @@ const RegisterSteps = () => {
                     <UserPlus className="h-8 w-8 text-primary" />
                   </div>
                   <h3 className="text-xl font-bold mb-2">عميل</h3>
-                  <p className="text-muted-foreground">سجل كعميل للبحث عن الخدمات وتوظيف المستقلين</p>
+                  <p className="text-muted-foreground">سجل كعميل للبحث عن الخدمات وتوظيف مزودي الخدمة</p>
                   
                   {formData.userType === 'client' && (
                     <div className="absolute top-4 left-4">
