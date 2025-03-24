@@ -1,58 +1,58 @@
 
 import React from 'react';
 import { Card } from "@/components/ui/card";
-import { Code, Paintbrush, Music, FileText, Video, BarChart, Globe, Lightbulb } from "lucide-react";
+import { Wrench, Code, GraduationCap, BookOpen, Home, Paintbrush, Truck, HelpCircle } from "lucide-react";
 import { Link } from 'react-router-dom';
 
 const Category = () => {
   const categories = [
     {
       id: 1,
-      icon: <Code className="h-8 w-8 text-primary" />,
-      title: "برمجة وتطوير",
-      description: "تطوير مواقع، تطبيقات جوال، برمجة خاصة"
+      icon: <Wrench className="h-8 w-8 text-primary" />,
+      title: "خدمات حرفية ومهنية",
+      description: "صيانة، نجارة، سباكة، كهرباء وغيرها"
     },
     {
       id: 2,
-      icon: <Paintbrush className="h-8 w-8 text-primary" />,
-      title: "تصميم وجرافيك",
-      description: "تصميم شعارات، واجهات مستخدم، رسومات"
+      icon: <Code className="h-8 w-8 text-primary" />,
+      title: "تقنية وبرمجيات",
+      description: "تطوير مواقع، تطبيقات، برمجة خاصة"
     },
     {
       id: 3,
-      icon: <FileText className="h-8 w-8 text-primary" />,
-      title: "كتابة وترجمة",
-      description: "محتوى تسويقي، مقالات، ترجمة احترافية"
+      icon: <GraduationCap className="h-8 w-8 text-primary" />,
+      title: "تعلم وتدريب",
+      description: "دورات، تعليم لغات، مهارات تقنية"
     },
     {
       id: 4,
-      icon: <Video className="h-8 w-8 text-primary" />,
-      title: "فيديو وأنيميشن",
-      description: "مونتاج، موشن جرافيك، انيميشن"
+      icon: <BookOpen className="h-8 w-8 text-primary" />,
+      title: "حلول إدارية واستشارية",
+      description: "استشارات قانونية، مالية، إدارية"
     },
     {
       id: 5,
-      icon: <Music className="h-8 w-8 text-primary" />,
-      title: "صوتيات",
-      description: "تعليق صوتي، مؤثرات، هندسة صوتية"
+      icon: <Home className="h-8 w-8 text-primary" />,
+      title: "خدمات منزلية",
+      description: "تنظيف، ترتيب، ديكور، حدائق"
     },
     {
       id: 6,
-      icon: <BarChart className="h-8 w-8 text-primary" />,
-      title: "تسويق وأعمال",
-      description: "تسويق الكتروني، استراتيجيات، تحليل بيانات"
+      icon: <Paintbrush className="h-8 w-8 text-primary" />,
+      title: "فن وإبداع",
+      description: "تصميم، رسم، تصوير، موسيقى"
     },
     {
       id: 7,
-      icon: <Globe className="h-8 w-8 text-primary" />,
-      title: "دعم ومساعدة",
-      description: "مساعدة افتراضية، دعم العملاء، إدخال بيانات"
+      icon: <Truck className="h-8 w-8 text-primary" />,
+      title: "نقل وتوصيل",
+      description: "توصيل طلبات، نقل أثاث، شحن"
     },
     {
       id: 8,
-      icon: <Lightbulb className="h-8 w-8 text-primary" />,
-      title: "استشارات",
-      description: "استشارات قانونية، مالية، تقنية"
+      icon: <HelpCircle className="h-8 w-8 text-primary" />,
+      title: "خدمات عامة متنوعة",
+      description: "خدمات متنوعة لتلبية احتياجاتك"
     }
   ];
 
@@ -63,7 +63,7 @@ const Category = () => {
           <span className="inline-block py-1 px-3 bg-primary/10 text-primary rounded-full text-sm font-medium mb-4">
             خدماتنا المميزة
           </span>
-          <h2 className="section-title opacity-0 animate-fade-in">استكشف مجالات العمل المتاحة</h2>
+          <h2 className="section-title opacity-0 animate-fade-in">استكشف مجالات الخدمات المتاحة</h2>
           <p className="section-subtitle opacity-0 animate-fade-in animate-delay-100">
             نقدم مجموعة متنوعة من الخدمات الاحترافية لتلبية احتياجاتك
           </p>
