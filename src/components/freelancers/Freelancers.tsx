@@ -165,10 +165,10 @@ const Freelancers = () => {
                         <span className="text-muted-foreground text-sm">({userRatings[freelancer.id]?.reviews || 0} تقييم)</span>
                       </div>
                     </div>
-                    <div className="text-right">
+                    {/* <div className="text-right">
                       <p className="text-primary font-bold text-xl">${userRates[freelancer.id] || 40}</p>
                       <p className="text-xs text-muted-foreground">في الساعة</p>
-                    </div>
+                    </div> */}
                   </div>
                   
                   <div className="mt-4 flex flex-wrap gap-2">
