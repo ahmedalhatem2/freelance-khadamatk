@@ -21,7 +21,7 @@ const Category = () => {
     {
       id: 3,
       icon: <GraduationCap className="h-8 w-8 text-primary" />,
-      title: "تعلم وتدريب",
+      title: "تعليم وتدريب",
       description: "دورات، تعليم لغات، مهارات تقنية"
     },
     {
