@@ -46,7 +46,7 @@ const ProviderInfo = ({ provider }: ProviderInfoProps) => {
               <CustomBadge variant={provider.status === 'active' ? "success" : "secondary"}>
                 {provider.status === 'active' ? 'متاح' : provider.status === 'inactive' ? 'غير متاح' : 'قيد المراجعة'}
               </CustomBadge>
-              <Link to={`/provider/${provider.id}/edit`}>
+              <Link to={`/provider/edit`}>
                 <Button variant="outline" size="sm" className="rounded-full gap-2">
                   <User className="h-4 w-4" />
                   تعديل الملف الشخصي
