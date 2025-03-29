@@ -1,20 +1,18 @@
-
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import ProviderInfo, { ProviderData } from "@/components/providers/ProviderInfo";
+import ProviderInfo from "@/components/providers/ProviderInfo";
 import ProviderServices from "@/components/providers/ProviderServices";
 import ProviderReviews from "@/components/providers/ProviderReviews";
 import { useAuth } from "@/context/AuthProvider";
 import { API_BASE_URL } from "@/config/api";
 import { toast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
-import { fetchProfileByUserId } from "@/api/users";
 
 const ProviderProfile = () => {
   const { id } = useParams();
   const { user, token, userRole } = useAuth();
   const navigate = useNavigate();
-  const [provider, setProvider] = useState<ProviderData | null>(null);
+  const [provider, setProvider] = useState(null);
   const [services, setServices] = useState([]);
   const [reviews, setReviews] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -32,23 +30,13 @@ const ProviderProfile = () => {
       try {
         // For the /provider/me route, use the current user data
         if (!id && user) {
-          // Try to fetch the profile data from the API
-          let aboutText = "مزود خدمة في منصة خدماتك";
-          
-          try {
-            const profileData = await fetchProfileByUserId(user.id);
-            if (profileData && profileData.about) {
-              aboutText = profileData.about;
-            }
-          } catch (error) {
-            console.error("Error fetching profile data:", error);
-          }
-
-          const currentUser: ProviderData = {
+          const currentUser = {
             id: user.id,
             firstName: user.first_name,
             lastName: user.last_name,
-            avatar: user.image || `https://ui-avatars.com/api/?name=${user.first_name}+${user.last_name}&background=random`,
+            avatar:
+              user.image , 
+              // user.image || "https://randomuser.me/api/portraits/men/1.jpg",
             profession: "مزود خدمة",
             email: user.email,
             phone: user.phone,
@@ -58,11 +46,14 @@ const ProviderProfile = () => {
               street: user.street,
               address: user.address,
             },
-            status: user.status === "active" ? "active" : user.status === "inactive" ? "inactive" : "pending",
-            about: aboutText,
+            status: user.status,
+            about: "مزود خدمة في منصة خدماتك",
           };
 
           setProvider(currentUser);
+
+          // In a real implementation, you would fetch services and reviews for this provider from the API
+          // For now we'll continue with the mock data until the API endpoints are ready
 
           // Attempt to fetch services from API, fallback to mock data
           try {
@@ -96,12 +87,41 @@ const ProviderProfile = () => {
                 setServices(transformedServices);
               } else {
                 // Fallback to mock data
-                setServices([]);
+                // setServices([]);
               }
             }
           } catch (error) {
             console.error("Error fetching provider services:", error);
-            setServices([]);
+            setServices([
+              // {
+              //   id: 1,
+              //   title: "تصميم شعار احترافي",
+              //   category: "تصميم",
+              //   price: 25000,
+              //   rating: 4.8,
+              //   reviews: 24,
+              //   image:
+              //     "https://images.unsplash.com/photo-1626785774573-4b799315345d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2071&q=80",
+              //   status: "active",
+              //   description:
+              //     "تصميم شعار احترافي لشركتك أو مشروعك مع تسليم كافة الصيغ المطلوبة (AI, PNG, JPG, PDF)",
+              //   location: "دمشق",
+              // },
+              // {
+              //   id: 2,
+              //   title: "تصميم هوية بصرية كاملة",
+              //   category: "تصميم",
+              //   price: 75000,
+              //   rating: 4.6,
+              //   reviews: 12,
+              //   image:
+              //     "https://images.unsplash.com/photo-1572044162444-ad60f128bdea?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=870&q=80",
+              //   status: "active",
+              //   description:
+              //     "تصميم هوية بصرية كاملة لعلامتك التجارية تشمل الشعار والألوان والخطوط وتطبيقات الهوية",
+              //   location: "دمشق",
+              // },
+            ]);
           }
 
           setReviews([
@@ -134,7 +154,7 @@ const ProviderProfile = () => {
         // For a specific provider by ID, fetch their data
         // In a real implementation, you would fetch from the API
         // For now we'll use mock data
-        const mockProvider: ProviderData = {
+        const mockProvider = {
           id: 1,
           firstName: "أحمد",
           lastName: "محمد",
@@ -154,7 +174,53 @@ const ProviderProfile = () => {
         };
 
         setProvider(mockProvider);
-        setServices([]);
+
+        const mockServices = [
+          // {
+          //   id: 1,
+          //   title: "تصميم شعار احترافي",
+          //   category: "تصميم",
+          //   price: 25000,
+          //   rating: 4.8,
+          //   reviews: 24,
+          //   image:
+          //     "https://images.unsplash.com/photo-1626785774573-4b799315345d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2071&q=80",
+          //   status: "active",
+          //   description:
+          //     "تصميم شعار احترافي لشركتك أو مشروعك مع تسليم كافة الصيغ المطلوبة (AI, PNG, JPG, PDF)",
+          //   location: "دمشق",
+          // },
+          // {
+          //   id: 2,
+          //   title: "تصميم هوية بصرية كاملة",
+          //   category: "تصميم",
+          //   price: 75000,
+          //   rating: 4.6,
+          //   reviews: 12,
+          //   image:
+          //     "https://images.unsplash.com/photo-1572044162444-ad60f128bdea?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=870&q=80",
+          //   status: "active",
+          //   description:
+          //     "تصميم هوية بصرية كاملة لعلامتك التجارية تشمل الشعار والألوان والخطوط وتطبيقات الهوية",
+          //   location: "دمشق",
+          // },
+          // {
+          //   id: 3,
+          //   title: "تصميم منشورات سوشيال ميديا",
+          //   category: "تصميم",
+          //   price: 10000,
+          //   rating: 4.3,
+          //   reviews: 8,
+          //   image:
+          //     "https://images.unsplash.com/photo-1611162616475-46b635cb6868?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=774&q=80",
+          //   status: "inactive",
+          //   description:
+          //     "تصميم 10 منشورات لمواقع التواصل الاجتماعي بتصاميم مميزة وجذابة تناسب نشاط عملك",
+          //   location: "دمشق",
+          // },
+        ];
+
+        setServices(mockServices);
 
         const mockReviews = [
           {
@@ -183,7 +249,7 @@ const ProviderProfile = () => {
             userAvatar: "https://randomuser.me/api/portraits/men/3.jpg",
             rating: 5,
             comment:
-              "من أفضل المصممين الذين تعاملت معهم، سريع في الاستجابة ومبدع في العمل.",
+              "من أفضل المصممين الذين تعاملت معهم، سريع في الاستجابة ومبدع ف�� العمل.",
             date: "2023-03-10",
             serviceName: "تصميم شعار احترافي",
           },
@@ -234,7 +300,7 @@ const ProviderProfile = () => {
     <div className="container mx-auto py-8 px-4">
       <div className="space-y-6">
         <ProviderInfo provider={provider} />
-        <ProviderServices providerId={provider.id} />
+        <ProviderServices providerId={provider.id} services={services} />
         <ProviderReviews
           reviews={reviews}
           avgRating={avgRating}
