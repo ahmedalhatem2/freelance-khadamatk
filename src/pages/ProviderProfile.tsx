@@ -234,7 +234,7 @@ const ProviderProfile = () => {
     <div className="container mx-auto py-8 px-4">
       <div className="space-y-6">
         <ProviderInfo provider={provider} />
-        <ProviderServices providerId={provider.id} />
+        <ProviderServices providerId={provider.id} services={services} />
         <ProviderReviews
           reviews={reviews}
           avgRating={avgRating}
