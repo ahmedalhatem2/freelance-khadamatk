@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -189,16 +189,26 @@ const ServiceDetails = () => {
                 
                 <Separator className="my-6" />
                 
-                <div className="space-y-4">
-                  <Button className="w-full rounded-full">طلب الخدمة</Button>
-                  <Button variant="outline" className="w-full rounded-full">
-                    <MessageCircle className="w-4 h-4 ml-2" />
-                    التواصل مع المزود
-                  </Button>
-                  <Button variant="outline" className="w-full rounded-full">
-                    <Phone className="w-4 h-4 ml-2" />
-                    {service.profile.user.phone}
-                  </Button>
+                <div className="grid grid-rows-3 gap-4">
+                  <Link  >
+                    <Button className="w-full rounded-full">طلب الخدمة</Button>
+                  </Link>
+
+                  <Link to={`/provider/${service.profile.user.id}`} >
+                    <Button variant="outline" className="w-full rounded-full" >
+                      <MessageCircle className="w-4 h-4 ml-2" />
+                      التواصل مع المزود
+                    </Button>
+                  </Link>
+                  
+                  <Link  >
+                  {/* to{`https://wa.me/963${service.profile.user.phone}`} */}
+                    <Button variant="outline" className="w-full rounded-full">
+                      <Phone className="w-4 h-4 ml-2" />
+                      {service.profile.user.phone}
+                    </Button>
+                  </Link>
+                  
                 </div>
               </Card>
             </div>
