@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -22,23 +21,14 @@ const Login = () => {
   const location = useLocation();
   const { toast } = useToast();
 
-  const { login, isLoading, error, isAuthenticated, userRole } = useAuth();
+  const { login, isLoading, error, isAuthenticated } = useAuth();
 
   useEffect(() => {
     if (isAuthenticated) {
       const from = (location.state as any)?.from?.pathname || "/";
-      
-      // Redirect based on user role
-      if (userRole === "admin") {
-        navigate("/admin", { replace: true });
-      } else if (userRole === "provider") {
-        navigate("/provider/me", { replace: true });
-      } else {
-        // Client role
-        navigate(from, { replace: true });
-      }
+      navigate(from, { replace: true });
     }
-  }, [isAuthenticated, navigate, location, userRole]);
+  }, [isAuthenticated, navigate, location]);
 
   useEffect(() => {
     if (error) {
@@ -76,11 +66,7 @@ const Login = () => {
     <div className="min-h-screen flex items-center justify-center bg-background py-12 px-4 sm:px-6 lg:px-8">
       <div className="w-full max-w-md">
         <Card className="glass">
-          <CardHeader className="space-y-4 text-center">
-            <div className="mb-2">
-              <h1 className="text-4xl font-bold text-primary mb-1">خدماتك</h1>
-              <p className="text-muted-foreground">منصتك للخدمات المستقلة</p>
-            </div>
+          <CardHeader className="space-y-2 text-center">
             <CardTitle className="text-3xl font-bold">تسجيل الدخول</CardTitle>
             <CardDescription>أدخل بياناتك للوصول إلى حسابك</CardDescription>
           </CardHeader>
