@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { API_BASE_URL } from '@/config/api';
 
@@ -50,6 +51,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const parsedUser = JSON.parse(storedUser);
       setUser(parsedUser);
       
+      // Set user role based on role_id
       if (parsedUser.role_id === 1) {
         setUserRole('admin');
       } else if (parsedUser.role_id === 2) {
@@ -86,10 +88,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setToken(authToken);
       setUser(userData);
       
+      // Set user role based on role_id
       if (userData.role_id === 1) {
-        setUserRole('provider');
-      } else if (userData.role_id === 2) {
         setUserRole('admin');
+      } else if (userData.role_id === 2) {
+        setUserRole('provider');
       } else {
         setUserRole('client');
       }
@@ -97,9 +100,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       localStorage.setItem('token', authToken);
       localStorage.setItem('user', JSON.stringify(userData));
       
+      return data; // Return the data for chaining
+      
     } catch (err) {
       setError(err instanceof Error ? err.message : 'حدث خطأ أثناء تسجيل الدخول');
       console.error('Login error:', err);
+      throw err; // Rethrow to allow handling in components
     } finally {
       setIsLoading(false);
     }

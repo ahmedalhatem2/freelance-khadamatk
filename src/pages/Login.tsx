@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -21,14 +22,26 @@ const Login = () => {
   const location = useLocation();
   const { toast } = useToast();
 
-  const { login, isLoading, error, isAuthenticated } = useAuth();
+  const { login, isLoading, error, isAuthenticated, userRole } = useAuth();
 
+  // Handle automatic redirection based on user role after login
   useEffect(() => {
     if (isAuthenticated) {
       const from = (location.state as any)?.from?.pathname || "/";
-      navigate(from, { replace: true });
+      
+      // Redirect based on user role
+      if (userRole === 'admin') {
+        navigate('/admin', { replace: true });
+      } else if (userRole === 'provider') {
+        navigate('/provider/me', { replace: true });
+      } else if (userRole === 'client') {
+        navigate('/profile/me', { replace: true });
+      } else {
+        // Fallback to the original from or home page
+        navigate(from, { replace: true });
+      }
     }
-  }, [isAuthenticated, navigate, location]);
+  }, [isAuthenticated, navigate, location, userRole]);
 
   useEffect(() => {
     if (error) {

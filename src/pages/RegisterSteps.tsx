@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useEffect } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
@@ -11,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { API_BASE_URL } from '@/config/api';
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useAuth } from '@/context/AuthProvider';
 
 type UserType = 'provider' | 'client' | null;
 type RegisterFormData = {
@@ -30,6 +30,7 @@ type RegisterFormData = {
 
 const RegisterSteps = () => {
   const location = useLocation();
+  const { login } = useAuth();
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState<RegisterFormData>({
     userType: null,
@@ -200,6 +201,23 @@ const RegisterSteps = () => {
     }
   };
 
+  const performAutoLogin = async (email: string, password: string) => {
+    try {
+      await login(email, password);
+      
+      // Redirect based on user type
+      if (formData.userType === 'provider') {
+        navigate('/provider/me');
+      } else {
+        navigate('/profile/me');
+      }
+    } catch (error) {
+      console.error('Auto login error:', error);
+      // If auto-login fails, allow manual login
+      navigate('/login');
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -250,16 +268,23 @@ const RegisterSteps = () => {
       
       toast({
         title: "تم إنشاء الحساب بنجاح",
-        description: `مرحباً ${userData.first_name}! يمكنك الآن تسجيل الدخول إلى منصة خدماتك`
+        description: `مرحباً ${userData.first_name}! تم تسجيل حسابك بنجاح`
       });
       
       // Store the user ID and token for provider profile submission
       if (formData.userType === 'provider') {
         setCreatedUserId(userData.id);
         setCreatedUserToken(userData.token);
+        
+        // For providers, automatically perform login after account creation
+        try {
+          await login(formData.email, formData.password);
+        } catch (error) {
+          console.error('Auto login error after provider registration:', error);
+        }
       } else {
-        // For clients, redirect to login
-        navigate('/login');
+        // For clients, automatically perform login and redirect to profile
+        await performAutoLogin(formData.email, formData.password);
       }
     } catch (error) {
       setError(error instanceof Error ? error.message : 'حدث خطأ أثناء التسجيل، يرجى المحاولة مرة أخرى');
@@ -310,13 +335,11 @@ const RegisterSteps = () => {
       
       toast({
         title: "تم إنشاء الملف الشخصي بنجاح",
-        description: "تم إكمال عملية التسجيل بنجاح، يمكنك الآن تسجيل الدخول إلى حسابك"
+        description: "تم إكمال عملية التسجيل بنجاح، جاري تسجيل الدخول تلقائياً"
       });
       
-      // Redirect to login after successful profile creation
-      setTimeout(() => {
-        navigate('/login');
-      }, 2000);
+      // Automatically perform login after profile creation and redirect to provider profile
+      await performAutoLogin(formData.email, formData.password);
       
     } catch (error) {
       setError(error instanceof Error ? error.message : 'حدث خطأ أثناء إنشاء الملف الشخصي، يرجى المحاولة مرة أخرى');

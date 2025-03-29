@@ -8,13 +8,26 @@ import { Plus } from "lucide-react";
 import { API_BASE_URL } from "@/config/api";
 import { useAuth } from "@/context/AuthProvider";
 
+interface Service {
+  id: number;
+  title: string;
+  category: string;
+  price: number;
+  rating: number;
+  reviews: number;
+  image: string;
+  status: string;
+  description: string;
+  location: string;
+}
+
 interface ProviderServicesProps {
   providerId: number;
 }
 
 const ProviderServices = ({ providerId }: ProviderServicesProps) => {
   const { token } = useAuth();
-  const [services, setServices] = useState([]);
+  const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -33,7 +46,7 @@ const ProviderServices = ({ providerId }: ProviderServicesProps) => {
         if (response.ok) {
           const data = await response.json();
           // Transform API response to match expected format
-          const transformedServices = data.map((service) => ({
+          const transformedServices = data.map((service: any) => ({
             id: service.id,
             title: service.title,
             category: service.category.name,
@@ -62,6 +75,14 @@ const ProviderServices = ({ providerId }: ProviderServicesProps) => {
     }
   }, [providerId, token]);
 
+  const handleEditService = (serviceId: number) => {
+    console.log(`Edit service ${serviceId}`);
+  };
+
+  const handleDeleteService = (serviceId: number) => {
+    console.log(`Delete service ${serviceId}`);
+  };
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -79,7 +100,12 @@ const ProviderServices = ({ providerId }: ProviderServicesProps) => {
           <p className="col-span-full text-center">جاري تحميل الخدمات...</p>
         ) : services.length > 0 ? (
           services.map((service) => (
-            <ProviderServiceCard key={service.id} service={service} />
+            <ProviderServiceCard 
+              key={service.id} 
+              service={service} 
+              onEditService={handleEditService}
+              onDeleteService={handleDeleteService}
+            />
           ))
         ) : (
           <div className="col-span-full text-center py-8">

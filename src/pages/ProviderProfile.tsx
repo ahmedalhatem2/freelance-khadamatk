@@ -44,7 +44,7 @@ const ProviderProfile = () => {
             console.error("Error fetching profile data:", error);
           }
 
-          const currentUser = {
+          const currentUser: ProviderData = {
             id: user.id,
             firstName: user.first_name,
             lastName: user.last_name,
@@ -58,7 +58,7 @@ const ProviderProfile = () => {
               street: user.street,
               address: user.address,
             },
-            status: user.status,
+            status: user.status === "active" ? "active" : user.status === "inactive" ? "inactive" : "pending",
             about: aboutText,
           };
 
@@ -134,7 +134,7 @@ const ProviderProfile = () => {
         // For a specific provider by ID, fetch their data
         // In a real implementation, you would fetch from the API
         // For now we'll use mock data
-        const mockProvider = {
+        const mockProvider: ProviderData = {
           id: 1,
           firstName: "أحمد",
           lastName: "محمد",
