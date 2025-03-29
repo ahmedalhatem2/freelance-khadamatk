@@ -1,7 +1,9 @@
+
 import React, { useState, useCallback, useEffect } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Mail, Lock, User, UserPlus, Phone, MapPin, Upload, CheckCircle2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -23,6 +25,7 @@ type RegisterFormData = {
   city: string;
   street: string;
   detailedAddress: string;
+  aboutMe: string;
 };
 
 const RegisterSteps = () => {
@@ -40,10 +43,14 @@ const RegisterSteps = () => {
     city: '',
     street: '',
     detailedAddress: '',
+    aboutMe: '',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [createdUserId, setCreatedUserId] = useState<number | null>(null);
+  const [createdUserToken, setCreatedUserToken] = useState<string | null>(null);
+  const [isProviderProfileSubmitted, setIsProviderProfileSubmitted] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -53,7 +60,6 @@ const RegisterSteps = () => {
     
     if (userType && (userType === 'client' || userType === 'provider')) {
       setFormData(prev => ({ ...prev, userType }));
-      
       setStep(2);
     }
   }, [location.search]);
@@ -79,7 +85,7 @@ const RegisterSteps = () => {
     setFormData({ ...formData, userType: type });
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
@@ -130,11 +136,12 @@ const RegisterSteps = () => {
       return false;
     }
     
-    const phoneRegex = /^\d{10}$/;
+    // Make sure phone number starts with +963 and has 9 more digits
+    const phoneRegex = /^\+963\d{9}$/;
     if (!phoneRegex.test(formData.phone)) {
       toast({
         title: "رقم الهاتف غير صالح",
-        description: "يرجى إدخال رقم هاتف مكون من 10 أرقام",
+        description: "يرجى إدخال رقم هاتف بصيغة +963 متبوعًا بـ 9 أرقام",
         variant: "destructive"
       });
       return false;
@@ -163,12 +170,27 @@ const RegisterSteps = () => {
     }
     return true;
   };
+  
+  const validateStep4 = () => {
+    if (!formData.aboutMe) {
+      toast({
+        title: "المعلومات غير مكتملة",
+        description: "يرجى إدخال معلومات عنك",
+        variant: "destructive"
+      });
+      return false;
+    }
+    return true;
+  };
 
   const nextStep = () => {
     if (step === 1 && validateStep1()) {
       setStep(2);
     } else if (step === 2 && validateStep2()) {
       setStep(3);
+    } else if (step === 3 && validateStep3() && formData.userType === 'provider') {
+      // For providers, move to step 4 (about me)
+      setStep(4);
     }
   };
 
@@ -181,7 +203,11 @@ const RegisterSteps = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!validateStep3()) {
+    if (step === 3 && formData.userType === 'client' && !validateStep3()) {
+      return;
+    }
+    
+    if (step === 4 && !validateStep4()) {
       return;
     }
     
@@ -227,13 +253,77 @@ const RegisterSteps = () => {
         description: `مرحباً ${userData.first_name}! يمكنك الآن تسجيل الدخول إلى منصة خدماتك`
       });
       
-      navigate('/login');
+      // Store the user ID and token for provider profile submission
+      if (formData.userType === 'provider') {
+        setCreatedUserId(userData.id);
+        setCreatedUserToken(userData.token);
+      } else {
+        // For clients, redirect to login
+        navigate('/login');
+      }
     } catch (error) {
       setError(error instanceof Error ? error.message : 'حدث خطأ أثناء التسجيل، يرجى المحاولة مرة أخرى');
       
       toast({
         title: "فشل إنشاء الحساب",
         description: error instanceof Error ? error.message : 'حدث خطأ أثناء التسجيل، يرجى المحاولة مرة أخرى',
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  const submitProviderProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!createdUserId || !createdUserToken) {
+      toast({
+        title: "خطأ في البيانات",
+        description: "يوجد مشكلة في بيانات المستخدم، يرجى المحاولة مرة أخرى",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    setLoading(true);
+    
+    try {
+      const response = await fetch(`${API_BASE_URL}/profiles`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${createdUserToken}`
+        },
+        body: JSON.stringify({
+          user_id: createdUserId,
+          about: formData.aboutMe
+        }),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'حدث خطأ أثناء إنشاء الملف الشخصي');
+      }
+      
+      setIsProviderProfileSubmitted(true);
+      
+      toast({
+        title: "تم إنشاء الملف الشخصي بنجاح",
+        description: "تم إكمال عملية التسجيل بنجاح، يمكنك الآن تسجيل الدخول إلى حسابك"
+      });
+      
+      // Redirect to login after successful profile creation
+      setTimeout(() => {
+        navigate('/login');
+      }, 2000);
+      
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'حدث خطأ أثناء إنشاء الملف الشخصي، يرجى المحاولة مرة أخرى');
+      
+      toast({
+        title: "فشل إنشاء الملف الشخصي",
+        description: error instanceof Error ? error.message : 'حدث خطأ أثناء إنشاء الملف الشخصي، يرجى المحاولة مرة أخرى',
         variant: "destructive"
       });
     } finally {
@@ -256,7 +346,7 @@ const RegisterSteps = () => {
             <CardContent className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div 
-                  className={`border rounded-xl p-6 text-center cursor-pointer transition-all ${
+                  className={`border rounded-xl p-6 text-center cursor-pointer transition-all relative ${
                     formData.userType === 'provider' 
                       ? 'border-primary bg-primary/5' 
                       : 'hover:bg-secondary'
@@ -277,7 +367,7 @@ const RegisterSteps = () => {
                 </div>
                 
                 <div 
-                  className={`border rounded-xl p-6 text-center cursor-pointer transition-all ${
+                  className={`border rounded-xl p-6 text-center cursor-pointer transition-all relative ${
                     formData.userType === 'client' 
                       ? 'border-primary bg-primary/5' 
                       : 'hover:bg-secondary'
@@ -373,9 +463,23 @@ const RegisterSteps = () => {
                     type="tel"
                     name="phone"
                     placeholder="رقم الهاتف"
-                    className="pr-10"
+                    className="pr-10 ltr:text-left"
+                    dir="ltr"
                     value={formData.phone}
-                    onChange={handleChange}
+                    onChange={(e) => {
+                      // Ensure that phone always starts with +963
+                      let value = e.target.value;
+                      if (!value.startsWith('+963')) {
+                        value = '+963' + value.replace(/^\+963/, '');
+                      }
+                      setFormData({ ...formData, phone: value });
+                    }}
+                    onFocus={(e) => {
+                      // If empty, set the prefix
+                      if (!e.target.value) {
+                        setFormData({ ...formData, phone: '+963' });
+                      }
+                    }}
                   />
                 </div>
               </div>
@@ -417,7 +521,7 @@ const RegisterSteps = () => {
         return (
           <>
             <CardHeader className="space-y-2 text-center">
-              <CardTitle className="text-3xl font-bold">إكمال الملف الشخصي</CardTitle>
+              <CardTitle className="text-3xl font-bold">معلومات العنوان</CardTitle>
               <CardDescription>
                 أضف صورة شخصية وأدخل معلومات العنوان
               </CardDescription>
@@ -537,6 +641,92 @@ const RegisterSteps = () => {
               >
                 السابق
               </Button>
+              {formData.userType === 'provider' ? (
+                <Button
+                  onClick={nextStep}
+                  className="w-full sm:w-2/3 rounded-full py-6"
+                  disabled={loading}
+                >
+                  التالي
+                </Button>
+              ) : (
+                <Button
+                  onClick={handleSubmit}
+                  className="w-full sm:w-2/3 rounded-full py-6 flex items-center justify-center gap-2"
+                  disabled={loading}
+                >
+                  {loading ? "جاري إنشاء الحساب..." : "إنشاء الحساب"}
+                  <UserPlus className="h-5 w-5" />
+                </Button>
+              )}
+            </CardFooter>
+          </>
+        );
+        
+      case 4:
+        // Provider "About Me" step (only for providers)
+        return (
+          <>
+            <CardHeader className="space-y-2 text-center">
+              <CardTitle className="text-3xl font-bold">نبذة عنك</CardTitle>
+              <CardDescription>
+                أخبرنا المزيد عنك وعن مهاراتك وخبراتك
+              </CardDescription>
+            </CardHeader>
+            
+            <CardContent className="space-y-6">
+              {error && (
+                <Alert variant="destructive" className="mb-4">
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
+              
+              <div className="flex items-center gap-4 mb-6">
+                <Avatar className="h-16 w-16 border-2 border-primary/20">
+                  {previewImage ? (
+                    <AvatarImage src={previewImage} alt="Profile" />
+                  ) : (
+                    <AvatarFallback className="bg-primary/10 text-primary">
+                      {formData.firstName && formData.lastName 
+                        ? `${formData.firstName[0]}${formData.lastName[0]}` 
+                        : 'صورة'}
+                    </AvatarFallback>
+                  )}
+                </Avatar>
+                <div>
+                  <h3 className="font-semibold text-lg">
+                    {formData.firstName} {formData.lastName}
+                  </h3>
+                  <p className="text-sm text-muted-foreground">{formData.email}</p>
+                </div>
+              </div>
+              
+              <div className="space-y-4">
+                <div className="space-y-1">
+                  <label className="text-sm font-medium">نبذة عنك</label>
+                  <Textarea
+                    name="aboutMe"
+                    placeholder="اكتب نبذة عنك، مهاراتك، خبراتك ومجالات عملك..."
+                    className="min-h-[150px]"
+                    value={formData.aboutMe}
+                    onChange={handleChange}
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    هذه المعلومات ستظهر في ملفك الشخصي وستساعد العملاء على التعرف عليك بشكل أفضل
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+            
+            <CardFooter className="flex flex-col sm:flex-row gap-3">
+              <Button
+                variant="outline"
+                onClick={prevStep}
+                className="w-full sm:w-1/3 rounded-full py-6"
+                disabled={loading}
+              >
+                السابق
+              </Button>
               <Button
                 onClick={handleSubmit}
                 className="w-full sm:w-2/3 rounded-full py-6 flex items-center justify-center gap-2"
@@ -549,10 +739,102 @@ const RegisterSteps = () => {
           </>
         );
         
+      case 5:
+        // Provider profile creation completion step
+        return (
+          <>
+            <CardHeader className="space-y-2 text-center">
+              <CardTitle className="text-3xl font-bold">خدماتك</CardTitle>
+              <CardDescription>
+                مرحباً بك في منصة خدماتك يا {formData.firstName}! تم تسجيل حسابك بنجاح.
+              </CardDescription>
+            </CardHeader>
+            
+            <CardContent className="space-y-6">
+              {error && (
+                <Alert variant="destructive" className="mb-4">
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
+              
+              <div className="flex items-center justify-center flex-col mb-6">
+                <Avatar className="h-24 w-24 border-2 border-primary/20 mb-4">
+                  {previewImage ? (
+                    <AvatarImage src={previewImage} alt="Profile" />
+                  ) : (
+                    <AvatarFallback className="bg-primary/10 text-primary text-2xl">
+                      {formData.firstName && formData.lastName 
+                        ? `${formData.firstName[0]}${formData.lastName[0]}` 
+                        : 'صورة'}
+                    </AvatarFallback>
+                  )}
+                </Avatar>
+                <h3 className="font-semibold text-xl">
+                  {formData.firstName} {formData.lastName}
+                </h3>
+                <p className="text-sm text-muted-foreground">{formData.email}</p>
+              </div>
+              
+              <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-900 rounded-lg p-4 text-center">
+                <CheckCircle2 className="h-12 w-12 mx-auto text-green-500 mb-2" />
+                <h3 className="text-xl font-bold mb-2">تم إنشاء حسابك بنجاح!</h3>
+                <p className="text-muted-foreground">
+                  يمكنك الآن إتمام إنشاء ملفك الشخصي وإضافة نبذة عنك
+                </p>
+              </div>
+              
+              <div className="space-y-4">
+                <div className="space-y-1">
+                  <label className="text-sm font-medium">أكمل ملفك الشخصي</label>
+                  <Textarea
+                    name="aboutMe"
+                    placeholder="اكتب نبذة عنك، مهاراتك، خبراتك ومجالات عملك..."
+                    className="min-h-[150px]"
+                    value={formData.aboutMe}
+                    onChange={handleChange}
+                    disabled={isProviderProfileSubmitted}
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    هذه المعلومات ستظهر في ملفك الشخصي وستساعد العملاء على التعرف عليك بشكل أفضل
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+            
+            <CardFooter className="flex flex-col gap-3">
+              <Button
+                onClick={submitProviderProfile}
+                className="w-full rounded-full py-6 flex items-center justify-center gap-2"
+                disabled={loading || isProviderProfileSubmitted}
+              >
+                {loading ? "جاري حفظ المعلومات..." : isProviderProfileSubmitted ? "تم حفظ المعلومات" : "حفظ المعلومات وإكمال التسجيل"}
+                {!loading && isProviderProfileSubmitted && <CheckCircle2 className="h-5 w-5" />}
+              </Button>
+              
+              {isProviderProfileSubmitted && (
+                <Button
+                  variant="outline"
+                  onClick={() => navigate('/login')}
+                  className="w-full rounded-full py-6"
+                >
+                  الانتقال إلى تسجيل الدخول
+                </Button>
+              )}
+            </CardFooter>
+          </>
+        );
+        
       default:
         return null;
     }
   };
+  
+  // When user registration is complete for providers, move to step 5
+  useEffect(() => {
+    if (createdUserId && createdUserToken && formData.userType === 'provider') {
+      setStep(5);
+    }
+  }, [createdUserId, createdUserToken, formData.userType]);
   
   return (
     <div className="min-h-screen flex items-center justify-center bg-background py-12 px-4 sm:px-6 lg:px-8">
@@ -581,6 +863,16 @@ const RegisterSteps = () => {
             }`}>
               3
             </div>
+            {formData.userType === 'provider' && (
+              <>
+                <div className={`w-12 h-1 ${step >= 4 ? 'bg-primary' : 'bg-muted'}`}></div>
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                  step >= 4 ? 'bg-primary text-white' : 'bg-muted text-muted-foreground'
+                }`}>
+                  4
+                </div>
+              </>
+            )}
           </div>
         </div>
         

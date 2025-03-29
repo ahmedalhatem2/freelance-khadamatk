@@ -7,24 +7,28 @@ import { CustomBadge } from "@/components/ui/custom-badge";
 import { MapPin, Mail, Phone, User, Briefcase } from "lucide-react";
 import { Link } from 'react-router-dom';
 
+export interface ProviderLocation {
+  region: string;
+  city: string;
+  street: string;
+  address: string;
+}
+
+export interface ProviderData {
+  id: number;
+  firstName: string;
+  lastName: string;
+  avatar: string;
+  profession: string;
+  email: string;
+  phone: string;
+  location: ProviderLocation;
+  status: 'active' | 'inactive' | 'pending';
+  about: string;
+}
+
 interface ProviderInfoProps {
-  provider: {
-    id: number;
-    firstName: string;
-    lastName: string;
-    avatar: string;
-    profession: string;
-    email: string;
-    phone: string;
-    location: {
-      region: string;
-      city: string;
-      street: string;
-      address: string;
-    };
-    status: 'active' | 'inactive' | 'pending';
-    about: string;
-  };
+  provider: ProviderData;
 }
 
 const ProviderInfo = ({ provider }: ProviderInfoProps) => {
