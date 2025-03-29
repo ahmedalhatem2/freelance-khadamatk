@@ -1,23 +1,77 @@
 
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import ProviderInfo, { ProviderData } from "@/components/providers/ProviderInfo";
+import ProviderInfo from "@/components/providers/ProviderInfo";
 import ProviderServices from "@/components/providers/ProviderServices";
 import ProviderReviews from "@/components/providers/ProviderReviews";
+import ProviderProfileForm from "@/components/providers/ProviderProfileForm";
 import { useAuth } from "@/context/AuthProvider";
 import { API_BASE_URL } from "@/config/api";
-import { toast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
-import { fetchProfileByUserId } from "@/api/users";
+
+interface ProviderService {
+  id: number;
+  title: string;
+  category: string;
+  price: number;
+  rating: number;
+  reviews: number;
+  image: string;
+  status: "active" | "inactive" | "pending";
+  description: string;
+  location: string;
+}
+
+interface ProviderReview {
+  id: number;
+  userName: string;
+  userAvatar: string;
+  rating: number;
+  comment: string;
+  date: string;
+  serviceName: string;
+}
+
+interface ApiService {
+  id: number;
+  title: string;
+  price: number;
+  status: string;
+  image?: string;
+  desc: string;
+  category: {
+    name: string;
+  };
+  rates_count: number;
+  profile: {
+    user: {
+      region: {
+        name: string;
+      };
+    };
+  };
+}
 
 const ProviderProfile = () => {
   const { id } = useParams();
-  const { user, token, userRole } = useAuth();
+  const { user, token, userRole, hasProfile, checkAndFetchProfile } = useAuth();
   const navigate = useNavigate();
-  const [provider, setProvider] = useState<ProviderData | null>(null);
-  const [services, setServices] = useState([]);
-  const [reviews, setReviews] = useState([]);
+  const { toast } = useToast();
+  const [provider, setProvider] = useState<any>(null);
+  const [services, setServices] = useState<ProviderService[]>([]);
+  const [reviews, setReviews] = useState<ProviderReview[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [showProfileForm, setShowProfileForm] = useState(false);
+
+  useEffect(() => {
+    // Check if profile needs to be shown for providers with no profile
+    if (userRole === "provider" && !hasProfile) {
+      setShowProfileForm(true);
+    } else {
+      setShowProfileForm(false);
+    }
+  }, [userRole, hasProfile]);
 
   useEffect(() => {
     // Handle the "me" route - redirect if not a provider
@@ -30,25 +84,18 @@ const ProviderProfile = () => {
       setIsLoading(true);
 
       try {
-        // For the /provider/me route, use the current user data
+        // For provider visiting their own profile (/provider/me route)
         if (!id && user) {
-          // Try to fetch the profile data from the API
-          let aboutText = "مزود خدمة في منصة خدماتك";
-          
-          try {
-            const profileData = await fetchProfileByUserId(user.id);
-            if (profileData && profileData.about) {
-              aboutText = profileData.about;
-            }
-          } catch (error) {
-            console.error("Error fetching profile data:", error);
+          // If the provider doesn't have a profile, check
+          if (userRole === "provider") {
+            await checkAndFetchProfile();
           }
 
-          const currentUser: ProviderData = {
+          const currentUser = {
             id: user.id,
             firstName: user.first_name,
             lastName: user.last_name,
-            avatar: user.image || `https://ui-avatars.com/api/?name=${user.first_name}+${user.last_name}&background=random`,
+            avatar: user.image,
             profession: "مزود خدمة",
             email: user.email,
             phone: user.phone,
@@ -58,13 +105,12 @@ const ProviderProfile = () => {
               street: user.street,
               address: user.address,
             },
-            status: user.status === "active" ? "active" : user.status === "inactive" ? "inactive" : "pending",
-            about: aboutText,
+            status: user.status,
+            about: "مزود خدمة في منصة خدماتك",
           };
 
           setProvider(currentUser);
 
-          // Attempt to fetch services from API, fallback to mock data
           try {
             if (token) {
               const servicesResponse = await fetch(
@@ -78,8 +124,9 @@ const ProviderProfile = () => {
 
               if (servicesResponse.ok) {
                 const servicesData = await servicesResponse.json();
+                
                 // Transform API response to match expected format
-                const transformedServices = servicesData.map((service) => ({
+                const transformedServices = servicesData.map((service: ApiService) => ({
                   id: service.id,
                   title: service.title,
                   category: service.category.name,
@@ -89,13 +136,14 @@ const ProviderProfile = () => {
                   image:
                     service.image ||
                     "https://images.unsplash.com/photo-1626785774573-4b799315345d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2071&q=80",
-                  status: service.status,
+                  status: service.status as "active" | "inactive" | "pending",
                   description: service.desc,
                   location: service.profile.user.region.name,
                 }));
+                
                 setServices(transformedServices);
               } else {
-                // Fallback to mock data
+                // Fallback to empty array if fetching services fails
                 setServices([]);
               }
             }
@@ -134,7 +182,7 @@ const ProviderProfile = () => {
         // For a specific provider by ID, fetch their data
         // In a real implementation, you would fetch from the API
         // For now we'll use mock data
-        const mockProvider: ProviderData = {
+        const mockProvider = {
           id: 1,
           firstName: "أحمد",
           lastName: "محمد",
@@ -183,7 +231,7 @@ const ProviderProfile = () => {
             userAvatar: "https://randomuser.me/api/portraits/men/3.jpg",
             rating: 5,
             comment:
-              "من أفضل المصممين الذين تعاملت معهم، سريع في الاستجابة ومبدع في العمل.",
+              "من أفضل المصممين الذين تعاملت معهم، سريع في الاستجابة ومبدع.",
             date: "2023-03-10",
             serviceName: "تصميم شعار احترافي",
           },
@@ -193,9 +241,9 @@ const ProviderProfile = () => {
       } catch (error) {
         console.error("Error fetching provider data:", error);
         toast({
-          variant: "destructive",
           title: "خطأ في جلب البيانات",
           description: "حدث خطأ أثناء محاولة جلب بيانات المزود.",
+          variant: "destructive",
         });
       } finally {
         setIsLoading(false);
@@ -203,7 +251,7 @@ const ProviderProfile = () => {
     };
 
     fetchProviderData();
-  }, [id, user, userRole, navigate, token]);
+  }, [id, user, userRole, navigate, token, toast, hasProfile, checkAndFetchProfile]);
 
   if (isLoading) {
     return (
@@ -233,6 +281,7 @@ const ProviderProfile = () => {
   return (
     <div className="container mx-auto py-8 px-4">
       <div className="space-y-6">
+        {showProfileForm && <ProviderProfileForm />}
         <ProviderInfo provider={provider} />
         <ProviderServices providerId={provider.id} services={services} />
         <ProviderReviews

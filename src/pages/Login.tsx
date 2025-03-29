@@ -24,20 +24,17 @@ const Login = () => {
 
   const { login, isLoading, error, isAuthenticated, userRole } = useAuth();
 
-  // Handle automatic redirection based on user role after login
   useEffect(() => {
     if (isAuthenticated) {
       const from = (location.state as any)?.from?.pathname || "/";
       
       // Redirect based on user role
-      if (userRole === 'admin') {
-        navigate('/admin', { replace: true });
-      } else if (userRole === 'provider') {
-        navigate('/provider/me', { replace: true });
-      } else if (userRole === 'client') {
-        navigate('/profile/me', { replace: true });
+      if (userRole === "admin") {
+        navigate("/admin", { replace: true });
+      } else if (userRole === "provider") {
+        navigate("/provider/me", { replace: true });
       } else {
-        // Fallback to the original from or home page
+        // Client role
         navigate(from, { replace: true });
       }
     }
@@ -79,7 +76,11 @@ const Login = () => {
     <div className="min-h-screen flex items-center justify-center bg-background py-12 px-4 sm:px-6 lg:px-8">
       <div className="w-full max-w-md">
         <Card className="glass">
-          <CardHeader className="space-y-2 text-center">
+          <CardHeader className="space-y-4 text-center">
+            <div className="mb-2">
+              <h1 className="text-4xl font-bold text-primary mb-1">خدماتك</h1>
+              <p className="text-muted-foreground">منصتك للخدمات المستقلة</p>
+            </div>
             <CardTitle className="text-3xl font-bold">تسجيل الدخول</CardTitle>
             <CardDescription>أدخل بياناتك للوصول إلى حسابك</CardDescription>
           </CardHeader>

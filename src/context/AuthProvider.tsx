@@ -1,6 +1,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { API_BASE_URL } from '@/config/api';
+import { useToast } from '@/hooks/use-toast';
 
 export type UserRole = 'admin' | 'client' | 'provider';
 
@@ -22,6 +23,14 @@ export interface User {
   updated_at: string;
 }
 
+interface Profile {
+  id: number;
+  user_id: number;
+  about: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 interface AuthContextType {
   user: User | null;
   token: string | null;
@@ -31,6 +40,10 @@ interface AuthContextType {
   isLoading: boolean;
   error: string | null;
   userRole: UserRole;
+  profile: Profile | null;
+  updateProfile: (about: string) => Promise<void>;
+  checkAndFetchProfile: () => Promise<void>;
+  hasProfile: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -41,6 +54,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<UserRole>('client');
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [hasProfile, setHasProfile] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     const storedToken = localStorage.getItem('token');
@@ -51,13 +67,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const parsedUser = JSON.parse(storedUser);
       setUser(parsedUser);
       
-      // Set user role based on role_id
       if (parsedUser.role_id === 1) {
         setUserRole('admin');
       } else if (parsedUser.role_id === 2) {
         setUserRole('provider');
       } else {
         setUserRole('client');
+      }
+      
+      // If user is a provider, check if they have a profile
+      if (parsedUser.role_id === 2) {
+        checkAndFetchProfile();
       }
     }
   }, []);
@@ -88,11 +108,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setToken(authToken);
       setUser(userData);
       
-      // Set user role based on role_id
       if (userData.role_id === 1) {
         setUserRole('admin');
       } else if (userData.role_id === 2) {
         setUserRole('provider');
+        // For providers, check if they have a profile
+        await checkAndFetchProfile();
       } else {
         setUserRole('client');
       }
@@ -100,12 +121,90 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       localStorage.setItem('token', authToken);
       localStorage.setItem('user', JSON.stringify(userData));
       
-      return data; // Return the data for chaining
-      
     } catch (err) {
       setError(err instanceof Error ? err.message : 'حدث خطأ أثناء تسجيل الدخول');
       console.error('Login error:', err);
-      throw err; // Rethrow to allow handling in components
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const checkAndFetchProfile = async () => {
+    if (!user || !token) return;
+    
+    try {
+      const response = await fetch(`${API_BASE_URL}/profiles/${user.id}`, {
+        headers: {
+          "Authorization": `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const profileData = await response.json();
+        setProfile(profileData);
+        setHasProfile(!!profileData.about);
+      } else {
+        // Profile doesn't exist or another error
+        setHasProfile(false);
+        setProfile(null);
+      }
+    } catch (error) {
+      console.error("Error fetching profile:", error);
+      setHasProfile(false);
+      setProfile(null);
+    }
+  };
+
+  const updateProfile = async (about: string) => {
+    if (!user || !token) {
+      toast({
+        title: "خطأ",
+        description: "يرجى تسجيل الدخول أولاً",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    
+    try {
+      const profileData = {
+        user_id: user.id,
+        about,
+      };
+
+      const url = profile ? `${API_BASE_URL}/profiles/${profile.id}` : `${API_BASE_URL}/profiles`;
+      const method = profile ? "PUT" : "POST";
+
+      const response = await fetch(url, {
+        method: method,
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(profileData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'فشل تحديث الملف الشخصي');
+      }
+
+      const data = await response.json();
+      setProfile(data);
+      setHasProfile(true);
+      
+      toast({
+        title: "تم بنجاح",
+        description: "تم تحديث الملف الشخصي بنجاح",
+      });
+    } catch (err) {
+      toast({
+        title: "خطأ",
+        description: err instanceof Error ? err.message : 'حدث خطأ أثناء تحديث الملف الشخصي',
+        variant: "destructive",
+      });
+      console.error('Profile update error:', err);
     } finally {
       setIsLoading(false);
     }
@@ -115,6 +214,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setToken(null);
     setUser(null);
     setUserRole('client');
+    setProfile(null);
+    setHasProfile(false);
     
     localStorage.removeItem('token');
     localStorage.removeItem('user');
@@ -129,6 +230,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     isLoading,
     error,
     userRole,
+    profile,
+    updateProfile,
+    checkAndFetchProfile,
+    hasProfile,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

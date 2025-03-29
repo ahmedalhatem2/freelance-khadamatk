@@ -7,31 +7,34 @@ import { CustomBadge } from "@/components/ui/custom-badge";
 import { MapPin, Mail, Phone, User, Briefcase } from "lucide-react";
 import { Link } from 'react-router-dom';
 
-export interface ProviderLocation {
-  region: string;
-  city: string;
-  street: string;
-  address: string;
-}
-
-export interface ProviderData {
-  id: number;
-  firstName: string;
-  lastName: string;
-  avatar: string;
-  profession: string;
-  email: string;
-  phone: string;
-  location: ProviderLocation;
-  status: 'active' | 'inactive' | 'pending';
-  about: string;
-}
+type StatusType = 'active' | 'inactive' | 'pending';
 
 interface ProviderInfoProps {
-  provider: ProviderData;
+  provider: {
+    id: number;
+    firstName: string;
+    lastName: string;
+    avatar: string;
+    profession: string;
+    email: string;
+    phone: string;
+    location: {
+      region: string;
+      city: string;
+      street: string;
+      address: string;
+    };
+    status: string;
+    about: string;
+  };
 }
 
 const ProviderInfo = ({ provider }: ProviderInfoProps) => {
+  // Convert status string to valid status type
+  const statusValue: StatusType = 
+    provider.status === 'active' ? 'active' : 
+    provider.status === 'inactive' ? 'inactive' : 'pending';
+
   return (
     <Card className="mb-6">
       <CardHeader className="flex flex-row items-center gap-4 pb-2">
@@ -47,8 +50,8 @@ const ProviderInfo = ({ provider }: ProviderInfoProps) => {
               <p className="text-muted-foreground">{provider.profession}</p>
             </div>
             <div className="flex gap-2">
-              <CustomBadge variant={provider.status === 'active' ? "success" : "secondary"}>
-                {provider.status === 'active' ? 'متاح' : provider.status === 'inactive' ? 'غير متاح' : 'قيد المراجعة'}
+              <CustomBadge variant={statusValue === 'active' ? "success" : "secondary"}>
+                {statusValue === 'active' ? 'متاح' : statusValue === 'inactive' ? 'غير متاح' : 'قيد المراجعة'}
               </CustomBadge>
               <Link to={`/provider/edit`}>
                 <Button variant="outline" size="sm" className="rounded-full gap-2">
