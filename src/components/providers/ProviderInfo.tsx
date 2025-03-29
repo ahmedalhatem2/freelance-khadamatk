@@ -7,8 +7,6 @@ import { CustomBadge } from "@/components/ui/custom-badge";
 import { MapPin, Mail, Phone, User, Briefcase } from "lucide-react";
 import { Link } from 'react-router-dom';
 
-type StatusType = 'active' | 'inactive' | 'pending';
-
 interface ProviderInfoProps {
   provider: {
     id: number;
@@ -24,17 +22,12 @@ interface ProviderInfoProps {
       street: string;
       address: string;
     };
-    status: string;
+    status: 'active' | 'inactive' | 'pending';
     about: string;
   };
 }
 
 const ProviderInfo = ({ provider }: ProviderInfoProps) => {
-  // Convert status string to valid status type
-  const statusValue: StatusType = 
-    provider.status === 'active' ? 'active' : 
-    provider.status === 'inactive' ? 'inactive' : 'pending';
-
   return (
     <Card className="mb-6">
       <CardHeader className="flex flex-row items-center gap-4 pb-2">
@@ -50,10 +43,10 @@ const ProviderInfo = ({ provider }: ProviderInfoProps) => {
               <p className="text-muted-foreground">{provider.profession}</p>
             </div>
             <div className="flex gap-2">
-              <CustomBadge variant={statusValue === 'active' ? "success" : "secondary"}>
-                {statusValue === 'active' ? 'متاح' : statusValue === 'inactive' ? 'غير متاح' : 'قيد المراجعة'}
+              <CustomBadge variant={provider.status === 'active' ? "success" : "secondary"}>
+                {provider.status === 'active' ? 'متاح' : provider.status === 'inactive' ? 'غير متاح' : 'قيد المراجعة'}
               </CustomBadge>
-              <Link to={`/provider/edit`}>
+              <Link to={`/provider/${provider.id}/edit`}>
                 <Button variant="outline" size="sm" className="rounded-full gap-2">
                   <User className="h-4 w-4" />
                   تعديل الملف الشخصي

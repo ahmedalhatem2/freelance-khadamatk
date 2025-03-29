@@ -7,7 +7,7 @@ import { MapPin, Mail, Phone, User, Shield } from "lucide-react";
 import { CustomBadge } from "@/components/ui/custom-badge";
 
 const AdminProfile = () => {
-  const { user, token } = useAuth();
+  const { user } = useAuth();
 
   if (!user) {
     return <div className="p-6 text-center">جاري تحميل البيانات...</div>;
@@ -38,7 +38,6 @@ const AdminProfile = () => {
                 <div className="flex items-center gap-2">
                   <Shield className="h-4 w-4 text-primary" />
                   <p className="text-muted-foreground">مدير النظام</p>
-                  <p>{token}</p>
                 </div>
               </div>
               <div className="flex gap-2">

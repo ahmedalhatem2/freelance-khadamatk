@@ -27,10 +27,6 @@ type RegisterFormData = {
 
 const RegisterSteps = () => {
   const location = useLocation();
-<<<<<<< HEAD
-  const { login, token } = useAuth();
-=======
->>>>>>> 8ef0fe08cc41db26410e15fe7bc9e51663373608
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState<RegisterFormData>({
     userType: null,
@@ -157,7 +153,7 @@ const RegisterSteps = () => {
   };
 
   const validateStep3 = () => {
-    if (!formData.governorate || !formData.city || !formData.street ) {
+    if (!formData.governorate || !formData.city || !formData.street || !formData.detailedAddress) {
       toast({
         title: "المعلومات غير مكتملة",
         description: "يرجى إدخال جميع معلومات العنوان المطلوبة",
