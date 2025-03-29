@@ -1,21 +1,77 @@
+
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import ProviderInfo from "@/components/providers/ProviderInfo";
 import ProviderServices from "@/components/providers/ProviderServices";
 import ProviderReviews from "@/components/providers/ProviderReviews";
+import ProviderProfileForm from "@/components/providers/ProviderProfileForm";
 import { useAuth } from "@/context/AuthProvider";
 import { API_BASE_URL } from "@/config/api";
-import { toast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
+
+interface ProviderService {
+  id: number;
+  title: string;
+  category: string;
+  price: number;
+  rating: number;
+  reviews: number;
+  image: string;
+  status: "active" | "inactive" | "pending";
+  description: string;
+  location: string;
+}
+
+interface ProviderReview {
+  id: number;
+  userName: string;
+  userAvatar: string;
+  rating: number;
+  comment: string;
+  date: string;
+  serviceName: string;
+}
+
+interface ApiService {
+  id: number;
+  title: string;
+  price: number;
+  status: string;
+  image?: string;
+  desc: string;
+  category: {
+    name: string;
+  };
+  rates_count: number;
+  profile: {
+    user: {
+      region: {
+        name: string;
+      };
+    };
+  };
+}
 
 const ProviderProfile = () => {
   const { id } = useParams();
-  const { user, token, userRole } = useAuth();
+  const { user, token, userRole, hasProfile, checkAndFetchProfile } = useAuth();
   const navigate = useNavigate();
-  const [provider, setProvider] = useState(null);
-  const [services, setServices] = useState([]);
-  const [reviews, setReviews] = useState([]);
+  const { toast } = useToast();
+  const [provider, setProvider] = useState<any>(null);
+  const [services, setServices] = useState<ProviderService[]>([]);
+  const [reviews, setReviews] = useState<ProviderReview[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [showProfileForm, setShowProfileForm] = useState(false);
+
+  useEffect(() => {
+    // Check if profile needs to be shown for providers with no profile
+    if (userRole === "provider" && !hasProfile) {
+      setShowProfileForm(true);
+    } else {
+      setShowProfileForm(false);
+    }
+  }, [userRole, hasProfile]);
 
   useEffect(() => {
     // Handle the "me" route - redirect if not a provider
@@ -28,14 +84,18 @@ const ProviderProfile = () => {
       setIsLoading(true);
 
       try {
-        // For the /provider/me route, use the current user data
+        // For provider visiting their own profile (/provider/me route)
         if (!id && user) {
+          // If the provider doesn't have a profile, check
+          if (userRole === "provider") {
+            await checkAndFetchProfile();
+          }
+
           const currentUser = {
             id: user.id,
             firstName: user.first_name,
             lastName: user.last_name,
-            avatar:
-              user.image || "https://randomuser.me/api/portraits/men/1.jpg",
+            avatar: user.image,
             profession: "مزود خدمة",
             email: user.email,
             phone: user.phone,
@@ -51,10 +111,6 @@ const ProviderProfile = () => {
 
           setProvider(currentUser);
 
-          // In a real implementation, you would fetch services and reviews for this provider from the API
-          // For now we'll continue with the mock data until the API endpoints are ready
-
-          // Attempt to fetch services from API, fallback to mock data
           try {
             if (token) {
               const servicesResponse = await fetch(
@@ -68,8 +124,9 @@ const ProviderProfile = () => {
 
               if (servicesResponse.ok) {
                 const servicesData = await servicesResponse.json();
+                
                 // Transform API response to match expected format
-                const transformedServices = servicesData.map((service) => ({
+                const transformedServices = servicesData.map((service: ApiService) => ({
                   id: service.id,
                   title: service.title,
                   category: service.category.name,
@@ -79,48 +136,20 @@ const ProviderProfile = () => {
                   image:
                     service.image ||
                     "https://images.unsplash.com/photo-1626785774573-4b799315345d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2071&q=80",
-                  status: service.status,
+                  status: service.status as "active" | "inactive" | "pending",
                   description: service.desc,
                   location: service.profile.user.region.name,
                 }));
+                
                 setServices(transformedServices);
               } else {
-                // Fallback to mock data
-                // setServices([]);
+                // Fallback to empty array if fetching services fails
+                setServices([]);
               }
             }
           } catch (error) {
             console.error("Error fetching provider services:", error);
-            setServices([
-              {
-                id: 1,
-                title: "تصميم شعار احترافي",
-                category: "تصميم",
-                price: 25000,
-                rating: 4.8,
-                reviews: 24,
-                image:
-                  "https://images.unsplash.com/photo-1626785774573-4b799315345d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2071&q=80",
-                status: "active",
-                description:
-                  "تصميم شعار احترافي لشركتك أو مشروعك مع تسليم كافة الصيغ المطلوبة (AI, PNG, JPG, PDF)",
-                location: "دمشق",
-              },
-              {
-                id: 2,
-                title: "تصميم هوية بصرية كاملة",
-                category: "تصميم",
-                price: 75000,
-                rating: 4.6,
-                reviews: 12,
-                image:
-                  "https://images.unsplash.com/photo-1572044162444-ad60f128bdea?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=870&q=80",
-                status: "active",
-                description:
-                  "تصميم هوية بصرية كاملة لعلامتك التجارية تشمل الشعار والألوان والخطوط وتطبيقات الهوية",
-                location: "دمشق",
-              },
-            ]);
+            setServices([]);
           }
 
           setReviews([
@@ -173,53 +202,7 @@ const ProviderProfile = () => {
         };
 
         setProvider(mockProvider);
-
-        const mockServices = [
-          {
-            id: 1,
-            title: "تصميم شعار احترافي",
-            category: "تصميم",
-            price: 25000,
-            rating: 4.8,
-            reviews: 24,
-            image:
-              "https://images.unsplash.com/photo-1626785774573-4b799315345d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2071&q=80",
-            status: "active",
-            description:
-              "تصميم شعار احترافي لشركتك أو مشروعك مع تسليم كافة الصيغ المطلوبة (AI, PNG, JPG, PDF)",
-            location: "دمشق",
-          },
-          {
-            id: 2,
-            title: "تصميم هوية بصرية كاملة",
-            category: "تصميم",
-            price: 75000,
-            rating: 4.6,
-            reviews: 12,
-            image:
-              "https://images.unsplash.com/photo-1572044162444-ad60f128bdea?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=870&q=80",
-            status: "active",
-            description:
-              "تصميم هوية بصرية كاملة لعلامتك التجارية تشمل الشعار والألوان والخطوط وتطبيقات الهوية",
-            location: "دمشق",
-          },
-          {
-            id: 3,
-            title: "تصميم منشورات سوشيال ميديا",
-            category: "تصميم",
-            price: 10000,
-            rating: 4.3,
-            reviews: 8,
-            image:
-              "https://images.unsplash.com/photo-1611162616475-46b635cb6868?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=774&q=80",
-            status: "inactive",
-            description:
-              "تصميم 10 منشورات لمواقع التواصل الاجتماعي بتصاميم مميزة وجذابة تناسب نشاط عملك",
-            location: "دمشق",
-          },
-        ];
-
-        setServices(mockServices);
+        setServices([]);
 
         const mockReviews = [
           {
@@ -248,7 +231,7 @@ const ProviderProfile = () => {
             userAvatar: "https://randomuser.me/api/portraits/men/3.jpg",
             rating: 5,
             comment:
-              "من أفضل المصممين الذين تعاملت معهم، سريع في الاستجابة ومبدع ف�� العمل.",
+              "من أفضل المصممين الذين تعاملت معهم، سريع في الاستجابة ومبدع.",
             date: "2023-03-10",
             serviceName: "تصميم شعار احترافي",
           },
@@ -258,9 +241,9 @@ const ProviderProfile = () => {
       } catch (error) {
         console.error("Error fetching provider data:", error);
         toast({
-          variant: "destructive",
           title: "خطأ في جلب البيانات",
           description: "حدث خطأ أثناء محاولة جلب بيانات المزود.",
+          variant: "destructive",
         });
       } finally {
         setIsLoading(false);
@@ -268,7 +251,7 @@ const ProviderProfile = () => {
     };
 
     fetchProviderData();
-  }, [id, user, userRole, navigate, token]);
+  }, [id, user, userRole, navigate, token, toast, hasProfile, checkAndFetchProfile]);
 
   if (isLoading) {
     return (
@@ -298,6 +281,7 @@ const ProviderProfile = () => {
   return (
     <div className="container mx-auto py-8 px-4">
       <div className="space-y-6">
+        {showProfileForm && <ProviderProfileForm />}
         <ProviderInfo provider={provider} />
         <ProviderServices providerId={provider.id} services={services} />
         <ProviderReviews
