@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Outlet, NavLink, useLocation } from "react-router-dom";
 import {
@@ -10,6 +11,7 @@ import {
   User,
   LogOut,
   Bolt,
+  Loader
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import ThemeToggle from "@/components/theme/ThemeToggle";
@@ -25,11 +27,15 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/context/AuthProvider";
-
-// Get user initials for avatar fallback
+import { useQuery } from "@tanstack/react-query";
+import { fetchUsers } from "@/api/users";
+import { fetchCategories } from "@/api/categories";
+import { fetchRegions } from "@/api/regions";
+import { fetchServices } from "@/api/services";
 
 const AdminLayout = () => {
-  const { isAuthenticated, user, logout, userRole } = useAuth();
+  const { isAuthenticated, user, logout, userRole, token } = useAuth();
+  
   const getUserInitials = () => {
     if (!user) return "U";
     return `${user.first_name.charAt(0)}${user.last_name.charAt(0)}`;
@@ -38,7 +44,37 @@ const AdminLayout = () => {
   const handleLogout = () => {
     logout();
   };
+  
   const location = useLocation();
+
+  // Fetch data for badge counts
+  const { data: users = [] } = useQuery({
+    queryKey: ['users'],
+    queryFn: fetchUsers,
+    enabled: !!token,
+  });
+  
+  const { data: categories = [] } = useQuery({
+    queryKey: ['categories'],
+    queryFn: fetchCategories,
+    enabled: !!token,
+  });
+  
+  const { data: regions = [] } = useQuery({
+    queryKey: ['regions'],
+    queryFn: fetchRegions,
+    enabled: !!token,
+  });
+  
+  const { data: services = [] } = useQuery({
+    queryKey: ['services'],
+    queryFn: fetchServices,
+    enabled: !!token,
+  });
+
+  // Count providers and clients
+  const providersCount = users.filter((u: any) => u.role_id === 2).length;
+  const clientsCount = users.filter((u: any) => u.role_id === 3).length;
 
   const navItems = [
     {
@@ -55,11 +91,13 @@ const AdminLayout = () => {
       path: "/admin/users",
       label: "المستخدمين",
       icon: <Users className="h-5 w-5" />,
+      count: users.length,
     },
     {
       path: "/admin/categories",
       label: "التصنيفات",
       icon: <Tag className="h-5 w-5" />,
+      count: categories.length,
     },
     {
       path: "/admin/roles",
@@ -70,11 +108,13 @@ const AdminLayout = () => {
       path: "/admin/regions",
       label: "المناطق",
       icon: <MapPin className="h-5 w-5" />,
+      count: regions.length,
     },
     {
       path: "/admin/services",
       label: "الخدمات",
       icon: <Briefcase className="h-5 w-5" />,
+      count: services.length,
     },
   ];
 
@@ -135,6 +175,36 @@ const AdminLayout = () => {
 
       <div className="flex flex-col md:flex-row flex-1">
         <aside className="bg-muted w-full md:w-64 p-4 md:min-h-[calc(100vh-72px)]">
+          <div className="space-y-2 mb-6">
+            <div className="text-sm text-muted-foreground">البيانات العامة</div>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="bg-muted-foreground/10 rounded p-2">
+                <div className="text-xs text-muted-foreground">مزودي الخدمات</div>
+                <div className="text-lg font-semibold">
+                  {token ? providersCount : <Loader className="h-4 w-4 animate-spin" />}
+                </div>
+              </div>
+              <div className="bg-muted-foreground/10 rounded p-2">
+                <div className="text-xs text-muted-foreground">العملاء</div>
+                <div className="text-lg font-semibold">
+                  {token ? clientsCount : <Loader className="h-4 w-4 animate-spin" />}
+                </div>
+              </div>
+              <div className="bg-muted-foreground/10 rounded p-2">
+                <div className="text-xs text-muted-foreground">الخدمات</div>
+                <div className="text-lg font-semibold">
+                  {token ? services.length : <Loader className="h-4 w-4 animate-spin" />}
+                </div>
+              </div>
+              <div className="bg-muted-foreground/10 rounded p-2">
+                <div className="text-xs text-muted-foreground">التصنيفات</div>
+                <div className="text-lg font-semibold">
+                  {token ? categories.length : <Loader className="h-4 w-4 animate-spin" />}
+                </div>
+              </div>
+            </div>
+          </div>
+
           <nav className="space-y-2">
             {navItems.map((item) => (
               <NavLink
@@ -143,7 +213,7 @@ const AdminLayout = () => {
                 end={item.path === "/admin"}
                 className={({ isActive }) =>
                   cn(
-                    "flex items-center gap-3 px-3 py-2 rounded-md text-sm",
+                    "flex items-center justify-between gap-3 px-3 py-2 rounded-md text-sm",
                     "transition-colors hover:bg-primary/10",
                     isActive
                       ? "bg-primary/20 text-primary font-medium"
@@ -151,8 +221,15 @@ const AdminLayout = () => {
                   )
                 }
               >
-                {item.icon}
-                <span>{item.label}</span>
+                <div className="flex items-center gap-3">
+                  {item.icon}
+                  <span>{item.label}</span>
+                </div>
+                {item.count !== undefined && (
+                  <span className="bg-primary/10 text-primary text-xs px-2 py-1 rounded-full">
+                    {item.count}
+                  </span>
+                )}
               </NavLink>
             ))}
           </nav>

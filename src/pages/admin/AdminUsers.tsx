@@ -1,10 +1,12 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { CustomBadge } from '@/components/ui/custom-badge';
+import { useToast } from '@/components/ui/use-toast';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { 
   Search, 
   User, 
@@ -16,86 +18,73 @@ import {
   CheckCircle, 
   XCircle,
   Star,
-  BarChart
+  BarChart,
+  Loader
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { fetchUsers, updateUserStatus } from '@/api/users';
+import { fetchRates } from '@/api/rates';
+import { fetchServices } from '@/api/services';
+import { useAuth } from '@/context/AuthProvider';
 
-// Mock user data
-const users = [
-  {
-    id: 1,
-    first_name: 'أحمد',
-    last_name: 'محمد',
-    image: 'https://avatars.hsoubcdn.com/d47c59f0d529e4ab8a36b2427d1b63d1?s=128',
-    phone: '0501234567',
-    email: 'ahmed43@gmail.com',
-    status: 'active',
-    role: { id: 2, name: 'مزود خدمة' },
-    region: { id: 1, name: 'دمشق' },
-    city: 'دمشق',
-    street: 'شارع بغداد',
-    address: 'بناء 5',
-    profession: 'مصمم جرافيك',
-    about: 'مصمم جرافيك محترف مع خبرة أكثر من 7 سنوات في مجال التصميم، متخصص في تصميم الهويات البصرية والشعارات.',
-    services: [
-      { id: 1, title: 'تصميم شعار', category: 'تصميم', price: 200000 },
-      { id: 2, title: 'تصميم هوية بصرية', category: 'تصميم', price: 500000 }
-    ],
-    ratings: [
-      { id: 1, rate: 5, comment: 'عمل رائع', service_id: 1 },
-      { id: 2, rate: 4, comment: 'خدمة جيدة جداً', service_id: 2 }
-    ]
-  },
-  {
-    id: 2,
-    first_name: 'سارة',
-    last_name: 'علي',
-    image: '',
-    phone: '0507654321',
-    email: 'sara.3le@gmail.com',
-    status: 'active',
-    role: { id: 1, name: 'عميل' },
-    region: { id: 2, name: 'ريف دمشق' },
-    city: 'النبك',
-    street: ' ',
-    address: ' ',
-    profession: '',
-    about: '',
-    services: [],
-    ratings: []
-  },
-  {
-    id: 3,
-    first_name: 'محمد',
-    last_name: 'عبدالله',
-    image: 'https://avatars.hsoubcdn.com/43e0d7378fe65d3d166dd4bf0d58261c?s=128',
-    phone: '0509876543',
-    email: 'mohammed.5b@example.com',
-    status: 'active',
-    role: { id: 2, name: 'مزود خدمة' },
-    region: { id: 3, name: 'حلب' },
-    city: 'سيف الدولة',
-    street: '',
-    address: 'حانب الدوحة مول',
-    profession: 'مطور ويب',
-    about: 'مطور ويب وتطبيقات محترف، متخصص في تقنيات الويب الحديثة وتطوير منصات الإلكترونية.',
-    services: [
-      { id: 3, title: 'تطوير موقع ويب', category: 'برمجة', price: 5000 },
-      { id: 4, title: 'تطوير تطبيق موبايل', category: 'برمجة', price: 10000 }
-    ],
-    ratings: [
-      { id: 3, rate: 5, comment: 'خدمة ممتازة ومحترفة', service_id: 3 },
-      { id: 4, rate: 5, comment: 'تطبيق رائع وسريع', service_id: 4 }
-    ]
-  }
-];
-
-const UserCard = ({ user }: { user: any }) => {
-  const isProvider = user.role.name === 'مزود خدمة';
+const UserCard = ({ user, onStatusChange }: { user: any; onStatusChange: (user: any, status: string) => void }) => {
+  const isProvider = user.role_id === 2;
   const [status, setStatus] = useState(user.status);
+  const [ratings, setRatings] = useState<any[]>([]);
+  const [services, setServices] = useState<any[]>([]);
+  const [loadingRatings, setLoadingRatings] = useState(false);
+  const [loadingServices, setLoadingServices] = useState(false);
+  const { token } = useAuth();
+  const { toast } = useToast();
 
-  const handleToggleStatus = () => {
-    setStatus(status === 'active' ? 'inactive' : 'active');
+  const handleToggleStatus = async () => {
+    const newStatus = status === 'active' ? 'inactive' : 'active';
+    try {
+      await onStatusChange(user, newStatus);
+      setStatus(newStatus);
+      toast({
+        title: "تم تحديث حالة المستخدم",
+        description: `تم تغيير حالة المستخدم إلى ${newStatus === 'active' ? 'نشط' : 'غير نشط'}`,
+      });
+    } catch (error) {
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء تحديث حالة المستخدم",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const loadRatings = async () => {
+    if (!token) return;
+    setLoadingRatings(true);
+    try {
+      const data = await fetchRates(token);
+      // Filter ratings by this user (if provider) or ratings given by this user (if client)
+      const userRatings = isProvider 
+        ? data.filter((rate: any) => rate.service_id === services.find((s: any) => s.profile_provider_id === user.id)?.id)
+        : data.filter((rate: any) => rate.user_id === user.id);
+      setRatings(userRatings);
+    } catch (error) {
+      console.error("Error loading ratings:", error);
+    } finally {
+      setLoadingRatings(false);
+    }
+  };
+
+  const loadServices = async () => {
+    if (!token || !isProvider) return;
+    setLoadingServices(true);
+    try {
+      const data = await fetchServices();
+      // Filter services by this provider
+      const providerServices = data.filter((service: any) => service.profile?.user_id === user.id);
+      setServices(providerServices);
+    } catch (error) {
+      console.error("Error loading services:", error);
+    } finally {
+      setLoadingServices(false);
+    }
   };
 
   return (
@@ -104,12 +93,16 @@ const UserCard = ({ user }: { user: any }) => {
         <div className="p-4">
           <div className="flex items-start justify-between gap-4">
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-full overflow-hidden">
-                <img 
-                  src={user.image} 
-                  alt={`${user.first_name} ${user.last_name}`}
-                  className="w-full h-full object-cover"
-                />
+              <div className="w-16 h-16 rounded-full overflow-hidden bg-muted">
+                {user.image ? (
+                  <img 
+                    src={user.image} 
+                    alt={`${user.first_name} ${user.last_name}`}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <User className="w-full h-full p-4 text-muted-foreground" />
+                )}
               </div>
               <div>
                 <h3 className="text-lg font-bold">
@@ -121,7 +114,7 @@ const UserCard = ({ user }: { user: any }) => {
                     {status === 'active' ? 'نشط' : 'غير نشط'}
                   </CustomBadge>
                   <CustomBadge variant="outline">
-                    {user.role.name}
+                    {user.role_id === 1 ? 'مدير' : user.role_id === 2 ? 'مزود خدمة' : 'عميل'}
                   </CustomBadge>
                 </div>
               </div>
@@ -129,7 +122,7 @@ const UserCard = ({ user }: { user: any }) => {
             
             {isProvider && (
               <div className="text-sm bg-muted px-3 py-1 rounded-md">
-                <span className="font-medium">{user.profession}</span>
+                <span className="font-medium">{user.profession || "مزود خدمة"}</span>
               </div>
             )}
           </div>
@@ -146,50 +139,50 @@ const UserCard = ({ user }: { user: any }) => {
               </div>
               <div className="flex items-center gap-2 text-sm">
                 <MapPin className="h-4 w-4 text-muted-foreground" />
-                <span>{user.region.name}</span>
+                <span>{user.region_id}</span>
               </div>
             </div>
             
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-sm">
                 <Home className="h-4 w-4 text-muted-foreground" />
-                <span>{user.city}، {user.street}</span>
+                <span>{user.city || '-'}{user.street ? `، ${user.street}` : ''}</span>
               </div>
               <div className="flex items-center gap-2 text-sm">
                 <Briefcase className="h-4 w-4 text-muted-foreground" />
-                <span>{user.role.name}</span>
+                <span>{user.role_id === 1 ? 'مدير' : user.role_id === 2 ? 'مزود خدمة' : 'عميل'}</span>
               </div>
             </div>
           </div>
 
-          {isProvider && (
-            <>
-              <div className="mt-4 p-3 bg-muted/50 rounded-md">
-                <p className="text-sm">{user.about}</p>
-              </div>
-              
-              <div className="flex flex-wrap gap-2 mt-4">
-                <Button 
-                  variant={status === 'active' ? 'destructive' : 'default'} 
-                  size="sm"
-                  onClick={handleToggleStatus}
-                >
-                  {status === 'active' ? (
-                    <>
-                      <XCircle className="h-4 w-4 mr-1" />
-                      <span>إيقاف</span>
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle className="h-4 w-4 mr-1" />
-                      <span>تفعيل</span>
-                    </>
-                  )}
-                </Button>
-                
+          <div className="flex flex-wrap gap-2 mt-4">
+            <Button 
+              variant={status === 'active' ? 'destructive' : 'default'} 
+              size="sm"
+              onClick={handleToggleStatus}
+            >
+              {status === 'active' ? (
+                <>
+                  <XCircle className="h-4 w-4 mr-1" />
+                  <span>إيقاف</span>
+                </>
+              ) : (
+                <>
+                  <CheckCircle className="h-4 w-4 mr-1" />
+                  <span>تفعيل</span>
+                </>
+              )}
+            </Button>
+            
+            {isProvider && (
+              <>
                 <Dialog>
                   <DialogTrigger asChild>
-                    <Button variant="outline" size="sm">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={loadRatings}
+                    >
                       <Star className="h-4 w-4 mr-1" />
                       <span>التقييمات</span>
                     </Button>
@@ -199,13 +192,17 @@ const UserCard = ({ user }: { user: any }) => {
                       <DialogTitle>تقييمات {user.first_name} {user.last_name}</DialogTitle>
                     </DialogHeader>
                     <div className="space-y-3 mt-4">
-                      {user.ratings.length > 0 ? (
-                        user.ratings.map((rating: any) => (
+                      {loadingRatings ? (
+                        <div className="flex justify-center py-4">
+                          <Loader className="h-6 w-6 animate-spin" />
+                        </div>
+                      ) : ratings.length > 0 ? (
+                        ratings.map((rating: any) => (
                           <div key={rating.id} className="p-3 bg-muted/50 rounded-md">
                             <div className="flex justify-between items-center">
                               <span className="flex items-center">
                                 <Star className="h-4 w-4 text-yellow-500 mr-1" />
-                                {rating.rate}/5
+                                {rating.num_star}/5
                               </span>
                               <span className="text-sm text-muted-foreground">
                                 خدمة #{rating.service_id}
@@ -223,7 +220,11 @@ const UserCard = ({ user }: { user: any }) => {
                 
                 <Dialog>
                   <DialogTrigger asChild>
-                    <Button variant="outline" size="sm">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={loadServices}
+                    >
                       <Briefcase className="h-4 w-4 mr-1" />
                       <span>الخدمات</span>
                     </Button>
@@ -233,12 +234,16 @@ const UserCard = ({ user }: { user: any }) => {
                       <DialogTitle>خدمات {user.first_name} {user.last_name}</DialogTitle>
                     </DialogHeader>
                     <div className="space-y-3 mt-4">
-                      {user.services.length > 0 ? (
-                        user.services.map((service: any) => (
+                      {loadingServices ? (
+                        <div className="flex justify-center py-4">
+                          <Loader className="h-6 w-6 animate-spin" />
+                        </div>
+                      ) : services.length > 0 ? (
+                        services.map((service: any) => (
                           <div key={service.id} className="p-3 bg-muted/50 rounded-md">
                             <div className="flex justify-between items-center">
                               <span className="font-medium">{service.title}</span>
-                              <CustomBadge variant="outline">{service.category}</CustomBadge>
+                              <CustomBadge variant="outline">{service.category?.name || 'غير مصنف'}</CustomBadge>
                             </div>
                             <div className="flex justify-between items-center mt-2">
                               <span className="text-sm text-muted-foreground">#{service.id}</span>
@@ -255,7 +260,14 @@ const UserCard = ({ user }: { user: any }) => {
                 
                 <Dialog>
                   <DialogTrigger asChild>
-                    <Button variant="outline" size="sm">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => {
+                        loadServices();
+                        loadRatings();
+                      }}
+                    >
                       <BarChart className="h-4 w-4 mr-1" />
                       <span>التقارير</span>
                     </Button>
@@ -268,17 +280,17 @@ const UserCard = ({ user }: { user: any }) => {
                       <div className="grid grid-cols-2 gap-4">
                         <div className="bg-muted/50 p-3 rounded-md">
                           <span className="text-sm text-muted-foreground">عدد الخدمات</span>
-                          <p className="text-xl font-bold">{user.services.length}</p>
+                          <p className="text-xl font-bold">{services.length}</p>
                         </div>
                         <div className="bg-muted/50 p-3 rounded-md">
                           <span className="text-sm text-muted-foreground">عدد التقييمات</span>
-                          <p className="text-xl font-bold">{user.ratings.length}</p>
+                          <p className="text-xl font-bold">{ratings.length}</p>
                         </div>
                         <div className="bg-muted/50 p-3 rounded-md">
                           <span className="text-sm text-muted-foreground">متوسط التقييم</span>
                           <p className="text-xl font-bold">
-                            {user.ratings.length > 0 
-                              ? (user.ratings.reduce((sum: number, rating: any) => sum + rating.rate, 0) / user.ratings.length).toFixed(1)
+                            {ratings.length > 0 
+                              ? (ratings.reduce((sum: number, rating: any) => sum + rating.num_star, 0) / ratings.length).toFixed(1)
                               : 'لا يوجد'}
                           </p>
                         </div>
@@ -290,9 +302,9 @@ const UserCard = ({ user }: { user: any }) => {
                     </div>
                   </DialogContent>
                 </Dialog>
-              </div>
-            </>
-          )}
+              </>
+            )}
+          </div>
         </div>
       </CardContent>
     </Card>
@@ -302,22 +314,62 @@ const UserCard = ({ user }: { user: any }) => {
 const AdminUsers = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('all');
+  const { token } = useAuth();
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
   
-  const filteredUsers = users.filter(user => {
+  const { data: users = [], isLoading, error } = useQuery({
+    queryKey: ['users'],
+    queryFn: () => fetchUsers(),
+    enabled: !!token,
+  });
+
+  const updateStatusMutation = useMutation({
+    mutationFn: ({ userId, status }: { userId: number, status: string }) => 
+      updateUserStatus(userId, status, token || ''),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+    },
+    onError: (error) => {
+      console.error('Error updating user status:', error);
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء تحديث حالة المستخدم",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleStatusChange = async (user: any, newStatus: string) => {
+    await updateStatusMutation.mutateAsync({ userId: user.id, status: newStatus });
+  };
+  
+  const filteredUsers = users.filter((user: any) => {
     // Filter by search term
     const searchMatch = 
-      user.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.phone.includes(searchTerm);
+      user.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.last_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (user.phone && user.phone.includes(searchTerm));
     
     // Filter by tab (role)
     if (activeTab === 'all') return searchMatch;
-    if (activeTab === 'providers') return searchMatch && user.role.name === 'مزود خدمة';
-    if (activeTab === 'clients') return searchMatch && user.role.name === 'عميل';
+    if (activeTab === 'providers') return searchMatch && user.role_id === 2;
+    if (activeTab === 'clients') return searchMatch && user.role_id === 3;
     
     return searchMatch;
   });
+  
+  if (error) {
+    return (
+      <div className="text-center py-10">
+        <div className="text-destructive">
+          <p className="text-lg font-medium">حدث خطأ أثناء تحميل البيانات</p>
+          <p className="text-sm mt-2">يرجى التحقق من الاتصال بالإنترنت والمحاولة مرة أخرى.</p>
+        </div>
+      </div>
+    );
+  }
   
   return (
     <div className="space-y-6">
@@ -346,9 +398,17 @@ const AdminUsers = () => {
       </div>
 
       <div className="grid grid-cols-1 gap-6">
-        {filteredUsers.length > 0 ? (
-          filteredUsers.map(user => (
-            <UserCard key={user.id} user={user} />
+        {isLoading ? (
+          <div className="flex justify-center py-10">
+            <Loader className="h-8 w-8 animate-spin" />
+          </div>
+        ) : filteredUsers.length > 0 ? (
+          filteredUsers.map((user: any) => (
+            <UserCard 
+              key={user.id} 
+              user={user} 
+              onStatusChange={handleStatusChange}
+            />
           ))
         ) : (
           <div className="text-center py-10">

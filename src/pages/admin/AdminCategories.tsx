@@ -3,14 +3,15 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { CustomBadge } from '@/components/ui/custom-badge';
+import { useToast } from '@/components/ui/use-toast';
 import { 
   Search, 
   Plus, 
   Edit, 
   Trash2,
   Tag,
-  Briefcase
+  Briefcase,
+  Loader
 } from 'lucide-react';
 import { 
   Dialog, 
@@ -22,72 +23,115 @@ import {
   DialogClose
 } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-
-// Mock category data
-const categoriesData = [
-  { id: 1, name: 'برمجة و تطوير', servicesCount: 24 },
-  { id: 2, name: 'تصميم و غرافيك', servicesCount: 16 },
-  { id: 3, name: 'الفيديو و الأنيميشن', servicesCount: 32 },
-  { id: 4, name: 'خدمات كهربائية', servicesCount: 8 },
-  { id: 5, name: 'خدمات هندسية ', servicesCount: 20 },
-  { id: 6, name: 'خدمات لوجستية', servicesCount: 15 },
-  { id: 7, name: 'خدمات منزلية', servicesCount: 12 },
-  { id: 8, name: 'خدمات نجارة', servicesCount: 6 },
-
-];
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { fetchCategories, createCategory, updateCategory, deleteCategory } from '@/api/categories';
+import { useAuth } from '@/context/AuthProvider';
+import { fetchServices } from '@/api/services';
 
 const AdminCategories = () => {
-  const [categories, setCategories] = useState(categoriesData);
   const [searchTerm, setSearchTerm] = useState('');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [currentCategory, setCurrentCategory] = useState<{ id: number, name: string } | null>(null);
   const [newCategoryName, setNewCategoryName] = useState('');
+  const { token } = useAuth();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
   
-  const filteredCategories = categories.filter(category => 
-    category.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const { data: categories = [], isLoading: loadingCategories } = useQuery({
+    queryKey: ['categories'],
+    queryFn: fetchCategories,
+  });
+
+  const { data: services = [] } = useQuery({
+    queryKey: ['services'],
+    queryFn: fetchServices,
+  });
+
+  // Calculate services count for each category
+  const categoryServicesCount = (categoryId: number) => {
+    return services.filter((service: any) => service.category_id === categoryId).length;
+  };
+
+  const addCategoryMutation = useMutation({
+    mutationFn: (name: string) => createCategory({ name }, token || ''),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['categories'] });
+      toast({
+        title: "تم إضافة التصنيف",
+        description: "تم إضافة التصنيف بنجاح",
+      });
+      setIsAddDialogOpen(false);
+      setNewCategoryName('');
+    },
+    onError: (error) => {
+      console.error('Error adding category:', error);
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء إضافة التصنيف",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const updateCategoryMutation = useMutation({
+    mutationFn: ({ id, name }: { id: number, name: string }) => 
+      updateCategory(id, { name }, token || ''),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['categories'] });
+      toast({
+        title: "تم تحديث التصنيف",
+        description: "تم تحديث التصنيف بنجاح",
+      });
+      setIsEditDialogOpen(false);
+      setCurrentCategory(null);
+      setNewCategoryName('');
+    },
+    onError: (error) => {
+      console.error('Error updating category:', error);
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء تحديث التصنيف",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteCategoryMutation = useMutation({
+    mutationFn: (id: number) => deleteCategory(id, token || ''),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['categories'] });
+      toast({
+        title: "تم حذف التصنيف",
+        description: "تم حذف التصنيف بنجاح",
+      });
+      setIsDeleteDialogOpen(false);
+      setCurrentCategory(null);
+    },
+    onError: (error) => {
+      console.error('Error deleting category:', error);
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء حذف التصنيف",
+        variant: "destructive",
+      });
+    },
+  });
 
   const handleAddCategory = () => {
     if (newCategoryName.trim() === '') return;
-    
-    const newCategory = {
-      id: categories.length > 0 ? Math.max(...categories.map(c => c.id)) + 1 : 1,
-      name: newCategoryName,
-      servicesCount: 0
-    };
-    
-    setCategories([...categories, newCategory]);
-    setNewCategoryName('');
-    setIsAddDialogOpen(false);
+    addCategoryMutation.mutate(newCategoryName);
   };
   
   const handleEditCategory = () => {
     if (!currentCategory || newCategoryName.trim() === '') return;
-    
-    const updatedCategories = categories.map(category => 
-      category.id === currentCategory.id 
-        ? { ...category, name: newCategoryName } 
-        : category
-    );
-    
-    setCategories(updatedCategories);
-    setNewCategoryName('');
-    setCurrentCategory(null);
-    setIsEditDialogOpen(false);
+    updateCategoryMutation.mutate({ id: currentCategory.id, name: newCategoryName });
   };
   
   const handleDeleteCategory = () => {
     if (!currentCategory) return;
-    
-    const updatedCategories = categories.filter(
-      category => category.id !== currentCategory.id
-    );
-    
-    setCategories(updatedCategories);
-    setCurrentCategory(null);
-    setIsDeleteDialogOpen(false);
+    deleteCategoryMutation.mutate(currentCategory.id);
   };
   
   const openEditDialog = (category: { id: number, name: string }) => {
@@ -101,6 +145,10 @@ const AdminCategories = () => {
     setIsDeleteDialogOpen(true);
   };
   
+  const filteredCategories = categories.filter((category: any) => 
+    category.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+  
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -108,7 +156,7 @@ const AdminCategories = () => {
         
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
-            <Button>
+            <Button disabled={!token}>
               <Plus className="h-4 w-4 mr-1" />
               <span>إضافة تصنيف</span>
             </Button>
@@ -130,7 +178,20 @@ const AdminCategories = () => {
               <DialogClose asChild>
                 <Button variant="outline">إلغاء</Button>
               </DialogClose>
-              <Button type="submit" onClick={handleAddCategory}>إضافة</Button>
+              <Button 
+                type="submit" 
+                onClick={handleAddCategory}
+                disabled={addCategoryMutation.isPending || newCategoryName.trim() === ''}
+              >
+                {addCategoryMutation.isPending ? (
+                  <>
+                    <Loader className="h-4 w-4 mr-1 animate-spin" />
+                    <span>جاري الإضافة...</span>
+                  </>
+                ) : (
+                  <span>إضافة</span>
+                )}
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -153,7 +214,11 @@ const AdminCategories = () => {
           <CardTitle>قائمة التصنيفات</CardTitle>
         </CardHeader>
         <CardContent>
-          {filteredCategories.length > 0 ? (
+          {loadingCategories ? (
+            <div className="flex justify-center py-10">
+              <Loader className="h-8 w-8 animate-spin" />
+            </div>
+          ) : filteredCategories.length > 0 ? (
             <Table>
               <TableHeader>
                 <TableRow>
@@ -164,7 +229,7 @@ const AdminCategories = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredCategories.map((category) => (
+                {filteredCategories.map((category: any) => (
                   <TableRow key={category.id}>
                     <TableCell className="font-medium">{category.id}</TableCell>
                     <TableCell>
@@ -176,7 +241,7 @@ const AdminCategories = () => {
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <Briefcase className="h-4 w-4 text-muted-foreground" />
-                        <span>{category.servicesCount}</span>
+                        <span>{categoryServicesCount(category.id)}</span>
                       </div>
                     </TableCell>
                     <TableCell>
@@ -185,6 +250,7 @@ const AdminCategories = () => {
                           variant="ghost" 
                           size="icon"
                           onClick={() => openEditDialog(category)}
+                          disabled={!token}
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
@@ -192,6 +258,7 @@ const AdminCategories = () => {
                           variant="ghost" 
                           size="icon"
                           onClick={() => openDeleteDialog(category)}
+                          disabled={!token}
                         >
                           <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>
@@ -230,7 +297,19 @@ const AdminCategories = () => {
             <DialogClose asChild>
               <Button variant="outline">إلغاء</Button>
             </DialogClose>
-            <Button onClick={handleEditCategory}>حفظ التغييرات</Button>
+            <Button 
+              onClick={handleEditCategory}
+              disabled={updateCategoryMutation.isPending || newCategoryName.trim() === ''}
+            >
+              {updateCategoryMutation.isPending ? (
+                <>
+                  <Loader className="h-4 w-4 mr-1 animate-spin" />
+                  <span>جاري التحديث...</span>
+                </>
+              ) : (
+                <span>حفظ التغييرات</span>
+              )}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -253,7 +332,20 @@ const AdminCategories = () => {
             <DialogClose asChild>
               <Button variant="outline">إلغاء</Button>
             </DialogClose>
-            <Button variant="destructive" onClick={handleDeleteCategory}>حذف</Button>
+            <Button 
+              variant="destructive" 
+              onClick={handleDeleteCategory}
+              disabled={deleteCategoryMutation.isPending}
+            >
+              {deleteCategoryMutation.isPending ? (
+                <>
+                  <Loader className="h-4 w-4 mr-1 animate-spin" />
+                  <span>جاري الحذف...</span>
+                </>
+              ) : (
+                <span>حذف</span>
+              )}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

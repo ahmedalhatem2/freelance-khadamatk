@@ -3,12 +3,14 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { useToast } from '@/components/ui/use-toast';
 import { 
   Search, 
   Plus, 
   Edit, 
   Trash2,
-  MapPin
+  MapPin,
+  Loader
 } from 'lucide-react';
 import { 
   Dialog, 
@@ -20,76 +22,104 @@ import {
   DialogClose
 } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-
-// Mock regions data
-const regionsData = [
-  { id: '1', name: 'دمشق' },
-  { id: '2', name: 'حلب' },
-  { id: '3', name: 'حمص' },
-  { id: '4', name: 'اللاذقية' },
-  { id: '5', name: 'حماة' },
-  { id: '6', name: 'طرطوس' },
-  { id: '7', name: 'درعا' },
-  { id: '8', name: 'إدلب' },
-  { id: '9', name: 'الحسكة' },
-  { id: '10', name: 'دير الزور' },
-  { id: '11', name: 'الرقة' },
-  { id: '12', name: 'السويداء' },
-  { id: '13', name: 'القنيطرة' },
-  { id: '14', name: 'ريف دمشق' },
-];
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { fetchRegions, createRegion, updateRegion, deleteRegion } from '@/api/regions';
+import { useAuth } from '@/context/AuthProvider';
 
 const AdminRegions = () => {
-  const [regions, setRegions] = useState(regionsData);
   const [searchTerm, setSearchTerm] = useState('');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [currentRegion, setCurrentRegion] = useState<{ id: number, name: string } | null>(null);
   const [newRegionName, setNewRegionName] = useState('');
+  const { token } = useAuth();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
   
-  const filteredRegions = regions.filter(region => 
-    region.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const { data: regions = [], isLoading: loadingRegions } = useQuery({
+    queryKey: ['regions'],
+    queryFn: fetchRegions,
+  });
+
+  const addRegionMutation = useMutation({
+    mutationFn: (name: string) => createRegion({ name }, token || ''),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['regions'] });
+      toast({
+        title: "تم إضافة المنطقة",
+        description: "تم إضافة المنطقة بنجاح",
+      });
+      setIsAddDialogOpen(false);
+      setNewRegionName('');
+    },
+    onError: (error) => {
+      console.error('Error adding region:', error);
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء إضافة المنطقة",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const updateRegionMutation = useMutation({
+    mutationFn: ({ id, name }: { id: number, name: string }) => 
+      updateRegion(id, { name }, token || ''),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['regions'] });
+      toast({
+        title: "تم تحديث المنطقة",
+        description: "تم تحديث المنطقة بنجاح",
+      });
+      setIsEditDialogOpen(false);
+      setCurrentRegion(null);
+      setNewRegionName('');
+    },
+    onError: (error) => {
+      console.error('Error updating region:', error);
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء تحديث المنطقة",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteRegionMutation = useMutation({
+    mutationFn: (id: number) => deleteRegion(id, token || ''),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['regions'] });
+      toast({
+        title: "تم حذف المنطقة",
+        description: "تم حذف المنطقة بنجاح",
+      });
+      setIsDeleteDialogOpen(false);
+      setCurrentRegion(null);
+    },
+    onError: (error) => {
+      console.error('Error deleting region:', error);
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء حذف المنطقة",
+        variant: "destructive",
+      });
+    },
+  });
 
   const handleAddRegion = () => {
     if (newRegionName.trim() === '') return;
-    
-    const newRegion = {
-      id: regions.length > 0 ? Math.max(...regions.map(r => r.id)) + 1 : 1,
-      name: newRegionName
-    };
-    
-    setRegions([...regions, newRegion]);
-    setNewRegionName('');
-    setIsAddDialogOpen(false);
+    addRegionMutation.mutate(newRegionName);
   };
   
   const handleEditRegion = () => {
     if (!currentRegion || newRegionName.trim() === '') return;
-    
-    const updatedRegions = regions.map(region => 
-      region.id === currentRegion.id 
-        ? { ...region, name: newRegionName } 
-        : region
-    );
-    
-    setRegions(updatedRegions);
-    setNewRegionName('');
-    setCurrentRegion(null);
-    setIsEditDialogOpen(false);
+    updateRegionMutation.mutate({ id: currentRegion.id, name: newRegionName });
   };
   
   const handleDeleteRegion = () => {
     if (!currentRegion) return;
-    
-    const updatedRegions = regions.filter(
-      region => region.id !== currentRegion.id
-    );
-    
-    setRegions(updatedRegions);
-    setCurrentRegion(null);
-    setIsDeleteDialogOpen(false);
+    deleteRegionMutation.mutate(currentRegion.id);
   };
   
   const openEditDialog = (region: { id: number, name: string }) => {
@@ -103,6 +133,10 @@ const AdminRegions = () => {
     setIsDeleteDialogOpen(true);
   };
   
+  const filteredRegions = regions.filter((region: any) => 
+    region.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+  
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -110,7 +144,7 @@ const AdminRegions = () => {
         
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
-            <Button>
+            <Button disabled={!token}>
               <Plus className="h-4 w-4 mr-1" />
               <span>إضافة منطقة</span>
             </Button>
@@ -132,7 +166,20 @@ const AdminRegions = () => {
               <DialogClose asChild>
                 <Button variant="outline">إلغاء</Button>
               </DialogClose>
-              <Button type="submit" onClick={handleAddRegion}>إضافة</Button>
+              <Button 
+                type="submit" 
+                onClick={handleAddRegion}
+                disabled={addRegionMutation.isPending || newRegionName.trim() === ''}
+              >
+                {addRegionMutation.isPending ? (
+                  <>
+                    <Loader className="h-4 w-4 mr-1 animate-spin" />
+                    <span>جاري الإضافة...</span>
+                  </>
+                ) : (
+                  <span>إضافة</span>
+                )}
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -155,7 +202,11 @@ const AdminRegions = () => {
           <CardTitle>قائمة المناطق</CardTitle>
         </CardHeader>
         <CardContent>
-          {filteredRegions.length > 0 ? (
+          {loadingRegions ? (
+            <div className="flex justify-center py-10">
+              <Loader className="h-8 w-8 animate-spin" />
+            </div>
+          ) : filteredRegions.length > 0 ? (
             <Table>
               <TableHeader>
                 <TableRow>
@@ -165,7 +216,7 @@ const AdminRegions = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredRegions.map((region) => (
+                {filteredRegions.map((region: any) => (
                   <TableRow key={region.id}>
                     <TableCell className="font-medium">{region.id}</TableCell>
                     <TableCell>
@@ -180,6 +231,7 @@ const AdminRegions = () => {
                           variant="ghost" 
                           size="icon"
                           onClick={() => openEditDialog(region)}
+                          disabled={!token}
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
@@ -187,6 +239,7 @@ const AdminRegions = () => {
                           variant="ghost" 
                           size="icon"
                           onClick={() => openDeleteDialog(region)}
+                          disabled={!token}
                         >
                           <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>
@@ -225,7 +278,19 @@ const AdminRegions = () => {
             <DialogClose asChild>
               <Button variant="outline">إلغاء</Button>
             </DialogClose>
-            <Button onClick={handleEditRegion}>حفظ التغييرات</Button>
+            <Button 
+              onClick={handleEditRegion}
+              disabled={updateRegionMutation.isPending || newRegionName.trim() === ''}
+            >
+              {updateRegionMutation.isPending ? (
+                <>
+                  <Loader className="h-4 w-4 mr-1 animate-spin" />
+                  <span>جاري التحديث...</span>
+                </>
+              ) : (
+                <span>حفظ التغييرات</span>
+              )}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -238,7 +303,7 @@ const AdminRegions = () => {
           </DialogHeader>
           <div className="py-4">
             <p className="text-center">
-              هل أنت متأكد من رغبتك في حذف منطقة &quot;{currentRegion?.name}&quot;؟
+              هل أنت متأكد من رغبتك في حذف منطقة &quot;{currentCategory?.name}&quot;؟
             </p>
             <p className="text-center text-muted-foreground text-sm mt-2">
               لا يمكن التراجع عن هذا الإجراء.
@@ -248,7 +313,20 @@ const AdminRegions = () => {
             <DialogClose asChild>
               <Button variant="outline">إلغاء</Button>
             </DialogClose>
-            <Button variant="destructive" onClick={handleDeleteRegion}>حذف</Button>
+            <Button 
+              variant="destructive" 
+              onClick={handleDeleteRegion}
+              disabled={deleteRegionMutation.isPending}
+            >
+              {deleteRegionMutation.isPending ? (
+                <>
+                  <Loader className="h-4 w-4 mr-1 animate-spin" />
+                  <span>جاري الحذف...</span>
+                </>
+              ) : (
+                <span>حذف</span>
+              )}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

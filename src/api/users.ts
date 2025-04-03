@@ -19,13 +19,6 @@ export interface User {
   updated_at: string;
 }
 
-export interface Profile {
-  user_id: number;
-  about: string;
-  created_at: string;
-  updated_at: string;
-}
-
 // Fetch all users
 export const fetchUsers = async (): Promise<User[]> => {
   try {
@@ -60,36 +53,27 @@ export const fetchUserById = async (id: number): Promise<User> => {
   }
 };
 
-// Fetch all profiles
-export const fetchProfiles = async (): Promise<Profile[]> => {
+// Update user status
+export const updateUserStatus = async (userId: number, status: string, token: string): Promise<User> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/profiles`);
+    const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({ status }),
+    });
     
     if (!response.ok) {
-      throw new Error(`Error fetching profiles: ${response.status}`);
+      const errorData = await response.json();
+      throw new Error(errorData.message || `Error updating user status: ${response.status}`);
     }
     
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error("Failed to fetch profiles:", error);
-    throw error;
-  }
-};
-
-// Fetch a specific profile by user ID
-export const fetchProfileByUserId = async (userId: number): Promise<Profile> => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/profiles/${userId}`);
-    
-    if (!response.ok) {
-      throw new Error(`Error fetching profile: ${response.status}`);
-    }
-    
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error(`Failed to fetch profile for user ID ${userId}:`, error);
+    console.error(`Failed to update status for user with ID ${userId}:`, error);
     throw error;
   }
 };

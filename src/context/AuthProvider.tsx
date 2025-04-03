@@ -1,7 +1,8 @@
+
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { API_BASE_URL } from '@/config/api';
 
-export type UserRole = 'admin' | 'client' | 'provider';
+export type UserRole = 'admin' | 'provider' | 'client';
 
 export interface User {
   id: number;
@@ -50,6 +51,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const parsedUser = JSON.parse(storedUser);
       setUser(parsedUser);
       
+      // Map role_id to role type
       if (parsedUser.role_id === 1) {
         setUserRole('admin');
       } else if (parsedUser.role_id === 2) {
@@ -86,10 +88,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setToken(authToken);
       setUser(userData);
       
+      // Map role_id to role type
       if (userData.role_id === 1) {
-        setUserRole('provider');
-      } else if (userData.role_id === 2) {
         setUserRole('admin');
+      } else if (userData.role_id === 2) {
+        setUserRole('provider');
       } else {
         setUserRole('client');
       }
