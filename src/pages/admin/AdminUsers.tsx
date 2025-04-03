@@ -27,7 +27,7 @@ import { fetchRates } from '@/api/rates';
 import { fetchServices } from '@/api/services';
 import { useAuth } from '@/context/AuthProvider';
 
-const UserCard = ({ user, onStatusChange }: { user: any; onStatusChange: (user: any, status: string) => void }) => {
+function UserCard({ user, onStatusChange }: { user: any; onStatusChange: (user: any, status: string) => void; }) {
   const isProvider = user.role_id === 2;
   const [status, setStatus] = useState(user.status);
   const [ratings, setRatings] = useState<any[]>([]);
@@ -61,7 +61,7 @@ const UserCard = ({ user, onStatusChange }: { user: any; onStatusChange: (user: 
     try {
       const data = await fetchRates(token);
       // Filter ratings by this user (if provider) or ratings given by this user (if client)
-      const userRatings = isProvider 
+      const userRatings = isProvider
         ? data.filter((rate: any) => rate.service_id === services.find((s: any) => s.profile_provider_id === user.id)?.id)
         : data.filter((rate: any) => rate.user_id === user.id);
       setRatings(userRatings);
@@ -95,11 +95,10 @@ const UserCard = ({ user, onStatusChange }: { user: any; onStatusChange: (user: 
             <div className="flex items-center gap-4">
               <div className="w-16 h-16 rounded-full overflow-hidden bg-muted">
                 {user.image ? (
-                  <img 
-                    src={user.image} 
+                  <img
+                    src={user.image}
                     alt={`${user.first_name} ${user.last_name}`}
-                    className="w-full h-full object-cover"
-                  />
+                    className="w-full h-full object-cover" />
                 ) : (
                   <User className="w-full h-full p-4 text-muted-foreground" />
                 )}
@@ -119,14 +118,14 @@ const UserCard = ({ user, onStatusChange }: { user: any; onStatusChange: (user: 
                 </div>
               </div>
             </div>
-            
+
             {isProvider && (
               <div className="text-sm bg-muted px-3 py-1 rounded-md">
                 <span className="font-medium">{user.profession || "مزود خدمة"}</span>
               </div>
             )}
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-sm">
@@ -142,7 +141,7 @@ const UserCard = ({ user, onStatusChange }: { user: any; onStatusChange: (user: 
                 <span>{user.region_id}</span>
               </div>
             </div>
-            
+
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-sm">
                 <Home className="h-4 w-4 text-muted-foreground" />
@@ -156,8 +155,8 @@ const UserCard = ({ user, onStatusChange }: { user: any; onStatusChange: (user: 
           </div>
 
           <div className="flex flex-wrap gap-2 mt-4">
-            <Button 
-              variant={status === 'active' ? 'destructive' : 'default'} 
+            <Button
+              variant={status === 'active' ? 'destructive' : 'default'}
               size="sm"
               onClick={handleToggleStatus}
             >
@@ -173,13 +172,13 @@ const UserCard = ({ user, onStatusChange }: { user: any; onStatusChange: (user: 
                 </>
               )}
             </Button>
-            
+
             {isProvider && (
               <>
                 <Dialog>
                   <DialogTrigger asChild>
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       size="sm"
                       onClick={loadRatings}
                     >
@@ -217,11 +216,11 @@ const UserCard = ({ user, onStatusChange }: { user: any; onStatusChange: (user: 
                     </div>
                   </DialogContent>
                 </Dialog>
-                
+
                 <Dialog>
                   <DialogTrigger asChild>
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       size="sm"
                       onClick={loadServices}
                     >
@@ -257,16 +256,16 @@ const UserCard = ({ user, onStatusChange }: { user: any; onStatusChange: (user: 
                     </div>
                   </DialogContent>
                 </Dialog>
-                
+
                 <Dialog>
                   <DialogTrigger asChild>
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       size="sm"
                       onClick={() => {
                         loadServices();
                         loadRatings();
-                      }}
+                      } }
                     >
                       <BarChart className="h-4 w-4 mr-1" />
                       <span>التقارير</span>
@@ -289,7 +288,7 @@ const UserCard = ({ user, onStatusChange }: { user: any; onStatusChange: (user: 
                         <div className="bg-muted/50 p-3 rounded-md">
                           <span className="text-sm text-muted-foreground">متوسط التقييم</span>
                           <p className="text-xl font-bold">
-                            {ratings.length > 0 
+                            {ratings.length > 0
                               ? (ratings.reduce((sum: number, rating: any) => sum + rating.num_star, 0) / ratings.length).toFixed(1)
                               : 'لا يوجد'}
                           </p>
@@ -309,7 +308,7 @@ const UserCard = ({ user, onStatusChange }: { user: any; onStatusChange: (user: 
       </CardContent>
     </Card>
   );
-};
+}
 
 const AdminUsers = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -320,7 +319,7 @@ const AdminUsers = () => {
   
   const { data: users = [], isLoading, error } = useQuery({
     queryKey: ['users'],
-    queryFn: () => fetchUsers(),
+    queryFn: () => fetchUsers(token),
     enabled: !!token,
   });
 

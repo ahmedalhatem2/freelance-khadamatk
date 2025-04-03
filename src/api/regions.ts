@@ -1,3 +1,4 @@
+// regions.ts
 
 import { API_BASE_URL } from "@/config/api";
 
@@ -9,14 +10,18 @@ export interface Region {
 }
 
 // Fetch all regions
-export const fetchRegions = async (): Promise<Region[]> => {
+export const fetchRegions = async (token: string): Promise<Region[]> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/regions`);
-    
+    const response = await fetch(`${API_BASE_URL}/regions`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        }
+    });
+
     if (!response.ok) {
       throw new Error(`Error fetching regions: ${response.status}`);
     }
-    
+
     const data = await response.json();
     return data;
   } catch (error) {
@@ -26,14 +31,18 @@ export const fetchRegions = async (): Promise<Region[]> => {
 };
 
 // Fetch a region by ID
-export const fetchRegionById = async (id: number): Promise<Region> => {
+export const fetchRegionById = async (id: number, token: string): Promise<Region> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/regions/${id}`);
-    
+    const response = await fetch(`${API_BASE_URL}/regions/${id}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        }
+    });
+
     if (!response.ok) {
       throw new Error(`Error fetching region: ${response.status}`);
     }
-    
+
     const data = await response.json();
     return data;
   } catch (error) {
@@ -53,12 +62,12 @@ export const createRegion = async (regionData: { name: string }, token: string):
       },
       body: JSON.stringify(regionData),
     });
-    
+
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(errorData.message || `Error creating region: ${response.status}`);
     }
-    
+
     const data = await response.json();
     return data;
   } catch (error) {
@@ -82,12 +91,12 @@ export const updateRegion = async (
       },
       body: JSON.stringify(regionData),
     });
-    
+
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(errorData.message || `Error updating region: ${response.status}`);
     }
-    
+
     const data = await response.json();
     return data;
   } catch (error) {
@@ -109,7 +118,7 @@ export const deleteRegion = async (
         'Content-Type': 'application/json',
       },
     });
-    
+
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(errorData.message || `Error deleting region: ${response.status}`);

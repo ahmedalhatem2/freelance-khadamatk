@@ -24,15 +24,21 @@ export interface Profile {
   user?: User;
 }
 
+
 // Fetch all users
-export const fetchUsers = async (): Promise<User[]> => {
+export const fetchUsers = async (token: string): Promise<User[]> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/users`);
-    
+    const response = await fetch(`${API_BASE_URL}/users`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
     if (!response.ok) {
-      throw new Error(`Error fetching users: ${response.status}`);
+      const errorData = await response.json();
+      throw new Error(errorData.message || `Error fetching users: ${response.status}`);
     }
-    
+
     const data = await response.json();
     return data;
   } catch (error) {
