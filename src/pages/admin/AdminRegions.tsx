@@ -141,6 +141,7 @@ const AdminRegions = () => {
     setIsDeleteDialogOpen(true);
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const filteredRegions = regions.filter((region: any) =>
     region.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -226,6 +227,7 @@ const AdminRegions = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 {filteredRegions.map((region: any) => (
                   <TableRow key={region.id}>
                     <TableCell className="font-medium">{region.id}</TableCell>

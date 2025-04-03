@@ -1,13 +1,44 @@
 import React from "react";
 import { useAuth } from "@/context/AuthProvider";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { MapPin, Mail, Phone, User, Shield } from "lucide-react";
+import { MapPin, Mail, Phone, User, Shield, Loader } from "lucide-react";
 import { CustomBadge } from "@/components/ui/custom-badge";
+import { fetchUsers } from "@/api/users";
+import { fetchRegions } from "@/api/regions";
+import { fetchServices } from "@/api/services";
 
 const AdminProfile = () => {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
+
+  const { data: users = [] } = useQuery({
+    queryKey: ["users"],
+    queryFn: () => fetchUsers(token),
+    enabled: !!token,
+  });
+  const { data: regions = [] } = useQuery({
+    queryKey: ["regions"],
+    queryFn: () => fetchRegions(token),
+    enabled: !!token,
+  });
+
+  const { data: services = [] } = useQuery({
+    queryKey: ["services"],
+    queryFn: () => fetchServices(token),
+    enabled: !!token,
+  });
+
+  // Count providers and clients
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const providersCount = users.filter((u: any) => u.role_id === 2).length;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const activeUsers = users.filter((u: any) => u.status === "active").length;
+  const activeServies = services.filter(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (s: any) => s.status === "active"
+  ).length;
 
   if (!user) {
     return <div className="p-6 text-center">جاري تحميل البيانات...</div>;
@@ -24,7 +55,8 @@ const AdminProfile = () => {
           <Avatar className="h-20 w-20 border-2 border-primary/20">
             <img
               src={
-                user.image || "https://pbs.twimg.com/profile_images/1669434861680054273/qHgWVO0G_400x400.jpg"
+                user.image ||
+                "https://pbs.twimg.com/profile_images/1669434861680054273/qHgWVO0G_400x400.jpg"
               }
               alt={`${user.first_name} ${user.last_name}`}
             />
@@ -84,25 +116,49 @@ const AdminProfile = () => {
               <div className="grid grid-cols-2 gap-4">
                 <Card>
                   <CardContent className="p-4 text-center">
-                    <p className="text-3xl font-bold text-primary">24</p>
+                    <p className="text-3xl font-bold text-primary">
+                      {token ? (
+                        activeUsers
+                      ) : (
+                        <Loader className="h-4 w-4 animate-spin" />
+                      )}
+                    </p>
                     <p className="text-sm text-muted-foreground">مستخدم نشط</p>
                   </CardContent>
                 </Card>
                 <Card>
                   <CardContent className="p-4 text-center">
-                    <p className="text-3xl font-bold text-primary">15</p>
+                    <p className="text-3xl font-bold text-primary">
+                      {token ? (
+                        providersCount
+                      ) : (
+                        <Loader className="h-4 w-4 animate-spin" />
+                      )}
+                    </p>
                     <p className="text-sm text-muted-foreground">مزود خدمة</p>
                   </CardContent>
                 </Card>
                 <Card>
                   <CardContent className="p-4 text-center">
-                    <p className="text-3xl font-bold text-primary">56</p>
+                    <p className="text-3xl font-bold text-primary">
+                      {token ? (
+                        activeServies
+                      ) : (
+                        <Loader className="h-4 w-4 animate-spin" />
+                      )}
+                    </p>
                     <p className="text-sm text-muted-foreground">خدمة متاحة</p>
                   </CardContent>
                 </Card>
                 <Card>
                   <CardContent className="p-4 text-center">
-                    <p className="text-3xl font-bold text-primary">8</p>
+                    <p className="text-3xl font-bold text-primary">
+                      {token ? (
+                        regions.length
+                      ) : (
+                        <Loader className="h-4 w-4 animate-spin" />
+                      )}
+                    </p>
                     <p className="text-sm text-muted-foreground">منطقة</p>
                   </CardContent>
                 </Card>

@@ -30,6 +30,7 @@ import { fetchUsers } from "@/api/users";
 import { fetchCategories } from "@/api/categories";
 import { fetchRegions } from "@/api/regions";
 import { fetchServices } from "@/api/services";
+import { fetchRoles } from "@/api/roles";
 
 const AdminLayout = () => {
   const { isAuthenticated, user, logout, userRole, token } = useAuth();
@@ -43,12 +44,11 @@ const AdminLayout = () => {
     logout();
   };
   
-  const location = useLocation();
 
   // Fetch data for badge counts
   const { data: users = [] } = useQuery({
     queryKey: ['users'],
-    queryFn: fetchUsers,
+    queryFn: () => fetchUsers(token),
     enabled: !!token,
   });
   
@@ -60,19 +60,21 @@ const AdminLayout = () => {
   
   const { data: regions = [] } = useQuery({
     queryKey: ['regions'],
-    queryFn: fetchRegions,
+    queryFn: () => fetchRegions(token),
     enabled: !!token,
   });
   
   const { data: services = [] } = useQuery({
     queryKey: ['services'],
-    queryFn: fetchServices,
+    queryFn: () => fetchServices(token),
     enabled: !!token,
   });
 
-  // Count providers and clients
-  const providersCount = users.filter((u: any) => u.role_id === 2).length;
-  const clientsCount = users.filter((u: any) => u.role_id === 3).length;
+  const { data: roles = [] } = useQuery({
+    queryKey: ['roles'],
+    queryFn: () => fetchRoles(token),
+    enabled: !!token,
+  });
 
   const navItems = [
     {
@@ -101,6 +103,7 @@ const AdminLayout = () => {
       path: "/admin/roles",
       label: "الأدوار",
       icon: <ShieldCheck className="h-5 w-5" />,
+      count: roles.length,
     },
     {
       path: "/admin/regions",
@@ -173,36 +176,6 @@ const AdminLayout = () => {
 
       <div className="flex flex-col md:flex-row flex-1">
         <aside className="bg-muted w-full md:w-64 p-4 md:min-h-[calc(100vh-72px)]">
-          <div className="space-y-2 mb-6">
-            <div className="text-sm text-muted-foreground">البيانات العامة</div>
-            <div className="grid grid-cols-2 gap-2">
-              <div className="bg-muted-foreground/10 rounded p-2">
-                <div className="text-xs text-muted-foreground">مزودي الخدمات</div>
-                <div className="text-lg font-semibold">
-                  {token ? providersCount : <Loader className="h-4 w-4 animate-spin" />}
-                </div>
-              </div>
-              <div className="bg-muted-foreground/10 rounded p-2">
-                <div className="text-xs text-muted-foreground">العملاء</div>
-                <div className="text-lg font-semibold">
-                  {token ? clientsCount : <Loader className="h-4 w-4 animate-spin" />}
-                </div>
-              </div>
-              <div className="bg-muted-foreground/10 rounded p-2">
-                <div className="text-xs text-muted-foreground">الخدمات</div>
-                <div className="text-lg font-semibold">
-                  {token ? services.length : <Loader className="h-4 w-4 animate-spin" />}
-                </div>
-              </div>
-              <div className="bg-muted-foreground/10 rounded p-2">
-                <div className="text-xs text-muted-foreground">التصنيفات</div>
-                <div className="text-lg font-semibold">
-                  {token ? categories.length : <Loader className="h-4 w-4 animate-spin" />}
-                </div>
-              </div>
-            </div>
-          </div>
-
           <nav className="space-y-2">
             {navItems.map((item) => (
               <NavLink
@@ -242,3 +215,7 @@ const AdminLayout = () => {
 };
 
 export default AdminLayout;
+function fetchRoless(token: string): any {
+  throw new Error("Function not implemented.");
+}
+

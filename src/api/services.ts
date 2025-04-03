@@ -3,7 +3,7 @@ import { API_BASE_URL } from "@/config/api";
 import { Service, Category } from "@/types/api";
 
 // Fetch all services
-export const fetchServices = async (): Promise<Service[]> => {
+export const fetchServices = async (token: string): Promise<Service[]> => {
   try {
     const response = await fetch(`${API_BASE_URL}/service/servicescard`);
     

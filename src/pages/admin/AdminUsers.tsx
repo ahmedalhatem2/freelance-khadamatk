@@ -27,10 +27,13 @@ import { fetchRates } from '@/api/rates';
 import { fetchServices } from '@/api/services';
 import { useAuth } from '@/context/AuthProvider';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function UserCard({ user, onStatusChange }: { user: any; onStatusChange: (user: any, status: string) => void; }) {
   const isProvider = user.role_id === 2;
   const [status, setStatus] = useState(user.status);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [ratings, setRatings] = useState<any[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [services, setServices] = useState<any[]>([]);
   const [loadingRatings, setLoadingRatings] = useState(false);
   const [loadingServices, setLoadingServices] = useState(false);
@@ -62,7 +65,9 @@ function UserCard({ user, onStatusChange }: { user: any; onStatusChange: (user: 
       const data = await fetchRates(token);
       // Filter ratings by this user (if provider) or ratings given by this user (if client)
       const userRatings = isProvider
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ? data.filter((rate: any) => rate.service_id === services.find((s: any) => s.profile_provider_id === user.id)?.id)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         : data.filter((rate: any) => rate.user_id === user.id);
       setRatings(userRatings);
     } catch (error) {
@@ -76,8 +81,9 @@ function UserCard({ user, onStatusChange }: { user: any; onStatusChange: (user: 
     if (!token || !isProvider) return;
     setLoadingServices(true);
     try {
-      const data = await fetchServices();
+      const data = await fetchServices(token);
       // Filter services by this provider
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const providerServices = data.filter((service: any) => service.profile?.user_id === user.id);
       setServices(providerServices);
     } catch (error) {
@@ -196,6 +202,7 @@ function UserCard({ user, onStatusChange }: { user: any; onStatusChange: (user: 
                           <Loader className="h-6 w-6 animate-spin" />
                         </div>
                       ) : ratings.length > 0 ? (
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         ratings.map((rating: any) => (
                           <div key={rating.id} className="p-3 bg-muted/50 rounded-md">
                             <div className="flex justify-between items-center">
@@ -238,6 +245,7 @@ function UserCard({ user, onStatusChange }: { user: any; onStatusChange: (user: 
                           <Loader className="h-6 w-6 animate-spin" />
                         </div>
                       ) : services.length > 0 ? (
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         services.map((service: any) => (
                           <div key={service.id} className="p-3 bg-muted/50 rounded-md">
                             <div className="flex justify-between items-center">
@@ -289,6 +297,7 @@ function UserCard({ user, onStatusChange }: { user: any; onStatusChange: (user: 
                           <span className="text-sm text-muted-foreground">متوسط التقييم</span>
                           <p className="text-xl font-bold">
                             {ratings.length > 0
+                              // eslint-disable-next-line @typescript-eslint/no-explicit-any
                               ? (ratings.reduce((sum: number, rating: any) => sum + rating.num_star, 0) / ratings.length).toFixed(1)
                               : 'لا يوجد'}
                           </p>
@@ -339,10 +348,12 @@ const AdminUsers = () => {
     },
   });
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleStatusChange = async (user: any, newStatus: string) => {
     await updateStatusMutation.mutateAsync({ userId: user.id, status: newStatus });
   };
   
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const filteredUsers = users.filter((user: any) => {
     // Filter by search term
     const searchMatch = 
@@ -402,6 +413,7 @@ const AdminUsers = () => {
             <Loader className="h-8 w-8 animate-spin" />
           </div>
         ) : filteredUsers.length > 0 ? (
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           filteredUsers.map((user: any) => (
             <UserCard 
               key={user.id} 
