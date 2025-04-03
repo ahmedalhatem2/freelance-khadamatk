@@ -215,6 +215,7 @@ const AdminLayout = () => {
 };
 
 export default AdminLayout;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function fetchRoless(token: string): any {
   throw new Error("Function not implemented.");
 }

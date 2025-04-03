@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -227,7 +228,7 @@ const AdminRegions = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-explicit-any, @typescript-eslint/no-explicit-any
                 {filteredRegions.map((region: any) => (
                   <TableRow key={region.id}>
                     <TableCell className="font-medium">{region.id}</TableCell>

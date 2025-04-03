@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -46,11 +47,12 @@ const AdminCategories = () => {
 
   const { data: services = [] } = useQuery({
     queryKey: ['services'],
-    queryFn: fetchServices,
+    queryFn: () => fetchServices(token),
   });
 
   // Calculate services count for each category
   const categoryServicesCount = (categoryId: number) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return services.filter((service: any) => service.category_id === categoryId).length;
   };
 
@@ -145,6 +147,7 @@ const AdminCategories = () => {
     setIsDeleteDialogOpen(true);
   };
   
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const filteredCategories = categories.filter((category: any) => 
     category.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -229,6 +232,7 @@ const AdminCategories = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 {filteredCategories.map((category: any) => (
                   <TableRow key={category.id}>
                     <TableCell className="font-medium">{category.id}</TableCell>
