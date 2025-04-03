@@ -13,23 +13,24 @@ import { toast } from '@/hooks/use-toast';
 
 interface ProviderServicesProps {
   providerId: number;
+  services?: any[]; // Make services optional
 }
 
-const ProviderServices = ({ providerId }: ProviderServicesProps) => {
+const ProviderServices = ({ providerId, services: initialServices }: ProviderServicesProps) => {
   const { token } = useAuth();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedServiceId, setSelectedServiceId] = useState<number | null>(null);
-  const [services, setServices] = useState<any[]>([]);
+  const [services, setServices] = useState<any[]>(initialServices || []);
   const [isLoading, setIsLoading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   
   useEffect(() => {
-    if (token) {
+    if (token && !initialServices) {
       fetchServices();
     }
-  }, [token, providerId]);
+  }, [token, providerId, initialServices]);
   
   const fetchServices = async () => {
     if (!token) return;

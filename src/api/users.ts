@@ -1,4 +1,3 @@
-
 import { API_BASE_URL } from "@/config/api";
 
 export interface User {
@@ -17,6 +16,12 @@ export interface User {
   email_verified_at: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface Profile {
+  user_id: number;
+  about: string;
+  user?: User;
 }
 
 // Fetch all users
@@ -74,6 +79,23 @@ export const updateUserStatus = async (userId: number, status: string, token: st
     return data;
   } catch (error) {
     console.error(`Failed to update status for user with ID ${userId}:`, error);
+    throw error;
+  }
+};
+
+// Fetch a profile for a specific user ID
+export const fetchProfileByUserId = async (userId: number): Promise<Profile> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/profiles/${userId}`);
+    
+    if (!response.ok) {
+      throw new Error(`Error fetching profile: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error(`Failed to fetch profile for user with ID ${userId}:`, error);
     throw error;
   }
 };

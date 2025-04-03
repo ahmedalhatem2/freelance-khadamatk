@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -303,7 +302,7 @@ const AdminRegions = () => {
           </DialogHeader>
           <div className="py-4">
             <p className="text-center">
-              هل أنت متأكد من رغبتك في حذف منطقة &quot;{currentCategory?.name}&quot;؟
+              هل أنت متأكد من رغبتك في حذف منطقة &quot;{currentRegion?.name}&quot;؟
             </p>
             <p className="text-center text-muted-foreground text-sm mt-2">
               لا يمكن التراجع عن هذا الإجراء.

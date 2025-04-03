@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { Card } from "@/components/ui/card";
@@ -60,12 +59,10 @@ const ServiceDetails = () => {
     );
   }
 
-  // Calculate average rating
   const averageRating = service.rates.length 
     ? service.rates.reduce((sum, rate) => sum + rate.num_star, 0) / service.rates.length 
     : 0;
 
-  // Get provider initials for avatar fallback
   const getProviderInitials = () => {
     const firstName = service.profile.user.first_name;
     const lastName = service.profile.user.last_name;
@@ -190,7 +187,7 @@ const ServiceDetails = () => {
                 <Separator className="my-6" />
                 
                 <div className="grid grid-rows-3 gap-4">
-                  <Link  >
+                  <Link to="#" >
                     <Button className="w-full rounded-full">طلب الخدمة</Button>
                   </Link>
 
@@ -201,8 +198,7 @@ const ServiceDetails = () => {
                     </Button>
                   </Link>
                   
-                  <Link  >
-                  {/* to{`https://wa.me/963${service.profile.user.phone}`} */}
+                  <Link to={`https://wa.me/963${service.profile.user.phone}`} >
                     <Button variant="outline" className="w-full rounded-full">
                       <Phone className="w-4 h-4 ml-2" />
                       {service.profile.user.phone}
