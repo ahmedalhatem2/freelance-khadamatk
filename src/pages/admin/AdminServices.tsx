@@ -4,13 +4,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { CustomBadge } from '@/components/ui/custom-badge';
+import { useToast } from '@/components/ui/use-toast';
 import { 
   Search, 
   Briefcase,
   Tag,
   User,
   CheckCircle,
-  XCircle
+  XCircle,
+  Loader
 } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { 
@@ -20,87 +22,80 @@ import {
   DialogTitle, 
   DialogTrigger 
 } from '@/components/ui/dialog';
-
-// Mock services data
-const servicesData = [
-  {
-    id: 1,
-    title: 'تصميم شعار احترافي',
-    category: { id: 1, name: 'تصميم' },
-    description: 'تصميم شعار احترافي وفريد يعكس هوية علامتك التجارية.',
-    image: 'https://placehold.co/600x400?text=Logo+Design',
-    status: 'active',
-    price: 500,
-    provider: { id: 1, first_name: 'أحمد', last_name: 'محمد', image: 'https://i.pravatar.cc/150?img=1' }
-  },
-  {
-    id: 2,
-    title: 'تطوير موقع إلكتروني',
-    category: { id: 2, name: 'برمجة' },
-    description: 'تطوير موقع إلكتروني متجاوب مع كافة الأجهزة باستخدام أحدث التقنيات.',
-    image: 'https://placehold.co/600x400?text=Web+Development',
-    status: 'active',
-    price: 3000,
-    provider: { id: 3, first_name: 'محمد', last_name: 'عبدالله', image: 'https://i.pravatar.cc/150?img=3' }
-  },
-  {
-    id: 3,
-    title: 'كتابة محتوى تسويقي',
-    category: { id: 5, name: 'كتابة محتوى' },
-    description: 'كتابة محتوى تسويقي جذاب ومحسن لمحركات البحث.',
-    image: 'https://placehold.co/600x400?text=Content+Writing',
-    status: 'inactive',
-    price: 200,
-    provider: { id: 4, first_name: 'سارة', last_name: 'خالد', image: 'https://i.pravatar.cc/150?img=5' }
-  },
-  {
-    id: 4,
-    title: 'تسويق عبر وسائل التواصل الاجتماعي',
-    category: { id: 3, name: 'تسويق' },
-    description: 'إدارة حسابات التواصل الاجتماعي وتنفيذ حملات إعلانية مستهدفة.',
-    image: 'https://placehold.co/600x400?text=Social+Media+Marketing',
-    status: 'active',
-    price: 1500,
-    provider: { id: 5, first_name: 'خالد', last_name: 'أحمد', image: 'https://i.pravatar.cc/150?img=4' }
-  },
-  {
-    id: 5,
-    title: 'ترجمة محتوى',
-    category: { id: 4, name: 'ترجمة' },
-    description: 'ترجمة محتوى من وإلى اللغة العربية والإنجليزية بدقة عالية.',
-    image: 'https://placehold.co/600x400?text=Translation',
-    status: 'active',
-    price: 150,
-    provider: { id: 6, first_name: 'فاطمة', last_name: 'علي', image: 'https://i.pravatar.cc/150?img=6' }
-  }
-];
+import { useAuth } from '@/context/AuthProvider';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { fetchServices, updateService } from '@/api/services';
 
 const AdminServices = () => {
-  const [services, setServices] = useState(servicesData);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedService, setSelectedService] = useState<any>(null);
+  const { token } = useAuth();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
   
+  // Fetch services data
+  const { 
+    data: services = [], 
+    isLoading,
+    error 
+  } = useQuery({
+    queryKey: ["services"],
+    queryFn: () => fetchServices(token),
+    enabled: !!token,
+  });
+  
+  // Update service status mutation
+  const updateServiceMutation = useMutation({
+    mutationFn: ({ serviceId, status }: { serviceId: number; status: string }) => {
+      const formData = new FormData();
+      formData.append('status', status);
+      return updateService(serviceId, formData, token || "");
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["services"] });
+      toast({
+        title: "تم بنجاح",
+        description: "تم تحديث حالة الخدمة بنجاح",
+      });
+    },
+    onError: (error) => {
+      console.error("Error updating service status:", error);
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء تحديث حالة الخدمة",
+        variant: "destructive",
+      });
+    },
+  });
+
   const filteredServices = services.filter(service => 
     service.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    service.category.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    service.provider.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    service.provider.last_name.toLowerCase().includes(searchTerm.toLowerCase())
+    service.category?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    service.profile?.user?.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    service.profile?.user?.last_name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleToggleStatus = (serviceId: number) => {
-    setServices(services.map(service => 
-      service.id === serviceId 
-        ? { 
-            ...service, 
-            status: service.status === 'active' ? 'inactive' : 'active' 
-          } 
-        : service
-    ));
+  const handleToggleStatus = (serviceId: number, currentStatus: string) => {
+    const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
+    updateServiceMutation.mutate({ serviceId, status: newStatus });
   };
   
   const openServiceDetails = (service: any) => {
     setSelectedService(service);
   };
+
+  if (error) {
+    return (
+      <div className="text-center py-10">
+        <div className="text-destructive">
+          <p className="text-lg font-medium">حدث خطأ أثناء تحميل البيانات</p>
+          <p className="text-sm mt-2">
+            يرجى التحقق من الاتصال بالإنترنت والمحاولة مرة أخرى.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -125,7 +120,11 @@ const AdminServices = () => {
           <CardTitle>قائمة الخدمات</CardTitle>
         </CardHeader>
         <CardContent>
-          {filteredServices.length > 0 ? (
+          {isLoading ? (
+            <div className="flex justify-center py-10">
+              <Loader className="h-8 w-8 animate-spin" />
+            </div>
+          ) : filteredServices.length > 0 ? (
             <Table>
               <TableHeader>
                 <TableRow>
@@ -139,17 +138,21 @@ const AdminServices = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredServices.map((service) => (
+                {filteredServices.map((service: any) => (
                   <TableRow key={service.id}>
                     <TableCell className="font-medium">{service.id}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-md overflow-hidden">
-                          <img 
-                            src={service.image}
-                            alt={service.title}
-                            className="w-full h-full object-cover"
-                          />
+                        <div className="w-12 h-12 rounded-md overflow-hidden bg-muted">
+                          {service.image ? (
+                            <img 
+                              src={service.image}
+                              alt={service.title}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <Briefcase className="h-full w-full p-3 text-muted-foreground" />
+                          )}
                         </div>
                         <span className="font-medium">{service.title}</span>
                       </div>
@@ -157,22 +160,28 @@ const AdminServices = () => {
                     <TableCell>
                       <CustomBadge variant="outline">
                         <Tag className="h-3.5 w-3.5 mr-1" />
-                        <span>{service.category.name}</span>
+                        <span>{service.category?.name || 'غير مصنف'}</span>
                       </CustomBadge>
                     </TableCell>
                     <TableCell className="font-medium">
-                      {service.price} ر.س
+                      {service.price} ل.س
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-full overflow-hidden">
-                          <img 
-                            src={service.provider.image}
-                            alt={`${service.provider.first_name} ${service.provider.last_name}`}
-                            className="w-full h-full object-cover"
-                          />
+                        <div className="w-8 h-8 rounded-full overflow-hidden bg-muted">
+                          {service.profile?.user?.image ? (
+                            <img 
+                              src={service.profile.user.image}
+                              alt={`${service.profile.user.first_name} ${service.profile.user.last_name}`}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <User className="h-full w-full p-1 text-muted-foreground" />
+                          )}
                         </div>
-                        <span>{service.provider.first_name} {service.provider.last_name}</span>
+                        <span>
+                          {service.profile?.user?.first_name} {service.profile?.user?.last_name}
+                        </span>
                       </div>
                     </TableCell>
                     <TableCell>
@@ -199,12 +208,16 @@ const AdminServices = () => {
                             </DialogHeader>
                             {selectedService && (
                               <div className="space-y-4 py-4">
-                                <div className="w-full aspect-video rounded-md overflow-hidden">
-                                  <img 
-                                    src={selectedService.image}
-                                    alt={selectedService.title}
-                                    className="w-full h-full object-cover"
-                                  />
+                                <div className="w-full aspect-video rounded-md overflow-hidden bg-muted">
+                                  {selectedService.image ? (
+                                    <img 
+                                      src={selectedService.image}
+                                      alt={selectedService.title}
+                                      className="w-full h-full object-cover"
+                                    />
+                                  ) : (
+                                    <Briefcase className="h-full w-full p-12 text-muted-foreground" />
+                                  )}
                                 </div>
                                 
                                 <div>
@@ -212,7 +225,7 @@ const AdminServices = () => {
                                   <div className="flex items-center gap-2 mt-2">
                                     <CustomBadge variant="outline">
                                       <Tag className="h-3.5 w-3.5 mr-1" />
-                                      <span>{selectedService.category.name}</span>
+                                      <span>{selectedService.category?.name || 'غير مصنف'}</span>
                                     </CustomBadge>
                                     <CustomBadge variant={selectedService.status === 'active' ? 'default' : 'destructive'}>
                                       {selectedService.status === 'active' ? 'نشط' : 'غير نشط'}
@@ -221,29 +234,52 @@ const AdminServices = () => {
                                 </div>
                                 
                                 <div className="p-3 bg-muted/50 rounded-md">
-                                  <p>{selectedService.description}</p>
+                                  <p>{selectedService.desc}</p>
                                 </div>
                                 
                                 <div className="flex justify-between items-center">
                                   <div className="flex items-center gap-2">
-                                    <div className="w-10 h-10 rounded-full overflow-hidden">
-                                      <img 
-                                        src={selectedService.provider.image}
-                                        alt={`${selectedService.provider.first_name} ${selectedService.provider.last_name}`}
-                                        className="w-full h-full object-cover"
-                                      />
+                                    <div className="w-10 h-10 rounded-full overflow-hidden bg-muted">
+                                      {selectedService.profile?.user?.image ? (
+                                        <img 
+                                          src={selectedService.profile.user.image}
+                                          alt={`${selectedService.profile.user.first_name} ${selectedService.profile.user.last_name}`}
+                                          className="w-full h-full object-cover"
+                                        />
+                                      ) : (
+                                        <User className="h-full w-full p-2 text-muted-foreground" />
+                                      )}
                                     </div>
                                     <div>
                                       <span className="font-medium">
-                                        {selectedService.provider.first_name} {selectedService.provider.last_name}
+                                        {selectedService.profile?.user?.first_name} {selectedService.profile?.user?.last_name}
                                       </span>
                                       <div className="text-sm text-muted-foreground">مزود الخدمة</div>
                                     </div>
                                   </div>
                                   <div className="text-2xl font-bold">
-                                    {selectedService.price} ر.س
+                                    {selectedService.price} ل.س
                                   </div>
                                 </div>
+                                
+                                {selectedService.rates && selectedService.rates.length > 0 && (
+                                  <div>
+                                    <h4 className="font-medium mb-2">التقييمات ({selectedService.rates.length})</h4>
+                                    <div className="space-y-2 max-h-40 overflow-y-auto">
+                                      {selectedService.rates.map((rate: any) => (
+                                        <div key={rate.id} className="p-2 bg-muted/50 rounded-md">
+                                          <div className="flex items-center gap-1 mb-1">
+                                            {Array.from({ length: 5 }).map((_, i) => (
+                                              <div key={i} className={`w-3 h-3 rounded-full ${i < rate.num_star ? 'bg-yellow-400' : 'bg-muted-foreground/30'}`} />
+                                            ))}
+                                            <span className="text-xs text-muted-foreground mr-1">({rate.num_star}/5)</span>
+                                          </div>
+                                          <p className="text-sm">{rate.comment}</p>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
                               </div>
                             )}
                           </DialogContent>
@@ -252,9 +288,12 @@ const AdminServices = () => {
                         <Button 
                           variant={service.status === 'active' ? 'destructive' : 'default'} 
                           size="sm"
-                          onClick={() => handleToggleStatus(service.id)}
+                          onClick={() => handleToggleStatus(service.id, service.status)}
+                          disabled={updateServiceMutation.isPending}
                         >
-                          {service.status === 'active' ? (
+                          {updateServiceMutation.isPending ? (
+                            <Loader className="h-4 w-4 animate-spin" />
+                          ) : service.status === 'active' ? (
                             <>
                               <XCircle className="h-4 w-4 mr-1" />
                               <span>إيقاف</span>
