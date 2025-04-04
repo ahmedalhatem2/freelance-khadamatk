@@ -223,12 +223,21 @@ const AdminRegions = () => {
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-12">#</TableHead>
-                  <TableHead>اسم المنطقة</TableHead>
-                  <TableHead className="text-left">الإجراءات</TableHead>
+                  <TableHead>
+                  <div className="flex items-center gap-2">
+                    
+                    اسم المنطقة
+                    </div>
+                    </TableHead>
+                  <TableHead className="text-left">
+                  <div className="flex items-center gap-2">
+                    
+                    الإجراءات
+                    </div>
+                    </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-explicit-any, @typescript-eslint/no-explicit-any
                 {filteredRegions.map((region: any) => (
                   <TableRow key={region.id}>
                     <TableCell className="font-medium">{region.id}</TableCell>

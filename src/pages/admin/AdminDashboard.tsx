@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,47 +10,88 @@ import {
   ShieldCheck, 
   TrendingUp 
 } from 'lucide-react';
+import { useAuth } from '@/context/AuthProvider';
+import { useQuery } from '@tanstack/react-query';
+import { fetchUsers } from '@/api/users';
+import { fetchRegions } from '@/api/regions';
+import { fetchServices, fetchCategories } from '@/api/services';
+import { stringify } from 'querystring';
 
-const statsData = [
-  { 
-    title: 'إجمالي المستخدمين', 
-    value: '4', 
-    icon: <Users className="h-8 w-8 text-primary" />,
-    change: '+25%'
-  },
-  { 
-    title: 'عدد المزودين', 
-    value: '3', 
-    icon: <Users className="h-8 w-8 text-blue-500" />,
-    change: '+66%'
-  },
-  { 
-    title: 'عدد العملاء', 
-    value: '2', 
-    icon: <Users className="h-8 w-8 text-indigo-500" />,
-    change: '+50%'
-  },
-  { 
-    title: 'إجمالي الخدمات', 
-    value: '9', 
-    icon: <Briefcase className="h-8 w-8 text-emerald-500" />,
-    change: '+25%'
-  },
-  { 
-    title: 'التصنيفات', 
-    value: '8', 
-    icon: <Tag className="h-8 w-8 text-yellow-500" />,
-    change: ''
-  },
-  { 
-    title: 'المناطق', 
-    value: '14', 
-    icon: <Map className="h-8 w-8 text-rose-500" />,
-    change: ''
-  }
-];
 
 const AdminDashboard = () => {
+
+   const { user, token } = useAuth();
+  
+    const { data: users = [] } = useQuery({
+      queryKey: ["users"],
+      queryFn: () => fetchUsers(token),
+      enabled: !!token,
+    });
+    const { data: regions = [] } = useQuery({
+      queryKey: ["regions"],
+      queryFn: () => fetchRegions(token),
+      enabled: !!token,
+    });
+  
+    const { data: services = [] } = useQuery({
+      queryKey: ["services"],
+      queryFn: () => fetchServices(token),
+      enabled: !!token,
+    });
+    const { data: categories = [] } = useQuery({
+      queryKey: ["categories"],
+      queryFn: () => fetchCategories(),
+      enabled: !!token,
+    });
+  
+
+    const usersCount = users.filter((u: any) => u.role_id !== 1).length;
+    const providersCount = users.filter((u: any) => u.role_id === 2).length;
+    const clientsCount = users.filter((u: any) => u.role_id === 3).length;
+    const serviesCount = services.length;
+    const regionsCount = regions.length;
+    const categoriesCount = categories.length;
+   
+
+    const statsData = [
+      { 
+        title: 'إجمالي المستخدمين', 
+        value: usersCount, 
+        icon: <Users className="h-8 w-8 text-primary" />,
+        change: '+25%'
+      },
+      { 
+        title: 'عدد المزودين', 
+        value: providersCount, 
+        icon: <Users className="h-8 w-8 text-blue-500" />,
+        change: '+66%'
+      },
+      { 
+        title: 'عدد العملاء', 
+        value: clientsCount, 
+        icon: <Users className="h-8 w-8 text-indigo-500" />,
+        change: '+50%'
+      },
+      { 
+        title: 'إجمالي الخدمات', 
+        value: serviesCount, 
+        icon: <Briefcase className="h-8 w-8 text-emerald-500" />,
+        change: '+25%'
+      },
+      { 
+        title: 'التصنيفات', 
+        value: categoriesCount, 
+        icon: <Tag className="h-8 w-8 text-yellow-500" />,
+        change: ''
+      },
+      { 
+        title: 'المناطق', 
+        value: regionsCount, 
+        icon: <Map className="h-8 w-8 text-rose-500" />,
+        change: ''
+      }
+    ];
+
   return (
     <div className="space-y-8">
       <div className="flex justify-between items-center">
@@ -65,7 +107,7 @@ const AdminDashboard = () => {
             <CardContent>
               <div className="flex justify-between items-center">
                 <div>
-                  <p className="text-3xl font-bold">{stat.value}</p>
+                  <p className="text-3xl font-bold">{(stat.value)}</p>
                   {stat.change && (
                     <p className="text-sm text-muted-foreground flex items-center mt-1">
                       <TrendingUp className="h-4 w-4 mr-1 text-emerald-500" />
@@ -134,5 +176,7 @@ const AdminDashboard = () => {
     </div>
   );
 };
+
+
 
 export default AdminDashboard;

@@ -150,8 +150,18 @@ const AdminRoles = () => {
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-12">#</TableHead>
-                  <TableHead>اسم الدور</TableHead>
-                  <TableHead className="text-left">الإجراءات</TableHead>
+                  <TableHead>
+                  <div className="flex items-center gap-2">
+
+                    اسم الدور
+                  </div>
+                    </TableHead>
+                  <TableHead className="text-left">
+                  <div className="flex items-center gap-2">
+                    
+                    الإجراءات
+                    </div>
+                    </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

@@ -1,39 +1,48 @@
-
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Button } from '@/components/ui/button';
-import { CustomBadge } from '@/components/ui/custom-badge';
-import { useToast } from '@/components/ui/use-toast';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { 
-  Search, 
-  User, 
-  Mail, 
-  Phone, 
-  MapPin, 
-  Home, 
-  Briefcase, 
-  CheckCircle, 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import React, { useState, useEffect } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { CustomBadge } from "@/components/ui/custom-badge";
+import { useToast } from "@/components/ui/use-toast";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  Search,
+  User,
+  Mail,
+  Phone,
+  MapPin,
+  Home,
+  Briefcase,
+  CheckCircle,
   XCircle,
   Star,
   BarChart,
-  Loader
-} from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { fetchUsers, updateUserStatus } from '@/api/users';
-import { fetchRates } from '@/api/rates';
-import { fetchServices } from '@/api/services';
-import { useAuth } from '@/context/AuthProvider';
+  Loader,
+} from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { fetchUsers, updateUserStatus } from "@/api/users";
+import { fetchRates } from "@/api/rates";
+import { fetchServices } from "@/api/services";
+import { useAuth } from "@/context/AuthProvider";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function UserCard({ user, onStatusChange }: { user: any; onStatusChange: (user: any, status: string) => void; }) {
+function UserCard({
+  user,
+  onStatusChange,
+}: {
+  user: any;
+  onStatusChange: (user: any, status: string) => void;
+}) {
   const isProvider = user.role_id === 2;
   const [status, setStatus] = useState(user.status);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [ratings, setRatings] = useState<any[]>([]);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [services, setServices] = useState<any[]>([]);
   const [loadingRatings, setLoadingRatings] = useState(false);
   const [loadingServices, setLoadingServices] = useState(false);
@@ -41,13 +50,15 @@ function UserCard({ user, onStatusChange }: { user: any; onStatusChange: (user: 
   const { toast } = useToast();
 
   const handleToggleStatus = async () => {
-    const newStatus = status === 'active' ? 'inactive' : 'active';
+    const newStatus = status === "active" ? "inactive" : "active";
     try {
       await onStatusChange(user, newStatus);
       setStatus(newStatus);
       toast({
         title: "تم تحديث حالة المستخدم",
-        description: `تم تغيير حالة المستخدم إلى ${newStatus === 'active' ? 'نشط' : 'غير نشط'}`,
+        description: `تم تغيير حالة المستخدم إلى ${
+          newStatus === "active" ? "نشط" : "غير نشط"
+        }`,
       });
     } catch (error) {
       toast({
@@ -64,11 +75,7 @@ function UserCard({ user, onStatusChange }: { user: any; onStatusChange: (user: 
     try {
       const data = await fetchRates(token);
       // Filter ratings by this user (if provider) or ratings given by this user (if client)
-      const userRatings = isProvider
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ? data.filter((rate: any) => rate.service_id === services.find((s: any) => s.profile_provider_id === user.id)?.id)
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        : data.filter((rate: any) => rate.user_id === user.id);
+      const userRatings = isProvider? data.filter((rate: any) =>rate.service_id ===services.find((s: any) => s.profile_provider_id === user.id)?.id): data.filter((rate: any) => rate.user_id === user.id);
       setRatings(userRatings);
     } catch (error) {
       console.error("Error loading ratings:", error);
@@ -77,14 +84,17 @@ function UserCard({ user, onStatusChange }: { user: any; onStatusChange: (user: 
     }
   };
 
+  
+
   const loadServices = async () => {
     if (!token || !isProvider) return;
     setLoadingServices(true);
     try {
       const data = await fetchServices(token);
       // Filter services by this provider
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const providerServices = data.filter((service: any) => service.profile?.user_id === user.id);
+      const providerServices = data.filter(
+        (service: any) => service.profile?.user_id === user.id
+      );
       setServices(providerServices);
     } catch (error) {
       console.error("Error loading services:", error);
@@ -104,7 +114,8 @@ function UserCard({ user, onStatusChange }: { user: any; onStatusChange: (user: 
                   <img
                     src={user.image}
                     alt={`${user.first_name} ${user.last_name}`}
-                    className="w-full h-full object-cover" />
+                    className="w-full h-full object-cover"
+                  />
                 ) : (
                   <User className="w-full h-full p-4 text-muted-foreground" />
                 )}
@@ -115,11 +126,17 @@ function UserCard({ user, onStatusChange }: { user: any; onStatusChange: (user: 
                 </h3>
                 <p className="text-sm text-muted-foreground">#{user.id}</p>
                 <div className="flex items-center gap-2 mt-1">
-                  <CustomBadge variant={status === 'active' ? 'default' : 'destructive'}>
-                    {status === 'active' ? 'نشط' : 'غير نشط'}
+                  <CustomBadge
+                    variant={status === "active" ? "default" : "destructive"}
+                  >
+                    {status === "active" ? "نشط" : "غير نشط"}
                   </CustomBadge>
                   <CustomBadge variant="outline">
-                    {user.role_id === 1 ? 'مدير' : user.role_id === 2 ? 'مزود خدمة' : 'عميل'}
+                    {user.role_id === 1
+                      ? "مدير"
+                      : user.role_id === 2
+                      ? "مزود خدمة"
+                      : "عميل"}
                   </CustomBadge>
                 </div>
               </div>
@@ -127,7 +144,9 @@ function UserCard({ user, onStatusChange }: { user: any; onStatusChange: (user: 
 
             {isProvider && (
               <div className="text-sm bg-muted px-3 py-1 rounded-md">
-                <span className="font-medium">{user.profession || "مزود خدمة"}</span>
+                <span className="font-medium">
+                  {user.profession || "مزود خدمة"}
+                </span>
               </div>
             )}
           </div>
@@ -151,22 +170,31 @@ function UserCard({ user, onStatusChange }: { user: any; onStatusChange: (user: 
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-sm">
                 <Home className="h-4 w-4 text-muted-foreground" />
-                <span>{user.city || '-'}{user.street ? `، ${user.street}` : ''}</span>
+                <span>
+                  {user.city || "-"}
+                  {user.street ? `، ${user.street}` : ""}
+                </span>
               </div>
               <div className="flex items-center gap-2 text-sm">
                 <Briefcase className="h-4 w-4 text-muted-foreground" />
-                <span>{user.role_id === 1 ? 'مدير' : user.role_id === 2 ? 'مزود خدمة' : 'عميل'}</span>
+                <span>
+                  {user.role_id === 1
+                    ? "مدير"
+                    : user.role_id === 2
+                    ? "مزود خدمة"
+                    : "عميل"}
+                </span>
               </div>
             </div>
           </div>
 
           <div className="flex flex-wrap gap-2 mt-4">
             <Button
-              variant={status === 'active' ? 'destructive' : 'default'}
+              variant={status === "active" ? "destructive" : "default"}
               size="sm"
               onClick={handleToggleStatus}
             >
-              {status === 'active' ? (
+              {status === "active" ? (
                 <>
                   <XCircle className="h-4 w-4 mr-1" />
                   <span>إيقاف</span>
@@ -183,18 +211,16 @@ function UserCard({ user, onStatusChange }: { user: any; onStatusChange: (user: 
               <>
                 <Dialog>
                   <DialogTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={loadRatings}
-                    >
+                    <Button variant="outline" size="sm" onClick={loadRatings}>
                       <Star className="h-4 w-4 mr-1" />
                       <span>التقييمات</span>
                     </Button>
                   </DialogTrigger>
                   <DialogContent className="sm:max-w-md">
                     <DialogHeader>
-                      <DialogTitle>تقييمات {user.first_name} {user.last_name}</DialogTitle>
+                      <DialogTitle>
+                        تقييمات {user.first_name} {user.last_name}
+                      </DialogTitle>
                     </DialogHeader>
                     <div className="space-y-3 mt-4">
                       {loadingRatings ? (
@@ -204,7 +230,10 @@ function UserCard({ user, onStatusChange }: { user: any; onStatusChange: (user: 
                       ) : ratings.length > 0 ? (
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         ratings.map((rating: any) => (
-                          <div key={rating.id} className="p-3 bg-muted/50 rounded-md">
+                          <div
+                            key={rating.id}
+                            className="p-3 bg-muted/50 rounded-md"
+                          >
                             <div className="flex justify-between items-center">
                               <span className="flex items-center">
                                 <Star className="h-4 w-4 text-yellow-500 mr-1" />
@@ -218,7 +247,9 @@ function UserCard({ user, onStatusChange }: { user: any; onStatusChange: (user: 
                           </div>
                         ))
                       ) : (
-                        <p className="text-center text-muted-foreground">لا توجد تقييمات بعد</p>
+                        <p className="text-center text-muted-foreground">
+                          لا توجد تقييمات بعد
+                        </p>
                       )}
                     </div>
                   </DialogContent>
@@ -226,18 +257,16 @@ function UserCard({ user, onStatusChange }: { user: any; onStatusChange: (user: 
 
                 <Dialog>
                   <DialogTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={loadServices}
-                    >
+                    <Button variant="outline" size="sm" onClick={loadServices}>
                       <Briefcase className="h-4 w-4 mr-1" />
                       <span>الخدمات</span>
                     </Button>
                   </DialogTrigger>
                   <DialogContent className="sm:max-w-md">
                     <DialogHeader>
-                      <DialogTitle>خدمات {user.first_name} {user.last_name}</DialogTitle>
+                      <DialogTitle>
+                        خدمات {user.first_name} {user.last_name}
+                      </DialogTitle>
                     </DialogHeader>
                     <div className="space-y-3 mt-4">
                       {loadingServices ? (
@@ -247,19 +276,32 @@ function UserCard({ user, onStatusChange }: { user: any; onStatusChange: (user: 
                       ) : services.length > 0 ? (
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         services.map((service: any) => (
-                          <div key={service.id} className="p-3 bg-muted/50 rounded-md">
+                          <div
+                            key={service.id}
+                            className="p-3 bg-muted/50 rounded-md"
+                          >
                             <div className="flex justify-between items-center">
-                              <span className="font-medium">{service.title}</span>
-                              <CustomBadge variant="outline">{service.category?.name || 'غير مصنف'}</CustomBadge>
+                              <span className="font-medium">
+                                {service.title}
+                              </span>
+                              <CustomBadge variant="outline">
+                                {service.category?.name || "غير مصنف"}
+                              </CustomBadge>
                             </div>
                             <div className="flex justify-between items-center mt-2">
-                              <span className="text-sm text-muted-foreground">#{service.id}</span>
-                              <span className="font-medium">{service.price} ل.س</span>
+                              <span className="text-sm text-muted-foreground">
+                                #{service.id}
+                              </span>
+                              <span className="font-medium">
+                                {service.price} ل.س
+                              </span>
                             </div>
                           </div>
                         ))
                       ) : (
-                        <p className="text-center text-muted-foreground">لا توجد خدمات بعد</p>
+                        <p className="text-center text-muted-foreground">
+                          لا توجد خدمات بعد
+                        </p>
                       )}
                     </div>
                   </DialogContent>
@@ -273,7 +315,7 @@ function UserCard({ user, onStatusChange }: { user: any; onStatusChange: (user: 
                       onClick={() => {
                         loadServices();
                         loadRatings();
-                      } }
+                      }}
                     >
                       <BarChart className="h-4 w-4 mr-1" />
                       <span>التقارير</span>
@@ -286,25 +328,41 @@ function UserCard({ user, onStatusChange }: { user: any; onStatusChange: (user: 
                     <div className="space-y-3 mt-4">
                       <div className="grid grid-cols-2 gap-4">
                         <div className="bg-muted/50 p-3 rounded-md">
-                          <span className="text-sm text-muted-foreground">عدد الخدمات</span>
+                          <span className="text-sm text-muted-foreground">
+                            عدد الخدمات
+                          </span>
                           <p className="text-xl font-bold">{services.length}</p>
                         </div>
                         <div className="bg-muted/50 p-3 rounded-md">
-                          <span className="text-sm text-muted-foreground">عدد التقييمات</span>
+                          <span className="text-sm text-muted-foreground">
+                            عدد التقييمات
+                          </span>
                           <p className="text-xl font-bold">{ratings.length}</p>
                         </div>
                         <div className="bg-muted/50 p-3 rounded-md">
-                          <span className="text-sm text-muted-foreground">متوسط التقييم</span>
+                          <span className="text-sm text-muted-foreground">
+                            متوسط التقييم
+                          </span>
                           <p className="text-xl font-bold">
                             {ratings.length > 0
-                              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                              ? (ratings.reduce((sum: number, rating: any) => sum + rating.num_star, 0) / ratings.length).toFixed(1)
-                              : 'لا يوجد'}
+                              ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                (
+                                  ratings.reduce(
+                                    (sum: number, rating: any) =>
+                                      sum + rating.num_star,
+                                    0
+                                  ) / ratings.length
+                                ).toFixed(1)
+                              : "لا يوجد"}
                           </p>
                         </div>
                         <div className="bg-muted/50 p-3 rounded-md">
-                          <span className="text-sm text-muted-foreground">الحالة</span>
-                          <p className="text-xl font-bold">{status === 'active' ? 'نشط' : 'غير نشط'}</p>
+                          <span className="text-sm text-muted-foreground">
+                            الحالة
+                          </span>
+                          <p className="text-xl font-bold">
+                            {status === "active" ? "نشط" : "غير نشط"}
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -320,26 +378,31 @@ function UserCard({ user, onStatusChange }: { user: any; onStatusChange: (user: 
 }
 
 const AdminUsers = () => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [activeTab, setActiveTab] = useState('all');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [activeTab, setActiveTab] = useState("all");
   const { token } = useAuth();
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  
-  const { data: users = [], isLoading, error } = useQuery({
-    queryKey: ['users'],
+
+  const {
+    data: allUsers = [],
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["users"],
     queryFn: () => fetchUsers(token),
     enabled: !!token,
   });
+  const users = allUsers.filter((u: any) => u.role_id !== 1);
 
   const updateStatusMutation = useMutation({
-    mutationFn: ({ userId, status }: { userId: number, status: string }) => 
-      updateUserStatus(userId, status, token || ''),
+    mutationFn: ({ userId, status }: { userId: number; status: string }) =>
+      updateUserStatus(userId, status, token || ""),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['users'] });
+      queryClient.invalidateQueries({ queryKey: ["users"] });
     },
     onError: (error) => {
-      console.error('Error updating user status:', error);
+      console.error("Error updating user status:", error);
       toast({
         title: "خطأ",
         description: "حدث خطأ أثناء تحديث حالة المستخدم",
@@ -350,37 +413,42 @@ const AdminUsers = () => {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleStatusChange = async (user: any, newStatus: string) => {
-    await updateStatusMutation.mutateAsync({ userId: user.id, status: newStatus });
+    await updateStatusMutation.mutateAsync({
+      userId: user.id,
+      status: newStatus,
+    });
   };
-  
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const filteredUsers = users.filter((user: any) => {
     // Filter by search term
-    const searchMatch = 
+    const searchMatch =
       user.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.last_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (user.phone && user.phone.includes(searchTerm));
-    
+
     // Filter by tab (role)
-    if (activeTab === 'all') return searchMatch;
-    if (activeTab === 'providers') return searchMatch && user.role_id === 2;
-    if (activeTab === 'clients') return searchMatch && user.role_id === 3;
-    
+    if (activeTab === "all") return searchMatch;
+    if (activeTab === "providers") return searchMatch && user.role_id === 2;
+    if (activeTab === "clients") return searchMatch && user.role_id === 3;
+
     return searchMatch;
   });
-  
+
   if (error) {
     return (
       <div className="text-center py-10">
         <div className="text-destructive">
           <p className="text-lg font-medium">حدث خطأ أثناء تحميل البيانات</p>
-          <p className="text-sm mt-2">يرجى التحقق من الاتصال بالإنترنت والمحاولة مرة أخرى.</p>
+          <p className="text-sm mt-2">
+            يرجى التحقق من الاتصال بالإنترنت والمحاولة مرة أخرى.
+          </p>
         </div>
       </div>
     );
   }
-  
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -390,15 +458,19 @@ const AdminUsers = () => {
       <div className="flex flex-col md:flex-row justify-between gap-4">
         <div className="relative w-full md:w-96">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input 
-            placeholder="بحث عن مستخدم..." 
+          <Input
+            placeholder="بحث عن مستخدم..."
             className="pl-9 w-full"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        
-        <Tabs defaultValue="all" className="w-full md:w-auto" onValueChange={setActiveTab}>
+
+        <Tabs
+          defaultValue="all"
+          className="w-full md:w-auto"
+          onValueChange={setActiveTab}
+        >
           <TabsList className="grid grid-cols-3 w-full md:w-[400px]">
             <TabsTrigger value="all">جميع المستخدمين</TabsTrigger>
             <TabsTrigger value="providers">مزودي الخدمات</TabsTrigger>
@@ -415,9 +487,9 @@ const AdminUsers = () => {
         ) : filteredUsers.length > 0 ? (
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           filteredUsers.map((user: any) => (
-            <UserCard 
-              key={user.id} 
-              user={user} 
+            <UserCard
+              key={user.id}
+              user={user}
               onStatusChange={handleStatusChange}
             />
           ))
@@ -425,7 +497,9 @@ const AdminUsers = () => {
           <div className="text-center py-10">
             <User className="h-10 w-10 mx-auto text-muted-foreground" />
             <h3 className="mt-4 text-lg font-medium">لا يوجد مستخدمين</h3>
-            <p className="text-muted-foreground">لم يتم العثور على مستخدمين مطابقين لمعايير البحث.</p>
+            <p className="text-muted-foreground">
+              لم يتم العثور على مستخدمين مطابقين لمعايير البحث.
+            </p>
           </div>
         )}
       </div>

@@ -226,13 +226,24 @@ const AdminCategories = () => {
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-12">#</TableHead>
-                  <TableHead>اسم التصنيف</TableHead>
-                  <TableHead>عدد الخدمات</TableHead>
-                  <TableHead className="text-left">الإجراءات</TableHead>
+                  <TableHead >
+                    <div className="flex items-center gap-2">
+                    اسم التصنيف
+                    </div>
+                    </TableHead>
+                  <TableHead >
+                  <div className="flex items-center gap-2">عدد الخدمات</div>
+                    </TableHead>
+                  <TableHead className="text-left">
+                    <div className="flex items-center gap-2">
+
+                    الإجراءات
+                    </div>
+                    </TableHead>
                 </TableRow>
               </TableHeader>
+                
               <TableBody>
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 {filteredCategories.map((category: any) => (
                   <TableRow key={category.id}>
                     <TableCell className="font-medium">{category.id}</TableCell>
