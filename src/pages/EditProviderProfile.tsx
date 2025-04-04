@@ -1,15 +1,28 @@
-
-import React from 'react';
+import React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useParams, useNavigate } from "react-router-dom";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
+import { useAuth } from "@/context/AuthProvider";
 
 const formSchema = z.object({
   firstName: z.string().min(2, {
@@ -47,9 +60,12 @@ const formSchema = z.object({
 });
 
 const EditProviderProfile = () => {
+  const { user, token } = useAuth();
   const { id } = useParams();
   const navigate = useNavigate();
+
   
+
   // Mock regions data - in a real app, you'd fetch these from an API
   const regions = [
     { id: "damascus", name: "دمشق" },
@@ -58,24 +74,42 @@ const EditProviderProfile = () => {
     { id: "latakia", name: "اللاذقية" },
     { id: "tartus", name: "طرطوس" },
   ];
-  
+
   // Mock provider data - in a real app, you'd fetch this from an API
   const providerData = {
-    id: 1,
-    firstName: "أحمد",
-    lastName: "محمد",
-    email: "ahmed@example.com",
-    phone: "0912345678",
-    profession: "مصمم جرافيك",
-    about: "مصمم جرافيك محترف مع خبرة أكثر من 5 سنوات في تصميم الهويات البصرية والمطبوعات وواجهات المستخدم.",
-    avatar: "https://randomuser.me/api/portraits/men/1.jpg",
-    region: "damascus",
-    city: "دمشق",
-    street: "شارع الثورة",
-    address: "بناء رقم 5، طابق 3",
-    status: "active" as const,
+    id: user.id ,
+    firstName: user.first_name,
+    lastName: user.last_name,
+    email: user.email,
+    phone: user.phone,
+    profession: "",
+    about: "",
+    avatar: user.image,
+    region: "",
+    city: user.city,
+    street: user.street,
+    address: user.address,
+    status: user.role_id,
   };
-  
+
+  // export interface User {
+  //   id: number;
+  //   first_name: string;
+  //   last_name: string;
+  //   phone: string;
+  //   status: string;
+  //   role_id: number;
+  //   region_id: number;
+  //   city: string;
+  //   street: string;
+  //   image: string | null;
+  //   address: string;
+  //   email: string;
+  //   email_verified_at: string;
+  //   created_at: string;
+  //   updated_at: string;
+  // }
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: providerData,
@@ -90,10 +124,13 @@ const EditProviderProfile = () => {
   return (
     <div className="container mx-auto py-8 px-4">
       <h1 className="text-2xl font-bold mb-6">تعديل الملف الشخصي</h1>
-      
+
       <Card className="p-6 max-w-4xl mx-auto">
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+          <form
+            onSubmit={form.handleSubmit(handleSubmit)}
+            className="space-y-6"
+          >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormField
                 control={form.control}
@@ -108,7 +145,7 @@ const EditProviderProfile = () => {
                   </FormItem>
                 )}
               />
-              
+
               <FormField
                 control={form.control}
                 name="lastName"
@@ -122,7 +159,7 @@ const EditProviderProfile = () => {
                   </FormItem>
                 )}
               />
-              
+
               <FormField
                 control={form.control}
                 name="email"
@@ -136,7 +173,7 @@ const EditProviderProfile = () => {
                   </FormItem>
                 )}
               />
-              
+
               <FormField
                 control={form.control}
                 name="phone"
@@ -150,7 +187,7 @@ const EditProviderProfile = () => {
                   </FormItem>
                 )}
               />
-              
+
               <FormField
                 control={form.control}
                 name="profession"
@@ -164,14 +201,17 @@ const EditProviderProfile = () => {
                   </FormItem>
                 )}
               />
-              
+
               <FormField
                 control={form.control}
                 name="status"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>الحالة</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="اختر الحالة" />
@@ -186,14 +226,17 @@ const EditProviderProfile = () => {
                   </FormItem>
                 )}
               />
-              
+
               <FormField
                 control={form.control}
                 name="region"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>المنطقة</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="اختر المنطقة" />
@@ -211,7 +254,7 @@ const EditProviderProfile = () => {
                   </FormItem>
                 )}
               />
-              
+
               <FormField
                 control={form.control}
                 name="city"
@@ -225,7 +268,7 @@ const EditProviderProfile = () => {
                   </FormItem>
                 )}
               />
-              
+
               <FormField
                 control={form.control}
                 name="street"
@@ -239,7 +282,7 @@ const EditProviderProfile = () => {
                   </FormItem>
                 )}
               />
-              
+
               <FormField
                 control={form.control}
                 name="address"
@@ -253,7 +296,7 @@ const EditProviderProfile = () => {
                   </FormItem>
                 )}
               />
-              
+
               <FormField
                 control={form.control}
                 name="avatar"
@@ -268,7 +311,7 @@ const EditProviderProfile = () => {
                 )}
               />
             </div>
-            
+
             <FormField
               control={form.control}
               name="about"
@@ -276,21 +319,21 @@ const EditProviderProfile = () => {
                 <FormItem>
                   <FormLabel>نبذة عني</FormLabel>
                   <FormControl>
-                    <Textarea 
-                      placeholder="اكتب نبذة مختصرة عن نفسك ومهاراتك وخبراتك" 
+                    <Textarea
+                      placeholder="اكتب نبذة مختصرة عن نفسك ومهاراتك وخبراتك"
                       className="min-h-[120px]"
-                      {...field} 
+                      {...field}
                     />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            
+
             <div className="flex justify-end gap-4">
-              <Button 
-                type="button" 
-                variant="outline" 
+              <Button
+                type="button"
+                variant="outline"
                 onClick={() => navigate(`/provider/${id}`)}
               >
                 إلغاء
