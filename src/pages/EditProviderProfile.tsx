@@ -1,4 +1,5 @@
-import React from "react";
+
+import React, { useState, useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -23,6 +24,12 @@ import {
 } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
 import { useAuth } from "@/context/AuthProvider";
+import { fetchRegions, Region } from "@/api/regions";
+import { fetchProfileByUserId, updateProfile, updateUser, updateUserWithImage } from "@/api/users";
+import { useQuery } from "@tanstack/react-query";
+import { Loader2, Upload } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const formSchema = z.object({
   firstName: z.string().min(2, {
@@ -56,70 +63,157 @@ const formSchema = z.object({
     message: "العنوان التفصيلي يجب أن يكون على الأقل 5 أحرف",
   }),
   status: z.enum(["active", "inactive"]),
-  avatar: z.string().optional(),
+  avatar: z.any().optional(),
 });
 
 const EditProviderProfile = () => {
   const { user, token } = useAuth();
   const { id } = useParams();
   const navigate = useNavigate();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [profileImage, setProfileImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
-  
+  const { data: regions = [], isLoading: loadingRegions } = useQuery({
+    queryKey: ["regions"],
+    queryFn: () => fetchRegions(token || ""),
+    enabled: !!token,
+  });
 
-  // Mock regions data - in a real app, you'd fetch these from an API
-  const regions = [
-    { id: "damascus", name: "دمشق" },
-    { id: "aleppo", name: "حلب" },
-    { id: "homs", name: "حمص" },
-    { id: "latakia", name: "اللاذقية" },
-    { id: "tartus", name: "طرطوس" },
-  ];
-
-  // Mock provider data - in a real app, you'd fetch this from an API
-  const providerData = {
-    id: user.id ,
-    firstName: user.first_name,
-    lastName: user.last_name,
-    email: user.email,
-    phone: user.phone,
-    profession: "",
-    about: "",
-    avatar: user.image,
-    region: "",
-    city: user.city,
-    street: user.street,
-    address: user.address,
-    status: user.role_id,
-  };
-
-  // export interface User {
-  //   id: number;
-  //   first_name: string;
-  //   last_name: string;
-  //   phone: string;
-  //   status: string;
-  //   role_id: number;
-  //   region_id: number;
-  //   city: string;
-  //   street: string;
-  //   image: string | null;
-  //   address: string;
-  //   email: string;
-  //   email_verified_at: string;
-  //   created_at: string;
-  //   updated_at: string;
-  // }
+  const { data: profile, isLoading: loadingProfile } = useQuery({
+    queryKey: ["profile", user?.id],
+    queryFn: () => fetchProfileByUserId(user?.id || 0, token || ""),
+    enabled: !!user?.id && !!token,
+    onError: (error) => {
+      console.error("Error fetching profile:", error);
+      // It's okay if profile doesn't exist yet
+    }
+  });
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: providerData,
+    defaultValues: {
+      firstName: user?.first_name || "",
+      lastName: user?.last_name || "",
+      email: user?.email || "",
+      phone: user?.phone || "",
+      profession: "",
+      about: "",
+      region: user?.region_id?.toString() || "",
+      city: user?.city || "",
+      street: user?.street || "",
+      address: user?.address || "",
+      status: (user?.status as "active" | "inactive") || "active",
+      avatar: undefined,
+    },
   });
 
-  const handleSubmit = (values: z.infer<typeof formSchema>) => {
-    console.log(values);
-    // Here you would handle form submission with an API call
-    navigate(`/provider/${id}`);
+  useEffect(() => {
+    if (user && !loadingProfile) {
+      form.reset({
+        firstName: user.first_name || "",
+        lastName: user.last_name || "",
+        email: user.email || "",
+        phone: user.phone || "",
+        profession: "",
+        about: profile?.about || "",
+        region: user.region_id?.toString() || "",
+        city: user.city || "",
+        street: user.street || "",
+        address: user.address || "",
+        status: (user.status as "active" | "inactive") || "active",
+        avatar: undefined,
+      });
+
+      if (user.image) {
+        setImagePreview(user.image);
+      }
+    }
+  }, [user, profile, loadingProfile]);
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      const file = files[0];
+      setProfileImage(file);
+      const reader = new FileReader();
+      reader.onload = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
   };
+
+  const handleSubmit = async (values: z.infer<typeof formSchema>) => {
+    if (!user || !token) return;
+    
+    setIsSubmitting(true);
+    try {
+      // Update profile (about)
+      if (profile) {
+        await updateProfile(user.id, { about: values.about }, token);
+      } else {
+        await createProfile({ user_id: user.id, about: values.about }, token);
+      }
+
+      // Update user info
+      const userData = {
+        first_name: values.firstName,
+        last_name: values.lastName,
+        phone: values.phone,
+        region_id: parseInt(values.region),
+        city: values.city,
+        street: values.street,
+        address: values.address,
+        status: values.status,
+      };
+
+      // If there's a new image, use FormData to upload it
+      if (profileImage) {
+        const formData = new FormData();
+        
+        // Add all user data
+        Object.entries(userData).forEach(([key, value]) => {
+          formData.append(key, value.toString());
+        });
+        
+        // Add image file
+        formData.append('image', profileImage);
+        
+        await updateUserWithImage(user.id, formData, token);
+      } else {
+        // Regular update without image
+        await updateUser(user.id, userData, token);
+      }
+
+      toast({
+        title: "تم بنجاح",
+        description: "تم تحديث الملف الشخصي بنجاح",
+      });
+
+      // Redirect to profile page
+      navigate(`/provider/${user.id}`);
+
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      toast({
+        variant: "destructive",
+        title: "حدث خطأ",
+        description: "فشل تحديث الملف الشخصي. يرجى المحاولة مرة أخرى.",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (loadingRegions || loadingProfile) {
+    return (
+      <div className="container mx-auto py-8 px-4 flex justify-center items-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <span className="mr-2">جاري تحميل البيانات...</span>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto py-8 px-4">
@@ -131,6 +225,31 @@ const EditProviderProfile = () => {
             onSubmit={form.handleSubmit(handleSubmit)}
             className="space-y-6"
           >
+            {/* Avatar Upload Section */}
+            <div className="flex flex-col items-center space-y-4 mb-6">
+              <Avatar className="h-24 w-24">
+                {imagePreview ? (
+                  <AvatarImage src={imagePreview} alt="صورة الملف الشخصي" />
+                ) : (
+                  <AvatarFallback>{user?.first_name?.charAt(0) || "U"}</AvatarFallback>
+                )}
+              </Avatar>
+              
+              <label htmlFor="avatar-upload" className="cursor-pointer">
+                <div className="flex items-center gap-2 text-sm text-primary hover:underline">
+                  <Upload className="h-4 w-4" />
+                  تغيير الصورة
+                </div>
+                <input
+                  id="avatar-upload"
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleImageChange}
+                />
+              </label>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormField
                 control={form.control}
@@ -167,7 +286,7 @@ const EditProviderProfile = () => {
                   <FormItem>
                     <FormLabel>البريد الإلكتروني</FormLabel>
                     <FormControl>
-                      <Input type="email" {...field} />
+                      <Input type="email" {...field} disabled />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -243,8 +362,8 @@ const EditProviderProfile = () => {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {regions.map((region) => (
-                          <SelectItem key={region.id} value={region.id}>
+                        {regions.map((region: Region) => (
+                          <SelectItem key={region.id} value={region.id.toString()}>
                             {region.name}
                           </SelectItem>
                         ))}
@@ -296,20 +415,6 @@ const EditProviderProfile = () => {
                   </FormItem>
                 )}
               />
-
-              <FormField
-                control={form.control}
-                name="avatar"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>صورة الملف الشخصي</FormLabel>
-                    <FormControl>
-                      <Input placeholder="رابط الصورة" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
             </div>
 
             <FormField
@@ -334,11 +439,21 @@ const EditProviderProfile = () => {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => navigate(`/provider/${id}`)}
+                onClick={() => navigate(`/provider/${id || ""}`)}
+                disabled={isSubmitting}
               >
                 إلغاء
               </Button>
-              <Button type="submit">حفظ التغييرات</Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="ml-2 h-4 w-4 animate-spin" />
+                    جاري الحفظ...
+                  </>
+                ) : (
+                  "حفظ التغييرات"
+                )}
+              </Button>
             </div>
           </form>
         </Form>

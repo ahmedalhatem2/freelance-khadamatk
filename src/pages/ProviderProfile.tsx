@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import ProviderInfo from "@/components/providers/ProviderInfo";
@@ -6,7 +7,13 @@ import ProviderReviews from "@/components/providers/ProviderReviews";
 import { useAuth } from "@/context/AuthProvider";
 import { API_BASE_URL } from "@/config/api";
 import { toast } from "@/hooks/use-toast";
-import { Loader2 } from "lucide-react";
+import { Loader2, UserPlus } from "lucide-react";
+import { fetchProfileByUserId, createProfile } from "@/api/users";
+import { useQuery } from "@tanstack/react-query";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 
 const ProviderProfile = () => {
   const { id } = useParams();
@@ -16,6 +23,20 @@ const ProviderProfile = () => {
   const [services, setServices] = useState([]);
   const [reviews, setReviews] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isCompleteProfileOpen, setIsCompleteProfileOpen] = useState(false);
+  const [about, setAbout] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Fetch profile for the current user
+  const { data: profile, isLoading: loadingProfile, refetch: refetchProfile } = useQuery({
+    queryKey: ["profile", user?.id],
+    queryFn: () => fetchProfileByUserId(user?.id || 0, token || ""),
+    enabled: !!user?.id && !!token,
+    onError: (error) => {
+      // It's okay if profile doesn't exist yet
+      console.error("Profile not found:", error);
+    }
+  });
 
   useEffect(() => {
     // Handle the "me" route - redirect if not a provider
@@ -46,15 +67,12 @@ const ProviderProfile = () => {
               address: user.address,
             },
             status: user.status,
-            about: "مزود خدمة في منصة خدماتك",
+            about: profile?.about || "مزود خدمة في منصة خدماتك",
           };
 
           setProvider(currentUser);
 
-          // In a real implementation, you would fetch services and reviews for this provider from the API
-          // For now we'll continue with the mock data until the API endpoints are ready
-
-          // Attempt to fetch services from API, fallback to mock data
+          // Try to fetch services from API, fallback to mock data
           try {
             if (token) {
               const servicesResponse = await fetch(
@@ -268,7 +286,47 @@ const ProviderProfile = () => {
     };
 
     fetchProviderData();
-  }, [id, user, userRole, navigate, token]);
+  }, [id, user, userRole, navigate, token, profile]);
+
+  // Handle profile completion
+  const handleCompleteProfile = async () => {
+    if (!user || !token || !about.trim()) {
+      toast({
+        variant: "destructive",
+        title: "خطأ",
+        description: "يرجى كتابة نبذة عنك",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      await createProfile({
+        user_id: user.id,
+        about: about.trim()
+      }, token);
+      
+      // Close dialog and refresh profile data
+      setIsCompleteProfileOpen(false);
+      refetchProfile();
+
+      toast({
+        title: "تم بنجاح",
+        description: "تم إكمال الملف الشخصي بنجاح",
+      });
+
+    } catch (error) {
+      console.error("Error completing profile:", error);
+      toast({
+        variant: "destructive",
+        title: "خطأ",
+        description: "فشل في إكمال الملف الشخصي. يرجى المحاولة مرة أخرى.",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -295,17 +353,91 @@ const ProviderProfile = () => {
       ? reviews.reduce((acc, review) => acc + review.rating, 0) / reviews.length
       : 0;
 
+  // Check if profile is complete (has about information)
+  const isProfileComplete = profile && profile.about && profile.about.trim() !== "";
+
   return (
     <div className="container mx-auto py-8 px-4">
       <div className="space-y-6">
+        {user && user.id === provider.id && !isProfileComplete && (
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
+            <div className="flex flex-col sm:flex-row items-center justify-between">
+              <div className="mb-4 sm:mb-0">
+                <h3 className="font-medium text-amber-800">ملفك الشخصي غير مكتمل</h3>
+                <p className="text-amber-700 text-sm">
+                  لتتمكن من إضافة خدمات وتلقي طلبات، يرجى إكمال ملفك الشخصي بإضافة نبذة عنك.
+                </p>
+              </div>
+              <Button 
+                onClick={() => setIsCompleteProfileOpen(true)}
+                className="bg-amber-600 hover:bg-amber-700 text-white"
+              >
+                <UserPlus className="ml-1 h-4 w-4" />
+                إكمال الملف الشخصي
+              </Button>
+            </div>
+          </div>
+        )}
+        
         <ProviderInfo provider={provider} />
-        <ProviderServices providerId={provider.id} services={services} />
+        <ProviderServices 
+          providerId={provider.id} 
+          services={services}
+          isProfileComplete={isProfileComplete}
+        />
         <ProviderReviews
           reviews={reviews}
           avgRating={avgRating}
           totalReviews={reviews.length}
         />
       </div>
+
+      {/* Profile Completion Dialog */}
+      <Dialog open={isCompleteProfileOpen} onOpenChange={setIsCompleteProfileOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>إكمال الملف الشخصي</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-4">
+            <div className="space-y-2">
+              <Label htmlFor="about">نبذة عنك</Label>
+              <Textarea
+                id="about"
+                placeholder="اكتب نبذة مختصرة عن نفسك، خبراتك، ومهاراتك..."
+                className="min-h-[150px]"
+                value={about}
+                onChange={(e) => setAbout(e.target.value)}
+              />
+              <p className="text-sm text-gray-500">
+                يجب أن يكون الوصف دقيقًا وواضحًا ويعكس خبراتك ومهاراتك.
+              </p>
+            </div>
+            <div className="flex justify-end gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsCompleteProfileOpen(false)}
+                disabled={isSubmitting}
+              >
+                إلغاء
+              </Button>
+              <Button 
+                onClick={handleCompleteProfile}
+                disabled={isSubmitting || !about.trim()}
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="ml-2 h-4 w-4 animate-spin" />
+                    جاري الحفظ...
+                  </>
+                ) : (
+                  "حفظ"
+                )}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

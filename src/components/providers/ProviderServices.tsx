@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Plus, Loader2 } from "lucide-react";
+import { Plus, Loader2, AlertCircle } from "lucide-react";
 import ProviderServiceCard from './ProviderServiceCard';
 import ServiceForm from './ServiceForm';
 import { useAuth } from '@/context/AuthProvider';
@@ -13,14 +13,16 @@ import { toast } from '@/hooks/use-toast';
 
 interface ProviderServicesProps {
   providerId: number;
-  services?: any[]; // Make services optional
+  services?: any[];
+  isProfileComplete?: boolean;  // Added this prop
 }
 
-const ProviderServices = ({ providerId, services: initialServices }: ProviderServicesProps) => {
+const ProviderServices = ({ providerId, services: initialServices, isProfileComplete = true }: ProviderServicesProps) => {
   const { token } = useAuth();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isIncompleteProfileDialogOpen, setIsIncompleteProfileDialogOpen] = useState(false);
   const [selectedServiceId, setSelectedServiceId] = useState<number | null>(null);
   const [services, setServices] = useState<any[]>(initialServices || []);
   const [isLoading, setIsLoading] = useState(false);
@@ -59,6 +61,14 @@ const ProviderServices = ({ providerId, services: initialServices }: ProviderSer
   const handleDeleteService = (serviceId: number) => {
     setSelectedServiceId(serviceId);
     setIsDeleteDialogOpen(true);
+  };
+  
+  const handleAddService = () => {
+    if (!isProfileComplete) {
+      setIsIncompleteProfileDialogOpen(true);
+      return;
+    }
+    setIsAddDialogOpen(true);
   };
   
   const confirmDeleteService = async () => {
@@ -113,12 +123,13 @@ const ProviderServices = ({ providerId, services: initialServices }: ProviderSer
       <CardHeader className="flex-row items-center justify-between pb-2">
         <CardTitle>الخدمات ({services.length})</CardTitle>
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-          <DialogTrigger asChild>
-            <Button className="rounded-full">
-              <Plus className="h-4 w-4 mr-1" />
-              إضافة خدمة
-            </Button>
-          </DialogTrigger>
+          <Button
+            className="rounded-full"
+            onClick={handleAddService}
+          >
+            <Plus className="h-4 w-4 mr-1" />
+            إضافة خدمة
+          </Button>
           <DialogContent className="sm:max-w-[600px]">
             <DialogHeader>
               <DialogTitle>إضافة خدمة جديدة</DialogTitle>
@@ -137,7 +148,7 @@ const ProviderServices = ({ providerId, services: initialServices }: ProviderSer
             <Button 
               variant="outline" 
               className="mt-4 rounded-full"
-              onClick={() => setIsAddDialogOpen(true)}
+              onClick={handleAddService}
             >
               <Plus className="h-4 w-4 mr-1" />
               إضافة خدمة جديدة
@@ -175,7 +186,7 @@ const ProviderServices = ({ providerId, services: initialServices }: ProviderSer
                 service={{
                   id: selectedService.id,
                   title: selectedService.title,
-                  category: selectedService.category_id.toString(),
+                  category: selectedService.category_id?.toString(),
                   price: selectedService.price,
                   image: selectedService.image,
                   status: selectedService.status as 'active' | 'inactive' | 'pending',
@@ -209,6 +220,24 @@ const ProviderServices = ({ providerId, services: initialServices }: ProviderSer
                   </>
                 ) : 'حذف'}
               </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        {/* Incomplete Profile Dialog */}
+        <AlertDialog open={isIncompleteProfileDialogOpen} onOpenChange={setIsIncompleteProfileDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <div className="flex items-center text-amber-600 mb-2">
+                <AlertCircle className="mr-2 h-5 w-5" />
+                <AlertDialogTitle>الملف الشخصي غير مكتمل</AlertDialogTitle>
+              </div>
+              <AlertDialogDescription>
+                يجب إكمال ملفك الشخصي بإضافة نبذة عنك قبل أن تتمكن من إضافة خدمات. يرجى الضغط على "إكمال الملف الشخصي" في أعلى الصفحة.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogAction>فهمت</AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
