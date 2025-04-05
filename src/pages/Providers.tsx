@@ -12,6 +12,7 @@ import Footer from "@/components/footer/Footer";
 import { fetchUsers, User } from '@/api/users';
 import { Link } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
+import { useAuth } from '@/context/AuthProvider';
 
 const Providers = () => {
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -19,7 +20,7 @@ const Providers = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [freelancers, setFreelancers] = useState<User[]>([]);
-  
+   const { token } = useAuth();
   const categories = [
     { id: "all", name: "جميع المستقلين", count: 0 },
     { id: "dev", name: "مطورين", count: 0 },
@@ -90,7 +91,7 @@ const Providers = () => {
     const loadFreelancers = async () => {
       setIsLoading(true);
       try {
-        const allUsers = await fetchUsers();
+        const allUsers = await fetchUsers(token);
         // Filter only users with role_id 2 (freelancers)
         const freelancerUsers = allUsers.filter(user => user.role_id === 2);
         setFreelancers(freelancerUsers);

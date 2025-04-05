@@ -8,12 +8,13 @@ import { Button } from "@/components/ui/button";
 import { Link } from 'react-router-dom';
 import { fetchUsers, User } from '@/api/users';
 import { toast } from '@/hooks/use-toast';
+import { useAuth } from '@/context/AuthProvider'
 
 const Freelancers = () => {
   const [category, setCategory] = useState("all");
   const [isLoading, setIsLoading] = useState(false);
   const [freelancers, setFreelancers] = useState<User[]>([]);
-  
+    const { token } = useAuth();
   const categories = [
     { id: "all", name: "الجميع" },
     { id: "dev", name: "مطورين" },
@@ -71,7 +72,7 @@ const Freelancers = () => {
     const loadFreelancers = async () => {
       setIsLoading(true);
       try {
-        const allUsers = await fetchUsers();
+        const allUsers = await fetchUsers(token);
         // Filter only users with role_id 2 (freelancers)
         const freelancerUsers = allUsers.filter(user => user.role_id === 2);
         setFreelancers(freelancerUsers);

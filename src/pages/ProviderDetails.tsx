@@ -15,7 +15,7 @@ import { Service } from "@/types/api";
 import { Separator } from "@/components/ui/separator";
 import { toast } from '@/hooks/use-toast';
 import ServiceCard from "@/components/services/ServiceCard";
-
+import { useAuth } from "@/context/AuthProvider"
 interface UserWithProfile extends User {
   profile?: Profile;
 }
@@ -25,7 +25,7 @@ const ProviderDetails = () => {
   const [provider, setProvider] = useState<UserWithProfile | null>(null);
   const [services, setServices] = useState<Service[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-
+const { token } = useAuth();
   const userTags: Record<number, string[]> = {
     1: ["React", "Vue.js", "TypeScript"],
     10: ["UI/UX", "Photoshop", "Illustrator"],
@@ -72,7 +72,7 @@ const ProviderDetails = () => {
       
       setIsLoading(true);
       try {
-        const userData = await fetchUserById(parseInt(id));
+        const userData = await fetchUserById(parseInt(id), token);
         
         // Check if this is a provider (role_id === 2)
         if (userData.role_id !== 2) {
