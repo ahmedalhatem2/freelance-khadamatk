@@ -1,31 +1,20 @@
+
 import { API_BASE_URL } from "@/config/api";
 import { Service, Category } from "@/types/api";
 
 // Fetch all services
-export const fetchServices = async (token?: string): Promise<Service[]> => {
+export const fetchServices = async (token: string): Promise<Service[]> => {
   try {
-    const headers: HeadersInit = {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json',
-    };
-
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-
-    const response = await fetch(`${API_BASE_URL}/services`, {
-      method: 'GET',
-      headers,
-    });
-
+    const response = await fetch(`${API_BASE_URL}/service/servicescard`);
+    
     if (!response.ok) {
-      throw new Error('Network response was not ok');
+      throw new Error(`Error fetching services: ${response.status}`);
     }
-
+    
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error('Error fetching services:', error);
+    console.error("Failed to fetch services:", error);
     throw error;
   }
 };
@@ -151,30 +140,18 @@ export const deleteService = async (
 };
 
 // Fetch all categories
-export const fetchCategories = async (token?: string): Promise<Category[]> => {
+export const fetchCategories = async (): Promise<Category[]> => {
   try {
-    const headers: HeadersInit = {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json',
-    };
-
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-
-    const response = await fetch(`${API_BASE_URL}/categories`, {
-      method: 'GET',
-      headers,
-    });
-
+    const response = await fetch(`${API_BASE_URL}/categories`);
+    
     if (!response.ok) {
-      throw new Error('Network response was not ok');
+      throw new Error(`Error fetching categories: ${response.status}`);
     }
-
+    
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error('Error fetching categories:', error);
+    console.error("Failed to fetch categories:", error);
     throw error;
   }
 };

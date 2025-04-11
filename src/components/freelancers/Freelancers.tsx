@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card } from "@/components/ui/card";
 import { Avatar } from "@/components/ui/avatar";
@@ -7,14 +8,13 @@ import { Button } from "@/components/ui/button";
 import { Link } from 'react-router-dom';
 import { fetchUsers, User } from '@/api/users';
 import { toast } from '@/hooks/use-toast';
-import { useAuth } from '@/context/AuthProvider';
-import { useQuery } from '@tanstack/react-query';
+import { useAuth } from '@/context/AuthProvider'
 
 const Freelancers = () => {
   const [category, setCategory] = useState("all");
   const [isLoading, setIsLoading] = useState(false);
   const [freelancers, setFreelancers] = useState<User[]>([]);
-  const { token } = useAuth();
+    const { token } = useAuth();
   const categories = [
     { id: "all", name: "الجميع" },
     { id: "dev", name: "مطورين" },
@@ -67,16 +67,7 @@ const Freelancers = () => {
     12: 60,
     13: 55
   };
-
-  const { 
-    data: topProviders = [], 
-    isLoading: loadingProviders,
-    error: providersError
-  } = useQuery({
-    queryKey: ['topProviders'],
-    queryFn: () => fetchTopProviders()
-  });
-
+  
   useEffect(() => {
     const loadFreelancers = async () => {
       setIsLoading(true);
@@ -99,7 +90,7 @@ const Freelancers = () => {
     
     loadFreelancers();
   }, []);
-
+  
   const getInitials = (firstName: string, lastName: string) => {
     return (firstName?.[0] || '') + (lastName?.[0] || '');
   };
