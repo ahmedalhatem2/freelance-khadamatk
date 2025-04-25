@@ -11,6 +11,7 @@ import Footer from "@/components/footer/Footer";
 import { useQuery } from "@tanstack/react-query";
 import { fetchServiceById } from "@/api/services";
 import { toast } from "@/hooks/use-toast";
+import { ServiceRequestDialog } from '@/components/services/ServiceRequestDialog';
 
 const ServiceDetails = () => {
   const { id } = useParams<{ id: string }>();
@@ -24,6 +25,8 @@ const ServiceDetails = () => {
     queryFn: () => fetchServiceById(id as string),
     enabled: !!id
   });
+
+  const [isRequestDialogOpen, setIsRequestDialogOpen] = React.useState(false);
 
   React.useEffect(() => {
     if (error) {
@@ -67,6 +70,10 @@ const ServiceDetails = () => {
     const firstName = service.profile.user.first_name;
     const lastName = service.profile.user.last_name;
     return `${firstName.charAt(0)}${lastName.charAt(0)}`;
+  };
+
+  const handleRequestService = () => {
+    setIsRequestDialogOpen(true);
   };
 
   return (
@@ -187,9 +194,12 @@ const ServiceDetails = () => {
                 <Separator className="my-6" />
                 
                 <div className="grid grid-rows-3 gap-4">
-                  <Link to="#" >
-                    <Button className="w-full rounded-full">طلب الخدمة</Button>
-                  </Link>
+                  <Button 
+                    className="w-full rounded-full"
+                    onClick={handleRequestService}
+                  >
+                    طلب الخدمة
+                  </Button>
 
                   <Link to={`/provider/${service.profile.user.id}`} >
                     <Button variant="outline" className="w-full rounded-full" >
@@ -211,6 +221,13 @@ const ServiceDetails = () => {
           </div>
         </div>
       </div>
+      
+      <ServiceRequestDialog
+        isOpen={isRequestDialogOpen}
+        onClose={() => setIsRequestDialogOpen(false)}
+        serviceTitle={service?.title || ''}
+        providerId={service?.profile.user.id || 0}
+      />
       
       <Footer />
     </div>
