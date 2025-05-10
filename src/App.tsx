@@ -26,6 +26,7 @@ import AdminCategories from "./pages/admin/AdminCategories";
 import AdminRoles from "./pages/admin/AdminRoles";
 import AdminRegions from "./pages/admin/AdminRegions";
 import AdminServices from "./pages/admin/AdminServices";
+import Messages from "./pages/Messages";
 
 const queryClient = new QueryClient();
 
@@ -46,6 +47,11 @@ const App = () => (
               <Route path="/service/:id" element={<ServiceDetails />} />
               <Route path="/providers" element={<Providers />} />
               <Route path="/provider/:id" element={<ProviderDetails />} />
+
+              {/* Messages route - requires authentication */}
+              <Route element={<PrivateRoute allowedRoles={["client", "provider", "admin"]} />}>
+                <Route path="/messages" element={<Messages />} />
+              </Route>
 
               {/* provider routes - requires provider role */}
               <Route element={<PrivateRoute allowedRoles={["provider"]} />}>
