@@ -1,8 +1,14 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useAuth } from "@/context/AuthProvider";
-import { fetchConversations, fetchMessages, sendMessage as apiSendMessage, startConversation } from "@/api/chat";
-import { Conversation, Message, User, ChatState } from "@/types/chat";
+import { 
+  fetchConversations, 
+  fetchMessages, 
+  sendMessage as apiSendMessage, 
+  startConversation as apiStartConversation,
+  markConversationAsRead
+} from "@/api/chat";
+import { Conversation, Message, ChatState, User } from "@/types/chat";
 
 export const useChat = () => {
   const { user, token } = useAuth();
@@ -40,17 +46,19 @@ export const useChat = () => {
   }, [token]);
 
   // Start a new conversation
-  const initConversation = useCallback(async (userId: number) => {
+  const initConversation = useCallback(async (receiverId: number) => {
     if (!token || !user) return;
     
     try {
       setState(prev => ({ ...prev, isLoading: true, error: null }));
-      const data = await startConversation(userId, token);
+      const data = await apiStartConversation({ reciver_id: receiverId }, token);
+      
       setState(prev => ({
         ...prev,
         conversations: [data, ...prev.conversations],
         isLoading: false
       }));
+      
       return data;
     } catch (error) {
       setState(prev => ({
@@ -62,17 +70,24 @@ export const useChat = () => {
   }, [token, user]);
 
   // Get messages for a conversation
-  const getMessages = useCallback(async (toUserId: number) => {
-    if (!token || !user) return;
+  const getMessages = useCallback(async (conversationId: number) => {
+    if (!token) return;
     
     try {
       setState(prev => ({ ...prev, isLoading: true, error: null }));
-      const data = await fetchMessages(user.id, toUserId, token);
+      const data = await fetchMessages(conversationId, token);
+      
+      // Mark messages as read
+      if (data.length > 0) {
+        markConversationAsRead(conversationId, token);
+      }
+      
       setState(prev => ({
         ...prev,
         messages: data,
         isLoading: false
       }));
+      
       return data;
     } catch (error) {
       setState(prev => ({
@@ -81,16 +96,15 @@ export const useChat = () => {
         isLoading: false
       }));
     }
-  }, [token, user]);
+  }, [token]);
 
   // Send a message
-  const sendMessage = useCallback(async (toUserId: number, content: string) => {
+  const sendMessage = useCallback(async (conversationId: number, content: string) => {
     if (!token || !user) return;
     
     const payload = {
-      from: user.id,
-      to: toUserId,
-      content
+      conversation_id: conversationId,
+      message: content
     };
     
     try {
@@ -104,6 +118,9 @@ export const useChat = () => {
         isLoading: false
       }));
       
+      // Update conversations list to reflect new message
+      getConversations();
+      
       return data;
     } catch (error) {
       setState(prev => ({
@@ -112,19 +129,28 @@ export const useChat = () => {
         isLoading: false
       }));
     }
-  }, [token, user]);
+  }, [token, user, getConversations]);
 
   // Set active conversation
-  const setActiveConversation = useCallback((conversationUser: User) => {
+  const setActiveConversation = useCallback((conversation: Conversation) => {
     setState(prev => ({
       ...prev,
-      activeConversation: conversationUser
+      activeConversation: conversation
     }));
     
-    if (user && conversationUser) {
-      getMessages(conversationUser.id);
+    // Fetch messages for this conversation
+    getMessages(conversation.id);
+    
+    // Mark conversation as read
+    if (token) {
+      markConversationAsRead(conversation.id, token)
+        .then(() => {
+          // Update unread count in conversations list
+          getConversations();
+        })
+        .catch(error => console.error("Error marking conversation as read:", error));
     }
-  }, [user, getMessages]);
+  }, [getMessages, token, getConversations]);
 
   // Connect WebSocket
   const connectWebSocket = useCallback(() => {
@@ -149,11 +175,16 @@ export const useChat = () => {
         
         // If the message is for the active conversation, add it to the messages
         if (state.activeConversation && 
-           (message.from === state.activeConversation.id || message.to === state.activeConversation.id)) {
+           (message.conversation_id === state.activeConversation.id)) {
           setState(prev => ({
             ...prev,
             messages: [...prev.messages, message]
           }));
+          
+          // Mark the message as read since we're currently viewing this conversation
+          if (token) {
+            markConversationAsRead(message.conversation_id, token);
+          }
         }
         
         // Update the conversation list to show the new message
@@ -180,21 +211,21 @@ export const useChat = () => {
     };
     
     wsRef.current = ws;
-  }, [user, state.activeConversation, getConversations]);
+  }, [user, state.activeConversation, getConversations, token]);
 
   // Fallback: poll for new messages if WebSocket disconnects
   const startPolling = useCallback(() => {
     if (pollingIntervalRef.current) return;
     
     const pollingInterval = setInterval(() => {
-      if (state.activeConversation && user) {
+      if (state.activeConversation) {
         getMessages(state.activeConversation.id);
       }
       getConversations();
     }, 10000); // Poll every 10 seconds
     
     pollingIntervalRef.current = pollingInterval;
-  }, [state.activeConversation, user, getMessages, getConversations]);
+  }, [state.activeConversation, getMessages, getConversations]);
 
   // Initialize
   useEffect(() => {

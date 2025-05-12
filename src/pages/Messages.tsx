@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '@/context/AuthProvider';
@@ -12,6 +11,7 @@ import ChatList from '@/components/chat/ChatList';
 import ChatHeader from '@/components/chat/ChatHeader';
 import MessageList from '@/components/chat/MessageList';
 import MessageInput from '@/components/chat/MessageInput';
+import { Conversation } from '@/types/chat';
 
 const Messages = () => {
   const { user } = useAuth();
@@ -37,17 +37,19 @@ const Messages = () => {
       const initializeConversation = async () => {
         // Find if conversation with this provider already exists
         const existingConvo = conversations.find(
-          (conv) => conv.user.id === providerId
+          (conv) => 
+            (conv.user_one_id === user.id && conv.user_two_id === providerId) || 
+            (conv.user_one_id === providerId && conv.user_two_id === user.id)
         );
 
         if (existingConvo) {
           // If exists, set it as active
-          setActiveConversation(existingConvo.user);
+          setActiveConversation(existingConvo);
           
           // If we have a note/service title, send it as a message
           if (serviceTitle || note) {
             const message = `طلب خدمة: ${serviceTitle || ''}\n${note || ''}`.trim();
-            sendMessage(providerId, message);
+            sendMessage(existingConvo.id, message);
           }
         } else {
           // If not, initiate a new conversation
@@ -55,7 +57,7 @@ const Messages = () => {
             const newConvoData = await initConversation(providerId);
             if (newConvoData && serviceTitle) {
               const message = `طلب خدمة: ${serviceTitle || ''}\n${note || ''}`.trim();
-              sendMessage(providerId, message);
+              sendMessage(newConvoData.id, message);
             }
           } catch (error) {
             console.error("Failed to init conversation:", error);
@@ -65,12 +67,26 @@ const Messages = () => {
 
       initializeConversation();
     }
-  }, [providerId, user, conversations]);
+  }, [providerId, user, conversations, setActiveConversation, sendMessage, initConversation]);
 
   const handleSendMessage = (content: string) => {
     if (activeConversation) {
       sendMessage(activeConversation.id, content);
     }
+  };
+
+  // Helper to get other user from conversation
+  const getOtherUser = (conversation: Conversation) => {
+    if (!user) return null;
+    
+    // If the conversation has other_user property, use it
+    if (conversation.other_user) return conversation.other_user;
+    
+    // Otherwise determine based on IDs
+    const isUserOne = conversation.user_one_id === user.id;
+    const otherUserId = isUserOne ? conversation.user_two_id : conversation.user_one_id;
+    
+    return { id: otherUserId } as any; // Temporary solution until API provides full user details
   };
 
   return (
@@ -96,6 +112,7 @@ const Messages = () => {
                         activeConversation={activeConversation}
                         onSelectConversation={setActiveConversation}
                         isLoading={isLoading}
+                        currentUser={user}
                       />
                     </div>
                   </SheetContent>
@@ -109,12 +126,15 @@ const Messages = () => {
                   activeConversation={activeConversation}
                   onSelectConversation={setActiveConversation}
                   isLoading={isLoading}
+                  currentUser={user}
                 />
               </div>
 
               {/* Chat content */}
               <div className="flex-1 flex flex-col">
-                <ChatHeader activeUser={activeConversation} />
+                {activeConversation && (
+                  <ChatHeader otherUser={getOtherUser(activeConversation)} />
+                )}
 
                 {!activeConversation ? (
                   <div className="flex-1 flex items-center justify-center">

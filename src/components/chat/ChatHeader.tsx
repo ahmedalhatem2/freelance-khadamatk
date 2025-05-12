@@ -6,15 +6,15 @@ import { Button } from '@/components/ui/button';
 import { Phone, Video, MoreVertical } from 'lucide-react';
 
 interface ChatHeaderProps {
-  activeUser: User | null;
+  otherUser: User | null;
 }
 
-const ChatHeader: React.FC<ChatHeaderProps> = ({ activeUser }) => {
-  if (!activeUser) {
+const ChatHeader: React.FC<ChatHeaderProps> = ({ otherUser }) => {
+  if (!otherUser) {
     return null;
   }
 
-  const getInitials = (firstName: string, lastName: string) => {
+  const getInitials = (firstName: string = 'U', lastName: string = 'U') => {
     return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
   };
 
@@ -22,17 +22,17 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({ activeUser }) => {
     <div className="flex items-center justify-between border-b p-3">
       <div className="flex items-center gap-3">
         <Avatar>
-          <AvatarImage src={activeUser.image || undefined} alt={`${activeUser.first_name} ${activeUser.last_name}`} />
+          <AvatarImage src={otherUser.image || undefined} alt={otherUser.first_name ? `${otherUser.first_name} ${otherUser.last_name || ''}` : 'User'} />
           <AvatarFallback>
-            {getInitials(activeUser.first_name, activeUser.last_name)}
+            {getInitials(otherUser.first_name, otherUser.last_name)}
           </AvatarFallback>
         </Avatar>
         <div>
           <h2 className="font-medium">
-            {activeUser.first_name} {activeUser.last_name}
+            {otherUser.first_name ? `${otherUser.first_name} ${otherUser.last_name || ''}` : `User ${otherUser.id}`}
           </h2>
           <p className="text-xs text-muted-foreground">
-            {activeUser.status === 'online' ? 'متصل الآن' : 'غير متصل'}
+            {otherUser.status === 'online' ? 'متصل الآن' : 'غير متصل'}
           </p>
         </div>
       </div>

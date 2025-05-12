@@ -12,7 +12,7 @@ interface MessageItemProps {
 const MessageItem = forwardRef<HTMLDivElement, MessageItemProps>(
   ({ message }, ref) => {
     const { user } = useAuth();
-    const isOwnMessage = user?.id === message.from;
+    const isOwnMessage = user?.id === message.sender_id;
 
     return (
       <div
@@ -30,7 +30,7 @@ const MessageItem = forwardRef<HTMLDivElement, MessageItemProps>(
               : "bg-muted text-foreground rounded-bl-none"
           )}
         >
-          <p className="whitespace-pre-wrap">{message.content}</p>
+          <p className="whitespace-pre-wrap">{message.massage}</p>
         </div>
         <span className="text-xs text-muted-foreground mt-1 px-1">
           {format(new Date(message.created_at), 'HH:mm')}

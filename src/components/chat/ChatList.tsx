@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Conversation, User } from '@/types/chat';
 import ConversationItem from './ConversationItem';
@@ -8,9 +7,10 @@ import { Search } from 'lucide-react';
 
 interface ChatListProps {
   conversations: Conversation[];
-  activeConversation: User | null;
-  onSelectConversation: (user: User) => void;
+  activeConversation: Conversation | null;
+  onSelectConversation: (conversation: Conversation) => void;
   isLoading: boolean;
+  currentUser: User | null;
 }
 
 const ChatList: React.FC<ChatListProps> = ({
@@ -18,6 +18,7 @@ const ChatList: React.FC<ChatListProps> = ({
   activeConversation,
   onSelectConversation,
   isLoading,
+  currentUser,
 }) => {
   const [searchQuery, setSearchQuery] = React.useState('');
 
@@ -25,8 +26,14 @@ const ChatList: React.FC<ChatListProps> = ({
     if (!searchQuery) return conversations;
     
     return conversations.filter((convo) => {
-      const fullName = `${convo.user.first_name} ${convo.user.last_name}`.toLowerCase();
-      return fullName.includes(searchQuery.toLowerCase());
+      // If other_user exists, use it for search
+      if (convo.other_user) {
+        const fullName = `${convo.other_user.first_name} ${convo.other_user.last_name}`.toLowerCase();
+        return fullName.includes(searchQuery.toLowerCase());
+      }
+      
+      // Otherwise just include the conversation
+      return true;
     });
   }, [conversations, searchQuery]);
 
@@ -59,9 +66,10 @@ const ChatList: React.FC<ChatListProps> = ({
               key={conversation.id}
               conversation={conversation}
               isActive={
-                activeConversation?.id === conversation.user.id
+                activeConversation?.id === conversation.id
               }
-              onClick={() => onSelectConversation(conversation.user)}
+              onClick={() => onSelectConversation(conversation)}
+              currentUser={currentUser}
             />
           ))
         )}

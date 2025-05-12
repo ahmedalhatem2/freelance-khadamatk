@@ -1,11 +1,11 @@
 
 import { API_BASE_URL } from "@/config/api";
-import { Conversation, Message, SendMessagePayload } from "@/types/chat";
+import { Conversation, Message, SendMessagePayload, StartConversationPayload } from "@/types/chat";
 
 // Fetch user conversations
 export const fetchConversations = async (token: string): Promise<Conversation[]> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/GetConversation`, {
+    const response = await fetch(`${API_BASE_URL}/conversations`, {
       headers: {
         'Authorization': `Bearer ${token}`,
       },
@@ -24,15 +24,15 @@ export const fetchConversations = async (token: string): Promise<Conversation[]>
 };
 
 // Start a new conversation
-export const startConversation = async (userId: number, token: string): Promise<Conversation> => {
+export const startConversation = async (payload: StartConversationPayload, token: string): Promise<Conversation> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/StartConversation`, {
+    const response = await fetch(`${API_BASE_URL}/conversation/start`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ user_id: userId }),
+      body: JSON.stringify(payload),
     });
     
     if (!response.ok) {
@@ -48,9 +48,9 @@ export const startConversation = async (userId: number, token: string): Promise<
 };
 
 // Fetch messages for a conversation
-export const fetchMessages = async (userId: number, toUserId: number, token: string): Promise<Message[]> => {
+export const fetchMessages = async (conversationId: number, token: string): Promise<Message[]> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/GetMessages?user_id=${userId}&to=${toUserId}`, {
+    const response = await fetch(`${API_BASE_URL}/conversation/messages/${conversationId}`, {
       headers: {
         'Authorization': `Bearer ${token}`,
       },
@@ -63,21 +63,21 @@ export const fetchMessages = async (userId: number, toUserId: number, token: str
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error(`Failed to fetch messages between ${userId} and ${toUserId}:`, error);
+    console.error(`Failed to fetch messages for conversation ${conversationId}:`, error);
     throw error;
   }
 };
 
 // Send a message
-export const sendMessage = async (message: SendMessagePayload, token: string): Promise<Message> => {
+export const sendMessage = async (payload: SendMessagePayload, token: string): Promise<Message> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/SendMessages`, {
+    const response = await fetch(`${API_BASE_URL}/messages/send`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(message),
+      body: JSON.stringify(payload),
     });
     
     if (!response.ok) {
@@ -88,6 +88,28 @@ export const sendMessage = async (message: SendMessagePayload, token: string): P
     return data;
   } catch (error) {
     console.error("Failed to send message:", error);
+    throw error;
+  }
+};
+
+// Mark conversation as read
+export const markConversationAsRead = async (conversationId: number, token: string): Promise<{ updated: number }> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/conversation/read/${conversationId}`, {
+      method: 'PATCH',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Error marking conversation as read: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Failed to mark conversation as read:", error);
     throw error;
   }
 };
