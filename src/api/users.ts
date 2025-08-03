@@ -1,251 +1,217 @@
-import { API_URL } from "@/config";
-import { User } from "@/types/api";
 
-export const createUser = async (data: any, token: string): Promise<User> => {
-  try {
-    const response = await fetch(`${API_URL}/users`, {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-      body: JSON.stringify(data),
-    });
+import { API_BASE_URL } from "@/config/api";
 
-    if (!response.ok) {
-      throw new Error('Network response was not ok');
-    }
+export interface User {
+  id: number;
+  first_name: string;
+  last_name: string;
+  phone: string;
+  status: string;
+  role_id: number;
+  region_id: number;
+  city: string;
+  street: string;
+  image: string | null;
+  address: string;
+  email: string;
+  email_verified_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
 
-    const responseData = await response.json();
-    return responseData;
-  } catch (error) {
-    console.error('Error creating user:', error);
-    throw error;
-  }
-};
+export interface Profile {
+  user_id: number;
+  about: string;
+  user?: User;
+  created_at?: string;
+  updated_at?: string;
+}
 
-export const updateUser = async (id: string, data: any, token: string): Promise<User> => {
-  try {
-    const response = await fetch(`${API_URL}/users/${id}`, {
-      method: 'PUT',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-      body: JSON.stringify(data),
-    });
 
-    if (!response.ok) {
-      throw new Error('Network response was not ok');
-    }
-
-    const responseData = await response.json();
-    return responseData;
-  } catch (error) {
-    console.error(`Error updating user ${id}:`, error);
-    throw error;
-  }
-};
-
-export const deleteUser = async (id: string, token: string): Promise<void> => {
-  try {
-    const response = await fetch(`${API_URL}/users/${id}`, {
-      method: 'DELETE',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error('Network response was not ok');
-    }
-  } catch (error) {
-    console.error(`Error deleting user ${id}:`, error);
-    throw error;
-  }
-};
-
-export const fetchUser = async (id: string, token: string): Promise<User> => {
-  try {
-    const response = await fetch(`${API_URL}/users/${id}`, {
-      method: 'GET',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error('Network response was not ok');
-    }
-
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error(`Error fetching user ${id}:`, error);
-    throw error;
-  }
-};
-
+// Fetch all users
 export const fetchUsers = async (token: string): Promise<User[]> => {
   try {
-    const response = await fetch(`${API_URL}/users`, {
-      method: 'GET',
+    const response = await fetch(`${API_BASE_URL}/users`, {
       headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,
       },
     });
 
     if (!response.ok) {
-      throw new Error('Network response was not ok');
+      const errorData = await response.json();
+      throw new Error(errorData.message || `Error fetching users: ${response.status}`);
     }
 
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error('Error fetching users:', error);
+    console.error("Failed to fetch users:", error);
     throw error;
   }
 };
 
-// Update fetchTopProviders to work without requiring a token
-export const fetchTopProviders = async (token?: string): Promise<User[]> => {
+// Fetch a specific user by ID
+export const fetchUserById = async (id: number, token: string): Promise<User> => {
   try {
-    const headers: HeadersInit = {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json',
-    };
-
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-
-    const response = await fetch(`${API_URL}/users/top-providers`, {
-      headers,
-    });
-
-    if (!response.ok) {
-      throw new Error('Network response was not ok');
-    }
-
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error('Error fetching top providers:', error);
-    throw error;
-  }
-};
-
-// Update fetchProvider to work with optional token
-export const fetchProvider = async (id: string, token?: string): Promise<User> => {
-  try {
-    const headers: HeadersInit = {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json',
-    };
-
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-
-    const response = await fetch(`${API_URL}/users/${id}`, {
-      headers,
-    });
-
-    if (!response.ok) {
-      throw new Error('Network response was not ok');
-    }
-
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error(`Error fetching provider ${id}:`, error);
-    throw error;
-  }
-};
-
-// Update fetchProviders to work without requiring a token
-export const fetchProviders = async (token?: string): Promise<User[]> => {
-  try {
-    const headers: HeadersInit = {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json',
-    };
-
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-
-    const response = await fetch(`${API_URL}/users/providers`, {
-      headers,
-    });
-
-    if (!response.ok) {
-      throw new Error('Network response was not ok');
-    }
-
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error('Error fetching providers:', error);
-    throw error;
-  }
-};
-
-// Update fetchProviderServices to work with optional token
-export const fetchProviderServices = async (providerId: string, token?: string): Promise<Service[]> => {
-  try {
-    const headers: HeadersInit = {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json',
-    };
-
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-
-    const response = await fetch(`${API_URL}/users/${providerId}/services`, {
-      headers,
-    });
-
-    if (!response.ok) {
-      throw new Error('Network response was not ok');
-    }
-
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error(`Error fetching provider services for ${providerId}:`, error);
-    throw error;
-  }
-};
-
-export const fetchMe = async (token: string): Promise<User> => {
-  try {
-    const response = await fetch(`${API_URL}/users/me`, {
-      method: 'GET',
+    const response = await fetch(`${API_BASE_URL}/users/${id}`, {
       headers: {
-        'Accept': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Error fetching user: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error(`Failed to fetch user with ID ${id}:`, error);
+    throw error;
+  }
+};
+
+// Update user data
+export const updateUser = async (userId: number, userData: Partial<User>, token: string): Promise<User> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
+      method: 'PUT',
+      headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,
       },
+      body: JSON.stringify(userData),
     });
-
+    
     if (!response.ok) {
-      throw new Error('Network response was not ok');
+      const errorData = await response.json();
+      throw new Error(errorData.message || `Error updating user: ${response.status}`);
     }
-
+    
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error(`Error fetching user me:`, error);
+    console.error(`Failed to update user with ID ${userId}:`, error);
+    throw error;
+  }
+};
+
+// Update user with image
+export const updateUserWithImage = async (userId: number, userData: FormData, token: string): Promise<User> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+      body: userData,
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || `Error updating user: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error(`Failed to update user with ID ${userId}:`, error);
+    throw error;
+  }
+};
+
+// Update user status
+export const updateUserStatus = async (userId: number, status: string, token: string): Promise<User> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({ status }),
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || `Error updating user status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error(`Failed to update status for user with ID ${userId}:`, error);
+    throw error;
+  }
+};
+
+// Fetch a profile for a specific user ID
+export const fetchProfileByUserId = async (userId: number, token: string): Promise<Profile> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/profiles/${userId}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Error fetching profile: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error(`Failed to fetch profile for user with ID ${userId}:`, error);
+    throw error;
+  }
+};
+
+// Create a new profile
+export const createProfile = async (profileData: { user_id: number; about: string }, token: string): Promise<Profile> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/profiles`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(profileData),
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || `Error creating profile: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error(`Failed to create profile:`, error);
+    throw error;
+  }
+};
+
+// Update an existing profile
+export const updateProfile = async (userId: number, profileData: { about: string }, token: string): Promise<Profile> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/profiles/${userId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(profileData),
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || `Error updating profile: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error(`Failed to update profile:`, error);
     throw error;
   }
 };

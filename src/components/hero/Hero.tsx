@@ -1,22 +1,14 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
 import khadamatkImg from "@/assets/images/k1.jpg"
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useAuth } from "@/context/AuthProvider";
 import { cn } from '@/lib/utils';
 
 const Hero = () => {
   const { isAuthenticated, user, logout, userRole } = useAuth();
-  const navigate = useNavigate();
-  const [searchQuery, setSearchQuery] = useState("");
-  
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    navigate(`/services?search=${encodeURIComponent(searchQuery)}`);
-  };
-
   return <section className="relative min-h-screen pt-32 pb-20 flex items-center">
       {/* Background Elements */}
       <div className="absolute inset-0 -z-10 overflow-hidden">
@@ -48,17 +40,11 @@ const Hero = () => {
               </Button>
             </div>
             ):(<></>)}
-            <form onSubmit={handleSearch} className="glass p-2 rounded-full flex items-center opacity-0 animate-fade-in animate-delay-500 bg-slate-100">
+            <div className="glass p-2 rounded-full flex items-center opacity-0 animate-fade-in animate-delay-500 bg-slate-100">
               <Search className="mx-3 text-muted-foreground" size={20} />
-              <input 
-                type="text" 
-                placeholder="ابحث عن مهارة أو خدمة..." 
-                className="flex-1 bg-transparent border-0 outline-none py-2 text-foreground placeholder:text-muted-foreground"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-              <Button type="submit" className="rounded-full ml-1">بحث</Button>
-            </form>
+              <input type="text" placeholder="ابحث عن مهارة أو خدمة..." className="flex-1 bg-transparent border-0 outline-none py-2 text-foreground placeholder:text-muted-foreground" />
+              <Button className="rounded-full ml-1">بحث</Button>
+            </div>
             
             <div className="mt-8 text-sm text-muted-foreground flex items-center gap-6 opacity-0 animate-fade-in animate-delay-500">
               <div className="flex -space-x-3 space-x-reverse">

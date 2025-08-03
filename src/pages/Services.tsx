@@ -19,15 +19,12 @@ import { fetchServices, fetchCategories } from "@/api/services";
 import { Service, Category } from "@/types/api";
 import ServicesList from "@/components/services/ServicesList";
 import { toast } from "@/hooks/use-toast";
-import { useLocation, useSearchParams } from 'react-router-dom';
-import { useAuth } from '@/context/AuthProvider';
+import { useLocation } from 'react-router-dom';
 
 const Services = () => {
   const location = useLocation();
-  const [searchParams, setSearchParams] = useSearchParams();
-  const categoryParam = searchParams.get("category");
-  const searchQueryParam = searchParams.get("search");
-  const { token } = useAuth();
+  const queryParams = new URLSearchParams(location.search);
+  const categoryParam = queryParams.get("category");
   
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedSort, setSelectedSort] = useState("newest");
@@ -45,7 +42,7 @@ const Services = () => {
     error: categoriesError
   } = useQuery({
     queryKey: ["categories"],
-    queryFn: () => fetchCategories()
+    queryFn: fetchCategories
   });
 
   // Fetch services
@@ -55,7 +52,7 @@ const Services = () => {
     error: servicesError
   } = useQuery({
     queryKey: ["services"],
-    queryFn: () => fetchServices()
+    queryFn: fetchServices
   });
 
   // Set category from URL parameter on initial load
@@ -70,15 +67,6 @@ const Services = () => {
       }
     }
   }, [categoryParam, categories]);
-
-  // Set search query from URL parameter
-  useEffect(() => {
-    if (searchQueryParam) {
-      setSearchQuery(searchQueryParam);
-      // Open sidebar on mobile if coming with a search query
-      setSidebarOpen(true);
-    }
-  }, [searchQueryParam]);
 
   useEffect(() => {
     if (categoriesError) {
@@ -97,17 +85,6 @@ const Services = () => {
       });
     }
   }, [categoriesError, servicesError]);
-
-  // Update URL when search query changes
-  const handleSearchChange = (value: string) => {
-    setSearchQuery(value);
-    if (value) {
-      searchParams.set("search", value);
-    } else {
-      searchParams.delete("search");
-    }
-    setSearchParams(searchParams);
-  };
 
   // Syrian governorates
   const governorates = [
@@ -231,7 +208,7 @@ const Services = () => {
                   placeholder="ابحث عن خدمة..." 
                   className="pl-10 pr-3 rounded-full"
                   value={searchQuery}
-                  onChange={(e) => handleSearchChange(e.target.value)}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                 />
                 <Search className="absolute top-1/2 transform -translate-y-1/2 left-3 h-5 w-5 text-muted-foreground" />
               </div>
