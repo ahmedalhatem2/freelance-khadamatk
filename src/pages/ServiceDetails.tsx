@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -12,11 +11,9 @@ import Footer from "@/components/footer/Footer";
 import { useQuery } from "@tanstack/react-query";
 import { fetchServiceById } from "@/api/services";
 import { toast } from "@/hooks/use-toast";
-import ServiceRequestDialog from '@/components/services/ServiceRequestDialog';
 
 const ServiceDetails = () => {
   const { id } = useParams<{ id: string }>();
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
   
   const { 
     data: service, 
@@ -24,7 +21,8 @@ const ServiceDetails = () => {
     error
   } = useQuery({
     queryKey: ['service', id],
-    queryFn: () => fetchServiceById(id as string)
+    queryFn: () => fetchServiceById(id as string),
+    enabled: !!id
   });
 
   React.useEffect(() => {
@@ -189,12 +187,9 @@ const ServiceDetails = () => {
                 <Separator className="my-6" />
                 
                 <div className="grid grid-rows-3 gap-4">
-                  <Button 
-                    className="w-full rounded-full"
-                    onClick={() => setIsDialogOpen(true)}
-                  >
-                    طلب الخدمة
-                  </Button>
+                  <Link to="#" >
+                    <Button className="w-full rounded-full">طلب الخدمة</Button>
+                  </Link>
 
                   <Link to={`/provider/${service.profile.user.id}`} >
                     <Button variant="outline" className="w-full rounded-full" >
@@ -209,20 +204,13 @@ const ServiceDetails = () => {
                       {service.profile.user.phone}
                     </Button>
                   </Link>
+                  
                 </div>
               </Card>
             </div>
           </div>
         </div>
       </div>
-      
-      {service && (
-        <ServiceRequestDialog
-          service={service}
-          isOpen={isDialogOpen}
-          onClose={() => setIsDialogOpen(false)}
-        />
-      )}
       
       <Footer />
     </div>
