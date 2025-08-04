@@ -52,7 +52,7 @@ const Services = () => {
     error: servicesError
   } = useQuery({
     queryKey: ["services"],
-    queryFn: fetchServices
+    queryFn: () => fetchServices(),
   });
 
   // Set category from URL parameter on initial load

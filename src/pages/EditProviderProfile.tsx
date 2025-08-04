@@ -25,7 +25,7 @@ import {
 import { Card } from "@/components/ui/card";
 import { useAuth } from "@/context/AuthProvider";
 import { fetchRegions, Region } from "@/api/regions";
-import { fetchProfileByUserId, updateProfile, updateUser, updateUserWithImage } from "@/api/users";
+import { fetchProfileByUserId, updateProfile, updateUser, updateUserWithImage, createProfile } from "@/api/users";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2, Upload } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
@@ -84,10 +84,6 @@ const EditProviderProfile = () => {
     queryKey: ["profile", user?.id],
     queryFn: () => fetchProfileByUserId(user?.id || 0, token || ""),
     enabled: !!user?.id && !!token,
-    onError: (error) => {
-      console.error("Error fetching profile:", error);
-      // It's okay if profile doesn't exist yet
-    }
   });
 
   const form = useForm<z.infer<typeof formSchema>>({

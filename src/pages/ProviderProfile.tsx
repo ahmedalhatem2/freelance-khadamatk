@@ -32,10 +32,6 @@ const ProviderProfile = () => {
     queryKey: ["profile", user?.id],
     queryFn: () => fetchProfileByUserId(user?.id || 0, token || ""),
     enabled: !!user?.id && !!token,
-    onError: (error) => {
-      // It's okay if profile doesn't exist yet
-      console.error("Profile not found:", error);
-    }
   });
 
   useEffect(() => {

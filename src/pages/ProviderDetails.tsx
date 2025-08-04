@@ -86,7 +86,7 @@ const { token } = useAuth();
         
         try {
           // Fetch the profile data for the user
-          const profileData = await fetchProfileByUserId(userData.id);
+          const profileData = await fetchProfileByUserId(userData.id, token || "");
           setProvider({ ...userData, profile: profileData });
         } catch (profileError) {
           // If profile fetch fails, still show the user data

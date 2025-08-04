@@ -27,6 +27,8 @@ import AdminCategories from "./pages/admin/AdminCategories";
 import AdminRoles from "./pages/admin/AdminRoles";
 import AdminRegions from "./pages/admin/AdminRegions";
 import AdminServices from "./pages/admin/AdminServices";
+import ShoppingCart from "./pages/ShoppingCart";
+import Conversations from "./pages/Conversations";
 
 const queryClient = new QueryClient();
 
@@ -60,6 +62,12 @@ const App = () => (
               {/* client routes - requires client role */}
               <Route element={<PrivateRoute allowedRoles={["client"]} />}>
                 <Route path="/profile/me" element={<ClientProfile />} />
+                <Route path="/cart" element={<ShoppingCart />} />
+              </Route>
+
+              {/* Messaging routes - requires authentication */}
+              <Route element={<PrivateRoute allowedRoles={["client", "provider"]} />}>
+                <Route path="/conversations" element={<Conversations />} />
               </Route>
 
               {/* Admin routes - requires admin role */}

@@ -85,6 +85,26 @@ const Navbar = () => {
 
           <div className="hidden md:flex items-center space-x-4 space-x-reverse">
             <ThemeToggle />
+            
+            {isAuthenticated && user && (
+              <>
+                {userRole === 'client' && (
+                  <Link to="/cart">
+                    <Button variant="ghost" size="icon">
+                      <ShoppingCart className="h-5 w-5" />
+                    </Button>
+                  </Link>
+                )}
+                
+                <Link to="/conversations">
+                  <Button variant="ghost" size="icon">
+                    <MessageCircle className="h-5 w-5" />
+                  </Button>
+                </Link>
+                
+                <NotificationsDropdown />
+              </>
+            )}
 
             {isAuthenticated ? (
               <DropdownMenu>
