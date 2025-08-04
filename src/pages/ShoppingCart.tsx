@@ -1,59 +1,64 @@
-import React from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Separator } from '@/components/ui/separator';
-import { Skeleton } from '@/components/ui/skeleton';
-import { 
-  Clock, 
-  Phone, 
-  MessageCircle, 
-  Trash2, 
+import React from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Clock,
+  Phone,
+  MessageCircle,
+  Trash2,
   CheckCircle,
   X,
   Timer,
   XCircle,
-  Play
-} from 'lucide-react';
-import { useAuth } from '@/context/AuthProvider';
-import { fetchClientOrders, updateOrder } from '@/api/orders';
-import { startConversation } from '@/api/conversations';
-import { toast } from '@/hooks/use-toast';
-import { useNavigate } from 'react-router-dom';
-import Navbar from '@/components/navbar/Navbar';
-import Footer from '@/components/footer/Footer';
+  Play,
+} from "lucide-react";
+import { useAuth } from "@/context/AuthProvider";
+import {
+  fetchClientOrders,
+  updateOrder,
+  Order,
+  UpdateOrderData,
+} from "@/api/orders";
+import { startConversation } from "@/api/conversations";
+import { toast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
+import Navbar from "@/components/navbar/Navbar";
+import Footer from "@/components/footer/Footer";
 
 const getStatusColor = (status: string) => {
   switch (status) {
-    case 'pending':
-      return 'bg-yellow-500/20 text-yellow-700 border-yellow-500/30';
-    case 'cancelled':
-      return 'bg-red-500/20 text-red-700 border-red-500/30';
-    case 'in_progress':
-      return 'bg-blue-500/20 text-blue-700 border-blue-500/30';
-    case 'accepted':
-      return 'bg-green-500/20 text-green-700 border-green-500/30';
-    case 'completed':
-      return 'bg-emerald-500/20 text-emerald-700 border-emerald-500/30';
+    case "pending":
+      return "bg-yellow-500/20 text-yellow-700 border-yellow-500/30";
+    case "cancelled":
+      return "bg-red-500/20 text-red-700 border-red-500/30";
+    case "in_progress":
+      return "bg-blue-500/20 text-blue-700 border-blue-500/30";
+    case "accepted":
+      return "bg-green-500/20 text-green-700 border-green-500/30";
+    case "completed":
+      return "bg-emerald-500/20 text-emerald-700 border-emerald-500/30";
     default:
-      return 'bg-gray-500/20 text-gray-700 border-gray-500/30';
+      return "bg-gray-500/20 text-gray-700 border-gray-500/30";
   }
 };
 
 const getStatusText = (status: string) => {
   switch (status) {
-    case 'pending':
-      return 'في الانتظار';
-    case 'cancelled':
-      return 'ملغي';
-    case 'in_progress':
-      return 'قيد التنفيذ';
-    case 'accepted':
-      return 'مقبول';
-    case 'completed':
-      return 'مكتمل';
+    case "pending":
+      return "في الانتظار";
+    case "cancelled":
+      return "ملغي";
+    case "in_progress":
+      return "قيد التنفيذ";
+    case "accepted":
+      return "مقبول";
+    case "completed":
+      return "مكتمل";
     default:
       return status;
   }
@@ -61,15 +66,15 @@ const getStatusText = (status: string) => {
 
 const getStatusIcon = (status: string) => {
   switch (status) {
-    case 'pending':
+    case "pending":
       return <Clock className="w-4 h-4" />;
-    case 'cancelled':
+    case "cancelled":
       return <XCircle className="w-4 h-4" />;
-    case 'in_progress':
+    case "in_progress":
       return <Play className="w-4 h-4" />;
-    case 'accepted':
+    case "accepted":
       return <CheckCircle className="w-4 h-4" />;
-    case 'completed':
+    case "completed":
       return <CheckCircle className="w-4 h-4" />;
     default:
       return <Timer className="w-4 h-4" />;
@@ -81,17 +86,26 @@ const ShoppingCart = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const { data: orders = [], isLoading, error } = useQuery({
-    queryKey: ['client-orders'],
+  const {
+    data: orders = [],
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["client-orders"],
     queryFn: () => fetchClientOrders(token!),
     enabled: !!token,
   });
 
   const updateOrderMutation = useMutation({
-    mutationFn: ({ orderId, data }: { orderId: number; data: any }) => 
-      updateOrder(orderId, data, token!),
+    mutationFn: ({
+      orderId,
+      data,
+    }: {
+      orderId: number;
+      data: UpdateOrderData;
+    }) => updateOrder(orderId, data, token!),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['client-orders'] });
+      queryClient.invalidateQueries({ queryKey: ["client-orders"] });
       toast({
         title: "تم التحديث بنجاح",
         description: "تم تحديث حالة الطلب بنجاح",
@@ -107,10 +121,10 @@ const ShoppingCart = () => {
   });
 
   const startConversationMutation = useMutation({
-    mutationFn: (receiverId: number) => 
+    mutationFn: (receiverId: number) =>
       startConversation({ reciver_id: receiverId }, token!),
     onSuccess: () => {
-      navigate('/conversations');
+      navigate("/conversations");
       toast({
         title: "تم بدء المحادثة",
         description: "تم توجيهك إلى صفحة المحادثات",
@@ -125,13 +139,15 @@ const ShoppingCart = () => {
     },
   });
 
-  const handleStatusAction = (orderId: number, newStatus: string) => {
+  const handleStatusAction = (orderId: number, newStatus: Order["status"]) => {
     updateOrderMutation.mutate({
       orderId,
-      data: { 
+      data: {
         status: newStatus,
-        ...(newStatus === 'completed' && { completed_at: new Date().toISOString() })
-      }
+        ...(newStatus === "completed" && {
+          completed_at: new Date().toISOString(),
+        }),
+      },
     });
   };
 
@@ -139,18 +155,18 @@ const ShoppingCart = () => {
     startConversationMutation.mutate(providerId);
   };
 
-  const getActionButton = (order: any) => {
+  const getActionButton = (order: Order) => {
     const { status, id, service } = order;
     const providerId = service?.profile?.user?.id;
 
     switch (status) {
-      case 'pending':
+      case "pending":
         return (
           <div className="flex gap-2">
             <Button
               variant="destructive"
               size="sm"
-              onClick={() => handleStatusAction(id, 'cancelled')}
+              onClick={() => handleStatusAction(id, "cancelled")}
               className="flex-1"
             >
               <X className="w-4 h-4 ml-1" />
@@ -167,14 +183,14 @@ const ShoppingCart = () => {
             </Button>
           </div>
         );
-      case 'accepted':
-      case 'in_progress':
+      case "accepted":
+      case "in_progress":
         return (
           <div className="flex gap-2">
             <Button
               variant="default"
               size="sm"
-              onClick={() => handleStatusAction(id, 'completed')}
+              onClick={() => handleStatusAction(id, "completed")}
               className="flex-1"
             >
               <CheckCircle className="w-4 h-4 ml-1" />
@@ -191,24 +207,24 @@ const ShoppingCart = () => {
             </Button>
           </div>
         );
-      case 'completed':
+      case "completed":
         return (
           <Button
             variant="outline"
             size="sm"
-            onClick={() => handleStatusAction(id, 'cancelled')}
+            onClick={() => handleStatusAction(id, "cancelled")}
             className="w-full"
           >
             <Trash2 className="w-4 h-4 ml-1" />
             إزالة من السلة
           </Button>
         );
-      case 'cancelled':
+      case "cancelled":
         return (
           <Button
             variant="outline"
             size="sm"
-            onClick={() => handleStatusAction(id, 'cancelled')}
+            onClick={() => handleStatusAction(id, "cancelled")}
             className="w-full"
           >
             <Trash2 className="w-4 h-4 ml-1" />
@@ -252,7 +268,9 @@ const ShoppingCart = () => {
       <div className="flex flex-col min-h-screen bg-background">
         <Navbar />
         <div className="container mx-auto mt-24 px-4 flex-grow flex justify-center items-center">
-          <p className="text-lg text-muted-foreground">حدث خطأ في تحميل الطلبات</p>
+          <p className="text-lg text-muted-foreground">
+            حدث خطأ في تحميل الطلبات
+          </p>
         </div>
         <Footer />
       </div>
@@ -262,7 +280,7 @@ const ShoppingCart = () => {
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <Navbar />
-      
+
       <div className="container mx-auto mt-24 px-4 flex-grow">
         <div className="py-8">
           <div className="flex items-center justify-between mb-8">
@@ -281,9 +299,10 @@ const ShoppingCart = () => {
                   </div>
                   <h3 className="text-xl font-semibold">سلة التسوق فارغة</h3>
                   <p className="text-muted-foreground">
-                    لم تقم بطلب أي خدمات بعد. تصفح الخدمات المتاحة وابدأ بطلب خدمة جديدة.
+                    لم تقم بطلب أي خدمات بعد. تصفح الخدمات المتاحة وابدأ بطلب
+                    خدمة جديدة.
                   </p>
-                  <Button onClick={() => navigate('/services')}>
+                  <Button onClick={() => navigate("/services")}>
                     تصفح الخدمات
                   </Button>
                 </div>
@@ -298,7 +317,10 @@ const ShoppingCart = () => {
                       {/* Service Image */}
                       <div className="md:w-48 h-48 md:h-auto">
                         <img
-                          src={order.service?.image || "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?q=80&w=2055&auto=format&fit=crop"}
+                          src={
+                            order.service?.image ||
+                            "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?q=80&w=2055&auto=format&fit=crop"
+                          }
                           alt={order.service?.title}
                           className="w-full h-full object-cover"
                         />
@@ -311,17 +333,25 @@ const ShoppingCart = () => {
                             {/* Service Info */}
                             <div className="space-y-3">
                               <div className="flex items-start justify-between">
-                                <h3 className="text-xl font-bold">{order.service?.title}</h3>
-                                <Badge className={`${getStatusColor(order.status)} border`}>
+                                <h3 className="text-xl font-bold">
+                                  {order.service?.title}
+                                </h3>
+                                <Badge
+                                  className={`${getStatusColor(
+                                    order.status
+                                  )} border`}
+                                >
                                   {getStatusIcon(order.status)}
-                                  <span className="mr-2">{getStatusText(order.status)}</span>
+                                  <span className="mr-2">
+                                    {getStatusText(order.status)}
+                                  </span>
                                 </Badge>
                               </div>
-                              
+
                               <p className="text-muted-foreground line-clamp-2">
                                 {order.service?.desc}
                               </p>
-                              
+
                               <div className="flex items-center gap-2">
                                 <Badge variant="outline">
                                   {order.service?.category?.name}
@@ -334,15 +364,22 @@ const ShoppingCart = () => {
                             {/* Provider Info */}
                             <div className="flex items-center gap-3">
                               <Avatar className="w-12 h-12">
-                                <AvatarImage src={order.service?.profile?.user?.image} />
+                                <AvatarImage
+                                  src={order.service?.profile?.user?.image}
+                                />
                                 <AvatarFallback>
-                                  {order.service?.profile?.user?.first_name?.charAt(0)}
-                                  {order.service?.profile?.user?.last_name?.charAt(0)}
+                                  {order.service?.profile?.user?.first_name?.charAt(
+                                    0
+                                  )}
+                                  {order.service?.profile?.user?.last_name?.charAt(
+                                    0
+                                  )}
                                 </AvatarFallback>
                               </Avatar>
                               <div>
                                 <p className="font-medium">
-                                  {order.service?.profile?.user?.first_name} {order.service?.profile?.user?.last_name}
+                                  {order.service?.profile?.user?.first_name}{" "}
+                                  {order.service?.profile?.user?.last_name}
                                 </p>
                                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                   <Phone className="w-3 h-3" />
@@ -362,9 +399,13 @@ const ShoppingCart = () => {
                                 </p>
                               </div>
                               <div>
-                                <p className="text-muted-foreground">تاريخ الطلب</p>
+                                <p className="text-muted-foreground">
+                                  تاريخ الطلب
+                                </p>
                                 <p className="font-medium">
-                                  {new Date(order.created_at).toLocaleDateString('ar')}
+                                  {new Date(
+                                    order.created_at
+                                  ).toLocaleDateString("ar")}
                                 </p>
                               </div>
                               {order.comment && (
@@ -390,7 +431,7 @@ const ShoppingCart = () => {
           )}
         </div>
       </div>
-      
+
       <Footer />
     </div>
   );
