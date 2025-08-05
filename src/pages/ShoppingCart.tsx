@@ -24,6 +24,7 @@ import {
   Order,
   UpdateOrderData,
 } from "@/api/orders";
+import { fetchServiceById } from "@/api/services";
 import { startConversation } from "@/api/conversations";
 import { toast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
@@ -92,8 +93,53 @@ const ShoppingCart = () => {
     error,
   } = useQuery({
     queryKey: ["client-orders"],
-    queryFn: () => fetchClientOrders(token!),
+    queryFn: async () => {
+      try {
+        if (!token) {
+          throw new Error("Token is required to fetch orders");
+        }
+
+        console.log("Fetching client orders...");
+        const ordersData = await fetchClientOrders(token);
+        console.log("Orders data received:", ordersData);
+
+        // إذا لم تكن هناك طلبات، نرجع مصفوفة فارغة
+        if (!ordersData || ordersData.length === 0) {
+          console.log("No orders found");
+          return [];
+        }
+
+        // جلب معلومات الخدمة الكاملة لكل طلب
+        const ordersWithServiceDetails = await Promise.all(
+          ordersData.map(async (order) => {
+            if (order.service_id) {
+              try {
+                const serviceDetails = await fetchServiceById(order.service_id);
+                return {
+                  ...order,
+                  service: serviceDetails,
+                };
+              } catch (error) {
+                console.error(
+                  `Failed to fetch service details for order ${order.id}:`,
+                  error
+                );
+                return order;
+              }
+            }
+            return order;
+          })
+        );
+        console.log("Orders with service details:", ordersWithServiceDetails);
+        return ordersWithServiceDetails;
+      } catch (error) {
+        console.error("Error in queryFn:", error);
+        throw error;
+      }
+    },
     enabled: !!token,
+    retry: 1,
+    retryDelay: 1000,
   });
 
   const updateOrderMutation = useMutation({
@@ -111,11 +157,21 @@ const ShoppingCart = () => {
         description: "تم تحديث حالة الطلب بنجاح",
       });
     },
-    onError: (error) => {
+    onError: (error: Error) => {
+      console.error("Update order error:", error);
+
+      // معالجة أخطاء محددة
+      let errorMessage = error.message;
+      if (error.message.includes("Failed to execute")) {
+        errorMessage = "فشل في الاتصال بالخادم. يرجى المحاولة مرة أخرى.";
+      } else if (error.message.includes("Unexpected end of JSON")) {
+        errorMessage = "استجابة غير صحيحة من الخادم. يرجى المحاولة مرة أخرى.";
+      }
+
       toast({
         variant: "destructive",
         title: "خطأ في التحديث",
-        description: "حدث خطأ أثناء تحديث الطلب",
+        description: errorMessage,
       });
     },
   });
@@ -130,16 +186,26 @@ const ShoppingCart = () => {
         description: "تم توجيهك إلى صفحة المحادثات",
       });
     },
-    onError: (error) => {
+    onError: (error: Error) => {
+      console.error("Start conversation error:", error);
       toast({
         variant: "destructive",
         title: "خطأ في بدء المحادثة",
-        description: "حدث خطأ أثناء بدء المحادثة",
+        description: error.message || "حدث خطأ أثناء بدء المحادثة",
       });
     },
   });
 
   const handleStatusAction = (orderId: number, newStatus: Order["status"]) => {
+    if (!token) {
+      toast({
+        variant: "destructive",
+        title: "خطأ في المصادقة",
+        description: "يرجى تسجيل الدخول مرة أخرى",
+      });
+      return;
+    }
+
     updateOrderMutation.mutate({
       orderId,
       data: {
@@ -152,12 +218,30 @@ const ShoppingCart = () => {
   };
 
   const handleContactProvider = (providerId: number) => {
+    if (!providerId) {
+      toast({
+        variant: "destructive",
+        title: "خطأ",
+        description: "لا يمكن العثور على مقدم الخدمة",
+      });
+      return;
+    }
     startConversationMutation.mutate(providerId);
   };
 
   const getActionButton = (order: Order) => {
     const { status, id, service } = order;
     const providerId = service?.profile?.user?.id;
+
+    // إذا لم تكن هناك معلومات خدمة، لا نعرض أزرار
+    if (!service) {
+      return (
+        <Button variant="outline" size="sm" disabled className="w-full">
+          <XCircle className="w-4 h-4 ml-1" />
+          معلومات الخدمة غير متوفرة
+        </Button>
+      );
+    }
 
     switch (status) {
       case "pending":
@@ -264,13 +348,22 @@ const ShoppingCart = () => {
   }
 
   if (error) {
+    console.error("Shopping cart error:", error);
     return (
       <div className="flex flex-col min-h-screen bg-background">
         <Navbar />
         <div className="container mx-auto mt-24 px-4 flex-grow flex justify-center items-center">
-          <p className="text-lg text-muted-foreground">
-            حدث خطأ في تحميل الطلبات
-          </p>
+          <div className="text-center space-y-4">
+            <p className="text-lg text-muted-foreground">
+              حدث خطأ في تحميل الطلبات
+            </p>
+            <p className="text-sm text-muted-foreground">
+              {error.message || "يرجى المحاولة مرة أخرى"}
+            </p>
+            <Button onClick={() => window.location.reload()} variant="outline">
+              إعادة تحميل الصفحة
+            </Button>
+          </div>
         </div>
         <Footer />
       </div>
@@ -354,8 +447,16 @@ const ShoppingCart = () => {
 
                               <div className="flex items-center gap-2">
                                 <Badge variant="outline">
-                                  {order.service?.category?.name}
+                                  {order.service?.category?.name || "غير محدد"}
                                 </Badge>
+                                {order.service?.rates_count && (
+                                  <Badge
+                                    variant="secondary"
+                                    className="text-xs"
+                                  >
+                                    ⭐ {order.service.rates_count} تقييم
+                                  </Badge>
+                                )}
                               </div>
                             </div>
 
@@ -376,7 +477,7 @@ const ShoppingCart = () => {
                                   )}
                                 </AvatarFallback>
                               </Avatar>
-                              <div>
+                              <div className="flex-1">
                                 <p className="font-medium">
                                   {order.service?.profile?.user?.first_name}{" "}
                                   {order.service?.profile?.user?.last_name}
@@ -385,6 +486,11 @@ const ShoppingCart = () => {
                                   <Phone className="w-3 h-3" />
                                   {order.service?.profile?.user?.phone}
                                 </div>
+                                {order.service?.profile?.about && (
+                                  <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                                    {order.service.profile.about}
+                                  </p>
+                                )}
                               </div>
                             </div>
 
