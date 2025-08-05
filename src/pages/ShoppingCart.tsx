@@ -270,26 +270,15 @@ const ShoppingCart = () => {
       case "accepted":
       case "in_progress":
         return (
-          <div className="flex gap-2">
-            <Button
-              variant="default"
-              size="sm"
-              onClick={() => handleStatusAction(id, "completed")}
-              className="flex-1"
-            >
-              <CheckCircle className="w-4 h-4 ml-1" />
-              إكمال الطلب
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleContactProvider(providerId)}
-              className="flex-1"
-            >
-              <MessageCircle className="w-4 h-4 ml-1" />
-              التواصل
-            </Button>
-          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleContactProvider(providerId)}
+            className="w-full"
+          >
+            <MessageCircle className="w-4 h-4 ml-1" />
+            التواصل
+          </Button>
         );
       case "completed":
         return (
