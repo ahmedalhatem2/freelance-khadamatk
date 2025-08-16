@@ -19,12 +19,14 @@ import { fetchServices, fetchCategories } from "@/api/services";
 import { Service, Category } from "@/types/api";
 import ServicesList from "@/components/services/ServicesList";
 import { toast } from "@/hooks/use-toast";
-import { useLocation } from 'react-router-dom';
+import { useLocation, useSearchParams } from 'react-router-dom';
 
 const Services = () => {
   const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
   const queryParams = new URLSearchParams(location.search);
   const categoryParam = queryParams.get("category");
+  const searchParam = searchParams.get("search") || "";
   
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedSort, setSelectedSort] = useState("newest");
@@ -32,8 +34,16 @@ const Services = () => {
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
   const [selectedRatings, setSelectedRatings] = useState<number[]>([]);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState(searchParam);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Update search query when URL search param changes
+  useEffect(() => {
+    const searchFromUrl = searchParams.get("search");
+    if (searchFromUrl) {
+      setSearchQuery(searchFromUrl);
+    }
+  }, [searchParams]);
 
   // Fetch categories
   const { 
@@ -208,7 +218,14 @@ const Services = () => {
                   placeholder="ابحث عن خدمة..." 
                   className="pl-10 pr-3 rounded-full"
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    if (e.target.value.trim()) {
+                      setSearchParams({ search: e.target.value.trim() });
+                    } else {
+                      setSearchParams({});
+                    }
+                  }}
                 />
                 <Search className="absolute top-1/2 transform -translate-y-1/2 left-3 h-5 w-5 text-muted-foreground" />
               </div>

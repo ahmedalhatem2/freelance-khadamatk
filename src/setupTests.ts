@@ -18,12 +18,27 @@ export const createTestQueryClient = () =>
   });
 
 // Mock IntersectionObserver
-global.IntersectionObserver = class IntersectionObserver {
-  constructor() {}
-  disconnect() {}
-  observe() {}
-  unobserve() {}
-};
+Object.defineProperty(window, 'IntersectionObserver', {
+  writable: true,
+  configurable: true,
+  value: class MockIntersectionObserver {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+    constructor() {}
+  }
+});
+
+Object.defineProperty(global, 'IntersectionObserver', {
+  writable: true,
+  configurable: true,
+  value: class MockIntersectionObserver {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+    constructor() {}
+  }
+});
 
 // Mock ResizeObserver
 global.ResizeObserver = class ResizeObserver {
