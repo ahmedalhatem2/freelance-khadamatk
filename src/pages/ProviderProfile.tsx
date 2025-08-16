@@ -4,7 +4,6 @@ import { useParams, useNavigate } from "react-router-dom";
 import ProviderInfo from "@/components/providers/ProviderInfo";
 import ProviderServices from "@/components/providers/ProviderServices";
 import ProviderReviews from "@/components/providers/ProviderReviews";
-import ProviderOrders from "@/components/providers/ProviderOrders";
 import { useAuth } from "@/context/AuthProvider";
 import { API_BASE_URL } from "@/config/api";
 import { toast } from "@/hooks/use-toast";
@@ -382,14 +381,7 @@ const ProviderProfile = () => {
           services={services}
           isProfileComplete={isProfileComplete}
         />
-        
-        {/* Orders Management - Only show for current user's profile */}
-        {user && user.id === provider.id && (
-          <ProviderOrders />
-        )}
-        
         <ProviderReviews
-          providerId={provider.id}
           reviews={reviews}
           avgRating={avgRating}
           totalReviews={reviews.length}

@@ -52,24 +52,3 @@ export const fetchRateById = async (id: number, token: string): Promise<Rate> =>
     throw error;
   }
 };
-
-// Fetch rates for a specific provider
-export const fetchProviderRates = async (providerId: number, token: string): Promise<any[]> => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/rates?provider_id=${providerId}`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Error fetching provider rates: ${response.status}`);
-    }
-    
-    const data = await response.json();
-    return Array.isArray(data) ? data : [];
-  } catch (error) {
-    console.error(`Failed to fetch rates for provider ${providerId}:`, error);
-    throw error;
-  }
-};
